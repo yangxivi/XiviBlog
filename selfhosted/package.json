@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
+    "postbuild": "node scripts/copy-static.mjs",
     "start": "next start",
     "install:db": "node scripts/install-db.mjs"
   },
