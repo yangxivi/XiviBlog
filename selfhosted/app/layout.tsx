@@ -21,35 +21,49 @@ import "./globals.css";
 /** 站点名称、导航、页脚都由数据库设置驱动，必须按请求渲染 */
 export const dynamic = "force-dynamic";
 
-/**
- * 用静态 metadata 而非 generateMetadata 函数：
- * Next 16.3.4 在预渲染内部 /_global-error 页时会为 generateMetadata 建立
- * searchParams 的 workStore，而该页无请求上下文 → 抛 InvariantError 导致 build 失败。
- * 静态导出不会触发该路径。站点名可在构建期用 SITE_NAME 环境变量覆盖。
- */
-const SITE = process.env.SITE_NAME || "曦微博客";
+const FALLBACK_SITE = "曦微博客";
+const FALLBACK_DESC =
+  "曦微（XIVI）的技术博客：AI 应用、桌面工具、自动化脚本与部署实践。";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.SITE_URL || "https://blog.aixivi.cn"),
-  title: {
-    default: SITE,
-    template: `%s | ${SITE}`,
-  },
-  description: "曦微（XIVI）的技术博客：AI 应用、桌面工具、自动化脚本与部署实践。",
-  alternates: {
-    canonical: "/",
-    types: {
-      "application/rss+xml": [{ url: "/rss.xml", title: `${SITE} RSS` }],
+/**
+ * 站点名称 / 描述跟随后台设置实时变化：用 generateMetadata 从数据库读取。
+ * 构建期 / 运行期获取不到设置时回落默认值，不影响渲染与构建。
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  let site = process.env.SITE_NAME || "";
+  let desc = "";
+  if (!site) {
+    try {
+      const s = await getSettings();
+      site = s.siteName || FALLBACK_SITE;
+      desc = s.siteDesc || "";
+    } catch {
+      site = FALLBACK_SITE;
+    }
+  }
+  const description = desc || FALLBACK_DESC;
+  return {
+    metadataBase: new URL(process.env.SITE_URL || "https://blog.aixivi.cn"),
+    title: {
+      default: site,
+      template: `%s | ${site}`,
     },
-  },
-  openGraph: {
-    type: "website",
-    siteName: SITE,
-    title: SITE,
-    description: "曦微（XIVI）的技术博客：AI 应用、桌面工具、自动化脚本与部署实践。",
-    locale: "zh_CN",
-  },
-};
+    description,
+    alternates: {
+      canonical: "/",
+      types: {
+        "application/rss+xml": [{ url: "/rss.xml", title: `${site} RSS` }],
+      },
+    },
+    openGraph: {
+      type: "website",
+      siteName: site,
+      title: site,
+      description,
+      locale: "zh_CN",
+    },
+  };
+}
 
 /** 首屏绘制前恢复主题，避免暗色用户看到白屏闪烁 */
 const THEME_INIT = `(function(){try{var s=localStorage.getItem('xivi-theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches;if(d){document.documentElement.classList.add('dark');}}catch(e){}})();`;
