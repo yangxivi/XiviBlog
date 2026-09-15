@@ -29,7 +29,7 @@
 
 ---
 
-## 🚀 部署到 Cloudflare Workers
+## 🚀 方式一：部署到 Cloudflare Workers
 
 ### 1. 安装依赖
 
