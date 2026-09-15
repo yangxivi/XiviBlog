@@ -102,6 +102,91 @@ npm run cf:deploy
 
 ---
 
+## 🤖 方式二：AI Agent 一键部署（推荐，5 分钟搞定）
+
+> 不想碰命令行？让 AI Agent 帮你全自动完成全部部署。你只需要一个 Cloudflare 账号和一句指令。
+
+### 前置准备（2 分钟）
+
+| 步骤 | 操作 | 说明 |
+| --- | --- | --- |
+| ① | 注册 [Cloudflare](https://dash.cloudflare.com/sign-up) 账号 | 免费版即可 |
+| ② | 准备一个域名（可选） | 在 Cloudflare 添加你的域名并开启**代理（橙色云朵）**；没有域名也能用 `xxx.workers.dev` 默认子域 |
+| ③ | 打开 AI Agent 对话 | [WorkBuddy](https://www.workbuddy.cn) / ChatGPT / Claude / 任何支持代码执行的 AI 助手 |
+
+### 第一步：Fork 仓库
+
+1. 打开 **[yangxivi/XiviBlog](https://github.com/yangxivi/XiviBlog)**
+2. 点右上角 **Fork** → 确认 Fork 到你自己的 GitHub 账号下
+3. 记住你的仓库名（默认也是 `XiviBlog`）
+
+> 没有 GitHub 账号？先去 [github.com](https://github.com) 注册一个（免费）。
+
+### 第二步：给 AI Agent 下达部署指令
+
+把下面这段话**完整复制**发给 AI Agent（WorkBuddy / ChatGPT / Claude 等），AI 会自动完成剩余全部操作：
+
+```
+请帮我把这个博客项目（XiviBlog）一键部署到我的 Cloudflare Workers 上。
+
+【我的信息】
+- GitHub 仓库：我已 Fork 了 yangxivi/XiviBlog 到自己的账号下，仓库地址是 https://github.com/<我的用户名>/XiviBlog
+- Cloudflare 账号：我已注册，请引导我创建 API Token 或用其他方式授权给你操作
+- 域名：我有域名 <你的域名，如 blog.example.com>（如果没有就填"没有，用 workers.dev"）
+- 邮箱：<你想用来登录后台的邮箱>
+
+【你需要做的事】（按顺序一步步来，每做完一步告诉我进度）
+
+1. 克隆我的 Fork 仓库到本地
+2. 引导我创建 Cloudflare API Token（需要 Edit Cloudflare Workers 权限），或者用 wrangler login 授权
+3. 用 wrangler 创建 D1 数据库，拿到 database_id
+4. 修改 wrangler.jsonc 中的 account_id、database_id、routes 为我的信息
+5. 逐个执行 migrations/ 目录下的所有 SQL 迁移文件（0001~0015，跳过 _seed_ 开头的种子文件）
+6. 生成随机的 SESSION_SECRET 和 ADMIN_PASSWORD，通过 wrangler secret put 设置
+7. 执行 npm install && npm run cf:build 构建项目
+8. 执行 wrangler deploy 部署到 Cloudflare Workers
+9. 如果我有域名，帮我在 Cloudflare 添加 DNS 记录（CNAME 指向 Worker）并绑定自定义路由
+10. 验证部署成功：访问首页返回 200
+11. 告诉我访问 /admin/register 的链接和 ADMIN_PASSWORD 的值，让我去注册管理员账号
+
+【注意事项】
+- 不要把任何 Token、密码、Secret 写入代码文件或提交到 Git
+- 部署完成后清理临时文件
+- 如果某步失败，告诉我具体错误和解决建议
+```
+
+### 第三步：按 AI 引导操作（约 3 分钟）
+
+AI 会逐步执行上述步骤，期间可能需要你配合做以下简单操作：
+
+| AI 可能请求你做的 | 你需要做的 | 耗时 |
+| --- | --- | --- |
+| 「请提供 Cloudflare API Token」 | 打开 [Cloudflare Dashboard → API Tokens → Create Token](https://dash.cloudflare.com/profile/api-tokens) → 选「Edit Cloudflare Workers」模板 → 创建 → 复制 Token 给 AI | 30 秒 |
+| 「请确认域名 DNS 配置」 | 去 Cloudflare 的 DNS 管理页面确认多了一条 CNAME/A 记录指向 Worker | 10 秒 |
+| 「请打开这个链接注册管理员」 | 浏览器打开 `https://<你的域名>/admin/register`，填邮箱+密码，邀请码填 AI 给你的 `ADMIN_PASSWORD` | 1 分钟 |
+
+### 第四步：验收
+
+部署完成后，你应该能：
+
+- [ ] 打开 `https://<你的域名>` 看到博客首页（7 套主题可切换）
+- [ ] 打开 `https://<你的域名>/admin` 用刚注册的账号登录后台
+- [ ] 后台写一篇测试文章并发布，前台能看到
+
+### 常见问题
+
+| 问题 | 解决 |
+| --- | --- |
+| AI 说「wrangler login 超时」 | 国内网络 OAuth 回调会超时，改用 API Token 方式（让 AI 用 `CLOUDFLARE_API_TOKEN` 环境变量） |
+| AI 报「域名未接入 Cloudflare」 | 先在 Cloudflare 添加你的域名，把 NS 服务器改成 Cloudflare 提供的，等 DNS 生效后再继续 |
+| 部署后访问 404 | 检查 `wrangler.jsonc` 的 `routes[].pattern` 是否匹配你的域名；或先用 `https://<worker名>.workers.dev` 访问确认 Worker 本身正常 |
+| 想换域名 / 改配置 | 直接告诉 AI：「帮我把域名从 A 改成 B」，AI 会自动改 `wrangler.jsonc` 并重新部署 |
+| 想回滚版本 | 告诉 AI：「回滚到上一个版本」，AI 会 `git checkout` 之前的 commit 并重新部署 |
+
+> 💡 **提示**：整个过程中 AI 会帮你读代码、改配置、跑命令、查错误日志。你不需要懂 Node.js 或 Cloudflare，只需要能在浏览器里点几下、复制粘贴几个值就行。
+
+---
+
 ## 💻 本地开发
 
 ```bash
