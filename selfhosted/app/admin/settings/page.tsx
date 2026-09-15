@@ -4,6 +4,7 @@ import { listPublished } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import AdminNav from "../admin-nav";
 import SettingsForm, { type PostOption } from "./settings-form";
+import UpdatePanel from "./update-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,8 @@ export default async function SettingsPage() {
       </div>
 
       <SettingsForm initial={settings} postOptions={postOptions} />
+
+      <UpdatePanel initialAutoUpdate={settings.autoUpdate === true} />
     </div>
   );
 }

@@ -114,6 +114,8 @@ export type SiteSettings = {
   categoryAliases: Record<string, string>;
   /** 站点主题（品牌色方案）：meituan / wechat / zhihu / tencent / xiaohongshu / purple / cyan */
   theme: string;
+  /** 自动检测更新：开启后后台访问时自动对比 GitHub 最新版本（静默、不自动安装） */
+  autoUpdate: boolean;
 };
 
 export const SETTINGS_KEY = "site";
@@ -193,6 +195,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   aiCoverBaseUrl: "https://apihub.agnes-ai.com/v1",
   categoryAliases: {},
   theme: "meituan",
+  autoUpdate: false,
   carousel: {
     mode: "auto",
     count: 5,
@@ -403,6 +406,7 @@ export function normalizeSettings(input: unknown): SiteSettings {
     aiCoverBaseUrl: str(input.aiCoverBaseUrl, d.aiCoverBaseUrl, 200),
     categoryAliases: normCategoryAliases(input.categoryAliases),
     theme: str(input.theme, d.theme, 20),
+    autoUpdate: input.autoUpdate === true,
   };
 }
 
