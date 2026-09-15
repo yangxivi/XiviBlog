@@ -175,8 +175,20 @@ export default function SettingsForm({
         error?: string;
       };
       if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
-      if (j.settings) setS(j.settings);
-      setMsg({ type: "ok", text: "已保存，前台即刻生效" });
+      if (j.settings) {
+        setS(j.settings);
+        // 立即把新主题套用到当前页面：无需等待整页重载即可看到配色变化，
+        // 解决「后台切主题刷新看不到、必须关浏览器重开」的体感问题
+        if (j.settings.theme) {
+          document.documentElement.setAttribute("data-theme", j.settings.theme);
+        }
+      }
+      setMsg({ type: "ok", text: "已保存，正在刷新预览新主题…" });
+      // 强制整页刷新：后台所有模块（导航/页脚/配色 CSS 变量）都按新设置重新渲染。
+      // 配合 lib/settings.ts 去掉 isolate 内存缓存后，刷新必定拿到最新主题。
+      setTimeout(() => {
+        window.location.reload();
+      }, 350);
     } catch (e) {
       setMsg({
         type: "err",

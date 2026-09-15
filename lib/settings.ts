@@ -120,12 +120,15 @@ export const SETTINGS_KEY = "site";
 
 /**
  * 站点设置是高频读取、极少变更的数据（每次请求 layout / metadata / 页面都要读）。
- * 在 Worker 实例内做一层 60s TTL 的内存缓存，避免每个请求都打一次 D1 查询。
- * 模块级变量在 Cloudflare Worker 同 isolate 内跨请求复用，是标准做法；
- * saveSettings 会立即刷新缓存，保证后台改完立刻生效。
+ *
+ * 注意：早期版本在这里做了一层「Worker isolate 内 60s 内存缓存」来省 D1 查询，
+ * 但 Cloudflare Workers 会同时跑多个 isolate，每个 isolate 的内存缓存互不相通。
+ * 在某个 isolate 上保存设置后，只刷新了那一台的缓存，其它 isolate 最多会滞后
+ * 60s 才过期——表现就是「后台切换主题后刷新仍看到旧配色，得关掉浏览器等缓存
+ * 过期才恢复」。因此这里改为**每次直读 D1**（D1 写入立即可见，跨 isolate 强一致），
+ * 整页 HTML 已在边缘层缓存 60s，多这一次 D1 读取对性能几乎无影响，却换来了
+ * 「改完立即全站生效」的正确性。
  */
-let _settingsCache: { value: SiteSettings; ts: number } | null = null;
-const SETTINGS_TTL_MS = 60_000;
 
 export const DEFAULT_SETTINGS: SiteSettings = {
   siteName: "曦微 XIVI",
@@ -408,10 +411,6 @@ export function normalizeSettings(input: unknown): SiteSettings {
  * 都回退到默认值，保证前台永远不会因为设置读取失败而崩。
  */
 export async function getSettings(): Promise<SiteSettings> {
-  const now = Date.now();
-  if (_settingsCache && now - _settingsCache.ts < SETTINGS_TTL_MS) {
-    return _settingsCache.value;
-  }
   try {
     const db = await getDB();
     const row = await db
@@ -419,17 +418,18 @@ export async function getSettings(): Promise<SiteSettings> {
       .bind(SETTINGS_KEY)
       .first<{ value: string }>();
     if (!row?.value) return { ...DEFAULT_SETTINGS };
-    const parsed = normalizeSettings(JSON.parse(row.value));
-    _settingsCache = { value: parsed, ts: now };
-    return parsed;
+    return normalizeSettings(JSON.parse(row.value));
   } catch {
     return { ...DEFAULT_SETTINGS };
   }
 }
 
-/** 仅清内存缓存（构建期/特殊场景用，运行时通常走 saveSettings 直接刷新） */
+/**
+ * 兼容保留：设置改为每次直读 D1，不再维护 isolate 内内存缓存，
+ * 保留空实现以避免破坏任何调用方（如构建脚本）。
+ */
 export function clearSettingsCache(): void {
-  _settingsCache = null;
+  // no-op：当前实现每次都读 D1，无需清内存缓存
 }
 
 /** 保存设置（整体覆盖，返回规范化后的结果） */
@@ -444,7 +444,5 @@ export async function saveSettings(patch: unknown): Promise<SiteSettings> {
     )
     .bind(SETTINGS_KEY, JSON.stringify(merged))
     .run();
-  // 立即刷新内存缓存，后台改完即生效（也避免 60s 内读到旧值）
-  _settingsCache = { value: merged, ts: Date.now() };
   return merged;
 }
