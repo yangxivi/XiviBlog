@@ -42,7 +42,10 @@ echo "==> [2/6] 拉取源码"
 $SUDO mkdir -p "$APP_DIR"
 if [ ! -f "$APP_DIR/selfhosted/package.json" ]; then
   $SUDO rm -rf "$APP_DIR"
-  $SUDO git clone --depth 1 "$REPO" "$APP_DIR"
+  if ! $SUDO git clone --depth 1 "$REPO" "$APP_DIR" 2>/dev/null; then
+    echo "    直连 GitHub 失败，改用 ghproxy 镜像..."
+    $SUDO git clone --depth 1 "https://ghproxy.com/https://github.com/yangxivi/XiviBlog.git" "$APP_DIR"
+  fi
 fi
 cd "$APP_DIR/selfhosted"
 
