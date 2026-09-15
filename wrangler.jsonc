@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "xivi-blog",
+  "main": "custom-worker.ts",
+  "compatibility_date": "2026-09-09",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "account_id": "b433825d809e0bb7e7ba0bb3946ced9f",
+  "routes": [
+    {
+      "pattern": "blog.aixivi.cn",
+      "custom_domain": true
+    }
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "xivi-blog-db",
+      "database_id": "0a6dacad-4281-4016-aa90-ce912fe9fa6a"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
