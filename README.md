@@ -194,16 +194,118 @@ AI 会逐步执行上述步骤，期间可能需要你配合做以下简单操�
 - 代码在 **`selfhosted/`** 目录（与 Cloudflare 版完全独立，互不影响）。
 - 数据库用本地 **SQLite 文件**（`better-sqlite3`），无需 MySQL/PostgreSQL。
 - 提供网页安装向导 **`/install`**：填管理员邮箱 + 密码即完成建库与建账号，体验同 `wp-admin/install.php`。
+- 安装完成即自带「关于本站」页面与 **20 篇样本文章**，开箱即用。
 - 配套 `install.sh`（一键初始化）、`setup-nginx.sh`（域名 + HTTPS）、完整文档 **[selfhosted/README-install.md](selfhosted/README-install.md)**。
 
+### 第 1 步：准备服务器
+
+| 项目 | 要求 |
+| --- | --- |
+| 系统 | 任意 Linux（Ubuntu / Debian / CentOS 等） |
+| Node.js | ≥ 18（推荐 20+） |
+| 数据库 | 自带 SQLite，**无需**安装 MySQL/PostgreSQL |
+| 内存 | ≥ 512MB 即可 |
+
+Ubuntu/Debian 安装 Node.js：
+
 ```bash
-cd selfhosted
-bash install.sh          # 装依赖 + 建库
-npm run build && npm start
-# 浏览器打开 http://服务器IP:3000/install 完成安装
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
 ```
 
+### 第 2 步：下载安装包，上传到网站根目录
+
+从 [**Releases**](https://github.com/yangxivi/XiviBlog/releases) 下载最新安装包（如 `xiviblog-install-v1.1.0.zip`），上传到你的服务器并解压到网站根目录：
+
+```bash
+# 本地执行：上传安装包到服务器（IP 换成你的）
+scp xiviblog-install-v1.1.0.zip root@你的服务器IP:/tmp/
+
+# 服务器执行：解压到网站根目录
+sudo mkdir -p /var/www/xiviblog
+sudo unzip /tmp/xiviblog-install-v1.1.0.zip -d /var/www/xiviblog
+cd /var/www/xiviblog
+```
+
+### 第 3 步：数据库与配置（.env）
+
+数据库是 **SQLite 文件，自动创建、零配置**——只需告诉它存哪里（默认 `./data/xiviblog.db`，目录自动创建）。
+
+```bash
+cp .env.example .env
+```
+
+编辑 `.env`，至少修改这两项（`SESSION_SECRET` 用 `openssl rand -hex 32` 生成）：
+
+```ini
+SESSION_SECRET=随机长字符串          # 会话签名密钥
+ADMIN_PASSWORD=你的后台邀请码        # /admin/register 邀请码 + 找回验证
+
+# 以下保持默认即可
+DATABASE_PATH=./data/xiviblog.db    # SQLite 数据库文件路径（自动建库）
+SITE_URL=http://localhost:3000      # 对外访问地址（绑域名后改成域名）
+PORT=3000                           # 监听端口
+```
+
+### 第 4 步：一键安装并启动
+
+```bash
+bash install.sh        # 装依赖 + 建库
+npm run build          # 首次构建
+npm start              # 启动，默认监听 3000
+```
+
+建议用 `pm2` 守护进程让服务常驻：
+
+```bash
+npm i -g pm2
+pm2 start "npm start" --name xiviblog
+pm2 save
+```
+
+### 第 5 步：域名解析（可选但推荐）
+
+到你的域名服务商（或 Cloudflare）添加一条 **A 记录**：主机记录填 `blog`（或 `@`），记录值填服务器公网 IP。生效后执行：
+
+```bash
+bash setup-nginx.sh blog.yourdomain.com   # Nginx 反代 + 免费 HTTPS 证书
+```
+
+完成后把 `.env` 里的 `SITE_URL` 改成 `https://blog.yourdomain.com` 并重启服务。
+
+### 第 6 步：XiviBlog 安装向导（关键一步）
+
+浏览器打开 **`http://服务器IP:3000/install`**（已绑域名则用域名），这是全站唯一的入口——未安装前访问任何页面都会被引导到这里：
+
+![XiviBlog 安装向导](selfhosted/docs/install-wizard.png)
+
+填写站点名称（可选）、管理员邮箱、管理员密码（≥6 位），点击「完成安装」。向导会自动：
+
+1. 建好全部数据库表；
+2. 创建管理员账号；
+3. 写入「关于本站」页面与 20 篇样本文章，页脚带 [By XiviBlog](https://blog.aixivi.cn/) 署名。
+
+看到下面这个页面就说明装好了：
+
+![安装成功](selfhosted/docs/install-done.png)
+
+### 第 7 步：开始使用
+
+打开 **`/admin`** 用刚才的邮箱密码登录后台。「站点设置」里可以改站名 / LOGO 文字 / 简介、**7 套主题配色**、导航、页脚、友链等，保存即时生效：
+
+![后台站点设置](selfhosted/docs/admin-settings.png)
+
+回到前台，你的博客已经就绪——首页带轮播、推荐位与样本文章：
+
+![博客首页](selfhosted/docs/homepage.png)
+
+「关于本站」也已预填好完整内容（可在后台自由修改）：
+
+![关于本站](selfhosted/docs/about-page.png)
+
 > 与 Cloudflare 版的区别：运行环境（Workers vs Node）、数据库（D1 vs 本地 SQLite）、缓存（边缘 vs 反向代理）、安装方式（无界面 vs 网页向导）。两者功能、主题、编辑器完全一致。
+>
+> 更多细节（忘记密码、换端口、better-sqlite3 编译问题等）见 **[selfhosted/README-install.md](selfhosted/README-install.md)**。
 
 ---
 

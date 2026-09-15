@@ -131,7 +131,7 @@ export const SETTINGS_KEY = "site";
  */
 
 export const DEFAULT_SETTINGS: SiteSettings = {
-  siteName: "曦微 XIVI",
+  siteName: "曦微博客系统 XiviBlogSystem",
   logoText: "曦微",
   siteDesc:
     "曦微（XIVI）的技术博客：AI 应用、桌面工具、自动化脚本与部署实践。",
@@ -167,8 +167,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
       ],
     },
   ],
-  copyright: "© {year} 曦微 XIVI",
-  footnote: "部署于 Cloudflare Workers",
+  copyright: "© {year} 曦微博客系统 XiviBlogSystem",
+  footnote: "By [XiviBlog](https://blog.aixivi.cn/)",
   icp: "",
   notice: {
     enabled: false,
@@ -204,7 +204,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
       variant: "outline",
       badge: "",
       title: "CODE A BETTER LIFE",
-      subtitle: "曦微 XIVI · 技术笔记",
+      subtitle: "曦微博客系统 XiviBlogSystem · 技术笔记",
       image: "",
       href: "",
     },

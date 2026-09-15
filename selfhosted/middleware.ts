@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // 未安装时，把站点页面请求重定向到 /install 安装向导（WordPress 式体验）。
-// 安装状态带 30s 内存缓存，避免每次请求都打 DB。
+// 安装状态带短周期内存缓存，避免每次请求都打 DB；TTL 要短，
+// 否则「刚装完的用户访问首页会被缓存里的未安装状态弹回安装页」。
 let cache: { installed: boolean; ts: number } | null = null;
-const TTL = 30_000;
+const TTL = 3_000;
 
 async function isInstalled(req: NextRequest): Promise<boolean> {
   const now = Date.now();

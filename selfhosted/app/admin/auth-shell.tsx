@@ -35,7 +35,7 @@ export default function AuthShell({
         </div>
 
         <p className="mt-6 text-center text-xs text-[var(--c-text-4)]">
-          © {new Date().getFullYear()} 曦微 XIVI · 后台管理
+          © {new Date().getFullYear()} 曦微博客系统 XiviBlogSystem · 后台管理
         </p>
       </div>
     </div>

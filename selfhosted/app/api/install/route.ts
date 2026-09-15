@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { runMigrations } from "@/lib/migrate";
 import { createUser, countUsers } from "@/lib/users";
 import { saveSettings } from "@/lib/settings";
+import { getRawDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -69,10 +72,42 @@ export async function POST(req: NextRequest) {
         /* 站点名写入失败不影响安装 */
       }
     }
+    // 4) 种子内容：「关于本站」（与 blog.aixivi.cn/about 一致的完整文案）
+    let seededAbout = false;
+    try {
+      const aboutMd = readFileSync(
+        join(process.cwd(), "migrations", "_seed_about.md"),
+        "utf8"
+      );
+      await saveSettings({ aboutTitle: "关于本站", aboutContent: aboutMd });
+      seededAbout = true;
+    } catch {
+      /* 种子失败不影响安装 */
+    }
+    // 5) 种子内容：20 篇样本文章（仅在文章表为空时写入）
+    let seededPosts = 0;
+    try {
+      const db = getRawDb();
+      const row = db.prepare("SELECT COUNT(*) AS c FROM posts").get() as
+        | { c: number }
+        | undefined;
+      if (!row || row.c === 0) {
+        const seedSql = readFileSync(
+          join(process.cwd(), "migrations", "_seed_posts20.sql"),
+          "utf8"
+        );
+        db.exec(seedSql);
+        seededPosts = 20;
+      }
+    } catch {
+      /* 种子失败不影响安装 */
+    }
     return NextResponse.json({
       ok: true,
       userId: uid,
       migrations: files.length,
+      seededAbout,
+      seededPosts,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

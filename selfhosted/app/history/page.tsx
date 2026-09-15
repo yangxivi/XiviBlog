@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "历史文章",
-  description: "曦微 XIVI 的全部文章归档。",
+  description: "曦微博客系统的全部文章归档。",
 };
 
 /** 归档页每页文章数（首屏只取这一页，其余页客户端按需拉 /api/posts） */

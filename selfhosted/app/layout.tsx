@@ -13,6 +13,7 @@ import ViewTracker from "./components/ViewTracker";
 import ScrollToTop from "./components/ScrollToTop";
 import { getSettings, type LinkItem } from "@/lib/settings";
 import { isAuthenticated } from "@/lib/auth";
+import { countUsers } from "@/lib/users";
 import { listNavPages } from "@/lib/pages";
 import { AdminProvider } from "./components/AdminContext";
 import "./globals.css";
@@ -60,6 +61,20 @@ const SIDEBAR_INIT = `(function(){try{var s=localStorage.getItem('xivi-sidebar')
 const SCROLL_INIT = `(function(){try{if(!window.location.hash){window.scrollTo(0,0);}}catch(e){}})();`;
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // 未安装（users 表为空，或表尚未建立）时输出「裸」布局：只有安装向导本身，
+  // 不渲染导航 / 搜索 / 公告 / 悬浮按钮 / 页脚等任何站点元素。
+  const installed = (await countUsers().catch(() => 0)) > 0;
+  if (!installed) {
+    return (
+      <html lang="zh-CN" className="h-full antialiased" suppressHydrationWarning>
+        <body className="flex min-h-full flex-col bg-[var(--c-page)] text-[var(--c-text)]">
+          <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+          {children}
+        </body>
+      </html>
+    );
+  }
+
   const settings = await getSettings();
   const isAdmin = await isAuthenticated();
 

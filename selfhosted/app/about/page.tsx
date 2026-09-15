@@ -9,7 +9,7 @@ import { renderMarkdown } from "@/lib/markdown";
 
 export const metadata: Metadata = {
   title: "关于我们",
-  description: "关于曦微 XIVI 与这个博客。",
+  description: "关于曦微博客系统与这个博客。",
 };
 
 /** 与其他标签页一致：设置驱动侧栏，按请求渲染 */

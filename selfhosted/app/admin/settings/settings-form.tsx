@@ -211,7 +211,7 @@ export default function SettingsForm({
               className={INPUT}
               value={s.siteName}
               onChange={(e) => set("siteName", e.target.value)}
-              placeholder="曦微 XIVI"
+              placeholder="曦微博客系统 XiviBlogSystem"
             />
           </div>
           <div>
@@ -661,7 +661,7 @@ export default function SettingsForm({
                     className={`${INPUT} min-h-[64px] resize-y`}
                     value={c.title}
                     onChange={(e) => patchPromo(i, { title: e.target.value })}
-                    placeholder={"CODE A BETTER LIFE\n曦微 XIVI · 技术笔记"}
+                    placeholder={"CODE A BETTER LIFE\n曦微博客系统 · 技术笔记"}
                   />
                 </div>
                 <div>
@@ -1173,7 +1173,7 @@ export default function SettingsForm({
               className={INPUT}
               value={s.copyright}
               onChange={(e) => set("copyright", e.target.value)}
-              placeholder="© {year} 曦微 XIVI"
+              placeholder="© {year} 曦微博客系统 XiviBlogSystem"
             />
           </div>
           <div>

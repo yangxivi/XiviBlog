@@ -51,7 +51,7 @@ export async function GET(req: Request) {
     /* 数据库不可用时仍返回一个合法但空的 feed */
   }
 
-  const siteName = settings?.siteName || "曦微 XIVI";
+  const siteName = settings?.siteName || "曦微博客系统 XiviBlogSystem";
   const siteDesc = settings?.siteDesc || "";
   const items = posts.slice(0, 30);
 

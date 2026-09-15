@@ -16,7 +16,7 @@ export default async function LoginPage({
   return (
     <AuthShell
       title="登录后台"
-      subtitle="曦微 XIVI 博客管理"
+      subtitle="曦微博客系统 管理后台"
     >
       {sp.reset === "1" && (
         <div className="mb-4 rounded-lg border border-[var(--c-brand-border)] bg-[var(--c-brand-soft)] px-3.5 py-2.5 text-sm text-[var(--brand-deep)]">
