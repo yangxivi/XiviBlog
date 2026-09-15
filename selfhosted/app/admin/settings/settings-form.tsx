@@ -1200,7 +1200,16 @@ export default function SettingsForm({
       </section>
 
       {/* 保存 */}
-      <div className="sticky bottom-4 flex items-center gap-4 rounded-xl border border-[var(--c-border-2)] bg-[var(--c-card)] px-4 py-3 shadow-sm">
+      <div className="sticky bottom-4 flex flex-wrap items-center gap-4 rounded-xl border border-[var(--c-border-2)] bg-[var(--c-card)] px-4 py-3 shadow-sm">
+        <label className="flex cursor-pointer select-none items-center gap-2 text-sm text-[var(--c-text-2)]">
+          <input
+            type="checkbox"
+            checked={s.autoUpdate === true}
+            onChange={(e) => set("autoUpdate", e.target.checked)}
+            className="h-4 w-4 accent-[var(--brand)]"
+          />
+          自动检测更新（后台访问时静默对比 GitHub，不会自动安装）
+        </label>
         <button
           onClick={save}
           disabled={saving}

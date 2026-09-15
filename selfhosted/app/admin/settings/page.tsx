@@ -40,9 +40,12 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <SettingsForm initial={settings} postOptions={postOptions} />
+      {/* 系统更新版块在上，应用设置表单（含保存按钮）在下 */}
+      <UpdatePanel />
 
-      <UpdatePanel initialAutoUpdate={settings.autoUpdate === true} />
+      <div className="mt-10">
+        <SettingsForm initial={settings} postOptions={postOptions} />
+      </div>
     </div>
   );
 }

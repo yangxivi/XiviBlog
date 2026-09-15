@@ -25,7 +25,6 @@ type Data = {
   check: Check;
   job: Job;
   rollbackBundles: Bundle[];
-  autoUpdate?: boolean;
 };
 
 const STATUS_TEXT: Record<string, string> = {
@@ -44,10 +43,9 @@ const STATUS_TEXT: Record<string, string> = {
 
 const IN_PROGRESS = ["queued", "backing_up", "downloading", "extracting", "installing", "building", "restarting"];
 
-export default function UpdatePanel({ initialAutoUpdate }: { initialAutoUpdate: boolean }) {
+export default function UpdatePanel() {
   const { ask, dialog } = useConfirm();
   const [data, setData] = useState<Data | null>(null);
-  const [autoUpdate, setAutoUpdate] = useState(initialAutoUpdate);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [selectedBundle, setSelectedBundle] = useState("");
@@ -60,7 +58,6 @@ export default function UpdatePanel({ initialAutoUpdate }: { initialAutoUpdate: 
       const j = await res.json();
       if (res.ok) {
         setData(j);
-        setAutoUpdate(j.autoUpdate ?? false);
         if (j.rollbackBundles?.length && !selectedBundle) {
           setSelectedBundle(j.rollbackBundles[0].file);
         }
@@ -128,18 +125,6 @@ export default function UpdatePanel({ initialAutoUpdate }: { initialAutoUpdate: 
     }
   }
 
-  async function saveAuto() {
-    try {
-      await fetch("/api/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ autoUpdate }),
-      });
-    } catch {
-      /* ignore */
-    }
-  }
-
   async function doRollback() {
     if (!selectedBundle) {
       setMsg({ type: "err", text: "请先选择要回滚到的源码备份。" });
@@ -180,7 +165,7 @@ export default function UpdatePanel({ initialAutoUpdate }: { initialAutoUpdate: 
   const inProgress = job && IN_PROGRESS.includes(job.status);
 
   return (
-    <div className="mt-10 rounded-xl border border-[var(--c-border-2)] bg-[var(--c-card)] p-6">
+    <div className="rounded-xl border border-[var(--c-border-2)] bg-[var(--c-card)] p-6">
       {dialog}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -194,21 +179,7 @@ export default function UpdatePanel({ initialAutoUpdate }: { initialAutoUpdate: 
         </span>
       </div>
 
-      {/* 自动检测开关 */}
-      <label className="mt-4 flex cursor-pointer select-none items-center gap-2 text-sm text-[var(--c-text-2)]">
-        <input
-          type="checkbox"
-          checked={autoUpdate}
-          onChange={(e) => {
-            setAutoUpdate(e.target.checked);
-            setTimeout(saveAuto, 0);
-          }}
-          className="h-4 w-4 accent-[var(--brand)]"
-        />
-        自动检测更新（后台访问时静默对比 GitHub，不会自动安装）
-      </label>
-
-      {/* 检测结果 */}
+      {/* 检测结果（自动检测更新开关已移至下方应用设置的保存栏） */}
       <div className="mt-4 rounded-lg border border-[var(--c-border-2)] bg-[var(--c-soft)] p-4 text-sm">
         {check ? (
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
