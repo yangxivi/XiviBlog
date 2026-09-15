@@ -277,7 +277,7 @@ bash setup-nginx.sh blog.yourdomain.com   # Nginx 反代 + 免费 HTTPS 证书
 
 浏览器打开 **`http://服务器IP:3000/install`**（已绑域名则用域名），这是全站唯一的入口——未安装前访问任何页面都会被引导到这里：
 
-![XiviBlog 安装向导](selfhosted/docs/install-wizard.png)
+![XiviBlog 安装向导](https://blog.aixivi.cn/shots/xiviblog-install-wizard.png)
 
 填写站点名称（可选）、管理员邮箱、管理员密码（≥6 位），点击「完成安装」。向导会自动：
 
@@ -287,21 +287,21 @@ bash setup-nginx.sh blog.yourdomain.com   # Nginx 反代 + 免费 HTTPS 证书
 
 看到下面这个页面就说明装好了：
 
-![安装成功](selfhosted/docs/install-done.png)
+![安装成功](https://blog.aixivi.cn/shots/xiviblog-install-done.png)
 
 ### 第 7 步：开始使用
 
 打开 **`/admin`** 用刚才的邮箱密码登录后台。「站点设置」里可以改站名 / LOGO 文字 / 简介、**7 套主题配色**、导航、页脚、友链等，保存即时生效：
 
-![后台站点设置](selfhosted/docs/admin-settings.png)
+![后台站点设置](https://blog.aixivi.cn/shots/xiviblog-admin-settings.png)
 
 回到前台，你的博客已经就绪——首页带轮播、推荐位与样本文章：
 
-![博客首页](selfhosted/docs/homepage.png)
+![博客首页](https://blog.aixivi.cn/shots/xiviblog-homepage.png)
 
 「关于本站」也已预填好完整内容（可在后台自由修改）：
 
-![关于本站](selfhosted/docs/about-page.png)
+![关于本站](https://blog.aixivi.cn/shots/xiviblog-about-page.png)
 
 > 与 Cloudflare 版的区别：运行环境（Workers vs Node）、数据库（D1 vs 本地 SQLite）、缓存（边缘 vs 反向代理）、安装方式（无界面 vs 网页向导）。两者功能、主题、编辑器完全一致。
 >
