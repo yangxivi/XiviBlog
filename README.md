@@ -29,7 +29,7 @@
 
 ---
 
-## 🚀 方式一：命令提示符部署 Cloudflare Workers
+## 🚀 部署到 Cloudflare Workers
 
 ### 1. 安装依赖
 
@@ -184,6 +184,26 @@ AI 会逐步执行上述步骤，期间可能需要你配合做以下简单操�
 | 想回滚版本 | 告诉 AI：「回滚到上一个版本」，AI 会 `git checkout` 之前的 commit 并重新部署 |
 
 > 💡 **提示**：整个过程中 AI 会帮你读代码、改配置、跑命令、查错误日志。你不需要懂 Node.js 或 Cloudflare，只需要能在浏览器里点几下、复制粘贴几个值就行。
+
+---
+
+## 🖥 方式三：自托管安装版（VPS / 云服务器，对标 WordPress）
+
+不想用 Cloudflare？本项目额外提供一个**自托管安装版**，代码同源、数据层换成本地 SQLite，能像 WordPress 那样「上传 → 解压 → 网页向导装好」部署到任意 Linux 云服务器。
+
+- 代码在 **`selfhosted/`** 目录（与 Cloudflare 版完全独立，互不影响）。
+- 数据库用本地 **SQLite 文件**（`better-sqlite3`），无需 MySQL/PostgreSQL。
+- 提供网页安装向导 **`/install`**：填管理员邮箱 + 密码即完成建库与建账号，体验同 `wp-admin/install.php`。
+- 配套 `install.sh`（一键初始化）、`setup-nginx.sh`（域名 + HTTPS）、完整文档 **[selfhosted/README-install.md](selfhosted/README-install.md)**。
+
+```bash
+cd selfhosted
+bash install.sh          # 装依赖 + 建库
+npm run build && npm start
+# 浏览器打开 http://服务器IP:3000/install 完成安装
+```
+
+> 与 Cloudflare 版的区别：运行环境（Workers vs Node）、数据库（D1 vs 本地 SQLite）、缓存（边缘 vs 反向代理）、安装方式（无界面 vs 网页向导）。两者功能、主题、编辑器完全一致。
 
 ---
 
