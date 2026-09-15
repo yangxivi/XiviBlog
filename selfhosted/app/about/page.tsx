@@ -8,7 +8,7 @@ import { getPageBySlug } from "@/lib/pages";
 import { renderMarkdown } from "@/lib/markdown";
 
 export const metadata: Metadata = {
-  title: "关于我们",
+  title: "关于本站",
   description: "关于曦微博客系统与这个博客。",
 };
 

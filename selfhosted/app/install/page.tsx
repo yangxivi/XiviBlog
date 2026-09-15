@@ -114,10 +114,10 @@ export default function InstallPage() {
         ) : (
           <p className="mt-6 text-center text-sm text-neutral-700">
             🎉 安装成功！前往{" "}
-            <a className="underline font-medium" href="/admin">
-              /admin
-            </a>{" "}
-            登录后台，或{" "}
+            <a className="underline font-medium" href="/admin/login">
+              后台登录
+            </a>
+            ，或{" "}
             <a className="underline font-medium" href="/">
               返回首页
             </a>

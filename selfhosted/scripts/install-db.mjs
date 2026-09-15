@@ -15,7 +15,10 @@ db.pragma("foreign_keys = OFF");
 
 const dir = join(process.cwd(), "migrations");
 const files = readdirSync(dir)
-  .filter((f) => /^\d+\.sql$/.test(f))
+  // 与 lib/migrate.ts 保持一致：0001_init.sql … 0017_pages.sql（数字编号开头即可）
+  .filter((f) => /^\d+.*\.sql$/.test(f))
+  // 跳过种子文件（_seed_*.sql 与 0002_seed.sql 由安装流程另行处理）
+  .filter((f) => !/seed/i.test(f))
   .sort();
 
 let count = 0;

@@ -138,7 +138,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   nav: [
     { label: "首页", href: "/" },
     { label: "历史文章", href: "/history" },
-    { label: "关于我们", href: "/about" },
+    { label: "关于本站", href: "/about" },
   ],
   footerBrand: "记录 AI 应用、Windows 工具与自动化脚本的实践过程。能自动化的绝不手动。",
   footerColumns: [
@@ -147,7 +147,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
       links: [
         { label: "首页", href: "/" },
         { label: "历史文章", href: "/history" },
-        { label: "关于我们", href: "/about" },
+        { label: "关于本站", href: "/about" },
         { label: "后台管理", href: "/admin" },
       ],
     },

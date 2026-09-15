@@ -8,6 +8,16 @@ import { getRawDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
+// 安装成功后种下的短命标记：middleware 见到即绕过安装状态缓存强制重探，
+// 避免刚装完点「/admin」被 3 秒旧缓存弹回安装页。
+const FRESH_COOKIE = "xivi_install_fresh=1; Path=/; Max-Age=15; HttpOnly; SameSite=Lax";
+
+function freshResponse(data: Record<string, unknown>, status = 200) {
+  const res = NextResponse.json(data, { status });
+  res.headers.append("set-cookie", FRESH_COOKIE);
+  return res;
+}
+
 export async function GET() {
   try {
     const n = await countUsers();
@@ -26,9 +36,9 @@ export async function POST(req: NextRequest) {
   // 已安装则拒绝重复安装
   try {
     if ((await countUsers()) > 0) {
-      return NextResponse.json(
+      return freshResponse(
         { error: "博客已安装，无需重复安装。如需重置请清空数据库文件后重试。" },
-        { status: 409 }
+        409
       );
     }
   } catch {
@@ -74,8 +84,9 @@ export async function POST(req: NextRequest) {
     }
     // 4) 种子内容：「关于本站」（与 blog.aixivi.cn/about 一致的完整文案）
     let seededAbout = false;
+    let aboutMd = "";
     try {
-      const aboutMd = readFileSync(
+      aboutMd = readFileSync(
         join(process.cwd(), "migrations", "_seed_about.md"),
         "utf8"
       );
@@ -83,6 +94,25 @@ export async function POST(req: NextRequest) {
       seededAbout = true;
     } catch {
       /* 种子失败不影响安装 */
+    }
+    // 4.5) 把「关于本站」种进页面管理（slug=about，即 /about 的内容源，
+    //       后台「页面管理」可直接编辑；show_in_nav=0，导航入口由默认设置提供）
+    let seededAboutPage = false;
+    if (aboutMd) {
+      try {
+        const db = getRawDb();
+        const exists = db
+          .prepare("SELECT id FROM pages WHERE slug='about'")
+          .get();
+        if (!exists) {
+          db.prepare(
+            "INSERT INTO pages (slug, title, content, show_in_nav, nav_order, allow_comments) VALUES ('about', '关于本站', ?, 0, 99, 1)"
+          ).run(aboutMd);
+        }
+        seededAboutPage = true;
+      } catch {
+        /* 页面种子失败不影响安装 */
+      }
     }
     // 5) 种子内容：20 篇样本文章（仅在文章表为空时写入）
     let seededPosts = 0;
@@ -102,11 +132,12 @@ export async function POST(req: NextRequest) {
     } catch {
       /* 种子失败不影响安装 */
     }
-    return NextResponse.json({
+    return freshResponse({
       ok: true,
       userId: uid,
       migrations: files.length,
       seededAbout,
+      seededAboutPage,
       seededPosts,
     });
   } catch (e) {

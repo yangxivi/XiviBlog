@@ -11,9 +11,15 @@ const TTL = 3_000;
 // middleware 对带此头的请求直接放行，避免「探针 → middleware → 再探针」递归。
 const PROBE_HEADER = "x-install-probe";
 
+// 安装成功时 /api/install 会种下短命标记 Cookie（15 秒）。
+// middleware 见到它就绕过内存缓存强制重新探测，
+// 消灭「刚装完点 /admin 被旧缓存弹回安装页」的窗口。
+const FRESH_COOKIE = "xivi_install_fresh";
+
 async function isInstalled(req: NextRequest): Promise<boolean> {
   const now = Date.now();
-  if (cache && now - cache.ts < TTL) return cache.installed;
+  const fresh = req.cookies.get(FRESH_COOKIE)?.value === "1";
+  if (!fresh && cache && now - cache.ts < TTL) return cache.installed;
   try {
     const url = new URL("/api/install", req.url);
     const r = await fetch(url, {

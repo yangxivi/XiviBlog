@@ -229,7 +229,7 @@ function FeedTrend({ data }: { data: FeedDay[] }) {
   const fixed: Record<string, string> = {
     "/": "首页",
     "/history": "历史文章",
-    "/about": "关于我们",
+    "/about": "关于本站",
     "/search": "搜索页",
   };
   return fixed[path] ?? path;
