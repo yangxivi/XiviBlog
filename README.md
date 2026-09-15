@@ -309,6 +309,26 @@ bash setup-nginx.sh blog.yourdomain.com   # Nginx 反代 + 免费 HTTPS 证书
 
 ---
 
+## 📊 三种部署方式对比
+
+| 维度 | ① Cloudflare Workers（手动） | ② AI Agent 一键部署（推荐） | ③ 自托管安装版（VPS） |
+| --- | --- | --- | --- |
+| **适合人群** | 熟悉命令行、Cloudflare 的开发者 | 不想碰命令行的所有用户 | 想完全掌控数据 / 已有 Linux 服务器 |
+| **运行环境** | Cloudflare Workers（边缘） | 同①（由 AI 帮你配） | 任意 Linux + Node.js |
+| **数据库** | D1（托管 SQLite） | 同① | 本地 SQLite 文件（自动建库） |
+| **缓存** | 边缘 Cache API（TTFB 0.25~0.5s） | 同① | 反向代理 / CDN 缓存 |
+| **安装过程** | 建库 + secret + `wrangler deploy`，无向导 | 把指令发给 AI，全自动 | 上传解压 → 网页 `/install` 向导（对标 WordPress） |
+| **域名 / HTTPS** | 自定义域名或 `*.workers.dev`（Cloudflare 托管证书） | 同① | 需自备域名 + `setup-nginx.sh`（Certbot 免费证书） |
+| **成本** | Cloudflare 免费额度（近乎零成本） | 同① | 一台 VPS（几十元/月） |
+| **是否需要 Cloudflare 账号** | 必须 | 必须 | 不需要 |
+| **数据所有权** | 数据在 Cloudflare D1 | 同① | 数据在自己服务器，完全私有 |
+| **运维难度** | 低（平台托管） | 最低（AI 代劳） | 中（自行维护 Node/进程/证书） |
+| **扩展性** | 跟着 Cloudflare 全球边缘走 | 同① | 受单机规格限制 |
+| **典型上手时间** | 30~60 分钟 | 5 分钟 | 10~20 分钟（含服务器准备） |
+| **开箱即用内容** | 空站，需自行注册管理员、发文 | 同① | 装好即带「关于本站」+ 20 篇样本文章、页脚 By XiviBlog |
+
+---
+
 ## 💻 本地开发
 
 ```bash
