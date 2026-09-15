@@ -29,7 +29,7 @@
 
 ---
 
-## 🚀 部署到 Cloudflare Workers
+## 🚀 方式一：命令提示符部署 Cloudflare Workers
 
 ### 1. 安装依赖
 
