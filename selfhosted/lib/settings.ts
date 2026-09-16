@@ -1,4 +1,5 @@
 import { getDB } from "./db";
+import { THEME_IDS } from "./themes";
 
 /** 单个链接（内部以 / 开头，外部写完整 URL） */
 export type LinkItem = { label: string; href: string };
@@ -28,6 +29,8 @@ export type CarouselConfig = {
 export type PromoCard = {
   /** outline = 白底描边；brand = 品牌色渐变；dark = 深色（颜色均随站点主题切换） */
   variant: "outline" | "brand" | "dark" | "plain";
+  /** plain 变体描边色："" = 跟随站点主题色；否则为 lib/themes.ts 里的主题 id（自选固定色） */
+  accent?: string;
   badge: string;
   /** 主标题，支持换行（前台按行渲染） */
   title: string;
@@ -292,6 +295,8 @@ function normPromos(v: unknown, fallback: PromoCard[]): PromoCard[] {
       subtitle,
       image,
       href: str(it.href, "", 500),
+      // plain 变体自选描边色：合法主题 id 保留，其它一律视为「跟随主题」
+      accent: THEME_IDS.includes(it.accent as string) ? (it.accent as string) : "",
     });
     if (out.length >= 8) break;
   }

@@ -628,6 +628,21 @@ export default function SettingsForm({
                   <option value="brand">品牌色渐变</option>
                   <option value="dark">深色</option>
                 </select>
+                {c.variant === "plain" && (
+                  <select
+                    className={`${FIELD} w-36 shrink-0`}
+                    value={c.accent || ""}
+                    onChange={(e) => patchPromo(i, { accent: e.target.value })}
+                    title="描边颜色（无LOGO卡专用）"
+                  >
+                    <option value="">描边·跟随主题</option>
+                    {THEMES.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        描边·{t.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <input
                   className={INPUT}
                   value={c.href}

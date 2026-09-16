@@ -1,7 +1,16 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import LogoMark from "./LogoMark";
 import CoverThumb from "./CoverThumb";
 import type { PromoCard } from "@/lib/settings";
+import { THEMES } from "@/lib/themes";
+
+/** plain 卡自选描边色：accent 为主题 id 时返回该主题品牌色；否则 undefined（跟随站点主题 CSS 变量） */
+function accentStyle(c: PromoCard): CSSProperties | undefined {
+  if (c.variant !== "plain" || !c.accent) return undefined;
+  const hex = THEMES.find((t) => t.id === c.accent)?.brand;
+  return hex ? { borderColor: hex } : undefined;
+}
 
 const WRAP: Record<PromoCard["variant"], string> = {
   outline: "rounded-2xl border-2 border-[var(--brand)] bg-[var(--c-card)]",
@@ -126,10 +135,11 @@ export default function PromoStack({
         const base = `block overflow-hidden transition ${WRAP[c.variant]} ${
           c.image ? "" : PAD[c.variant]
         }`;
+        const accentCss = accentStyle(c);
 
         if (!c.href) {
           return (
-            <div key={idx} className={base}>
+            <div key={idx} className={base} style={accentCss}>
               {body}
             </div>
           );
@@ -142,11 +152,17 @@ export default function PromoStack({
             target="_blank"
             rel="noopener noreferrer"
             className={`${base} hover:brightness-105`}
+            style={accentCss}
           >
             {body}
           </a>
         ) : (
-          <Link key={idx} href={c.href} className={`${base} hover:brightness-105`}>
+          <Link
+            key={idx}
+            href={c.href}
+            className={`${base} hover:brightness-105`}
+            style={accentCss}
+          >
             {body}
           </Link>
         );
