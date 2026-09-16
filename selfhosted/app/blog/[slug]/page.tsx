@@ -5,6 +5,8 @@ import type { Metadata } from "next";
 import SiteAside from "@/app/components/SiteAside";
 import ShareBar from "@/app/components/ShareBar";
 import Comments from "@/app/components/Comments";
+import AdminEditButton from "@/app/components/AdminEditButton";
+import PostToc from "@/app/components/PostToc";
 import {
   getBySlugFlexible,
   getNeighbors,
@@ -14,6 +16,7 @@ import {
 } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { renderMarkdown } from "@/lib/markdown";
+import { buildToc } from "@/lib/toc";
 
 export const dynamic = "force-dynamic";
 
@@ -65,13 +68,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PostPage({ params }: Props) {
-  const { slug: rawSlug } = await params;
-  const slug = decodeURIComponent(rawSlug);
+  const { slug } = await params;
   const post = await getBySlugFlexible(slug);
   if (!post) notFound();
 
   const { prev, next } = await getNeighbors(post.slug);
-  const html = renderMarkdown(post.content);
+  // 正文渲染 + 顺带提取 h2/h3 目录（给标题补锚点 id）
+  const { html, items: toc } = buildToc(renderMarkdown(post.content));
   const origin = originOf(await headers());
 
   // 侧栏数据：与首页保持一致的两栏结构（左 836 正文 + 右 280 侧栏）
@@ -92,17 +95,36 @@ export default async function PostPage({ params }: Props) {
   // 当前文章分类的英文别名（用于分类链接 URL 与展示）
   const aliasFor = settings.categoryAliases[post.tag || "随笔"] || "";
 
+  // 目录至少 2 条才有意义；有目录时大屏（xl+）左栏留出来放目录
+  const showToc = toc.length >= 2;
+
   return (
     <div className="mx-auto max-w-[var(--page-outer)] px-4 py-6 md:px-6 md:py-8">
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-16">
-        {/* 左：正文 */}
+      <div
+        className={
+          showToc
+            ? "grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-16 xl:grid-cols-[176px_minmax(0,1fr)_280px] xl:gap-10"
+            : "grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-16"
+        }
+      >
+        {/* 左：文章目录（大屏吸顶） */}
+        {showToc && (
+          <aside className="hidden xl:block">
+            <PostToc items={toc} />
+          </aside>
+        )}
+
+        {/* 中：正文 */}
         <article className="min-w-0 main-col">
-          <Link
-            href="/"
-            className="text-sm text-[var(--c-text-3)] transition hover:text-[var(--brand-deep)]"
-          >
-            ← 返回首页
-          </Link>
+          <div className="flex items-center justify-between gap-3">
+            <Link
+              href="/"
+              className="text-sm text-[var(--c-text-3)] transition hover:text-[var(--brand-deep)]"
+            >
+              ← 返回首页
+            </Link>
+            <AdminEditButton href={`/admin/edit/${post.id}`} label="编辑文章" />
+          </div>
 
           <header className="mt-6 border-b border-[var(--c-border-2)] pb-8">
             <div className="mb-3 flex items-center gap-3 text-xs text-[var(--c-text-3)]">
