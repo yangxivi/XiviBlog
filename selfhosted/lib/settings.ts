@@ -133,7 +133,7 @@ export const SETTINGS_KEY = "site";
  */
 
 export const DEFAULT_SETTINGS: SiteSettings = {
-  siteName: "曦微博客系统 XiviBlogSystem",
+  siteName: "曦微博客（XiviBlog）开源博客系统",
   logoText: "曦微",
   siteDesc:
     "曦微（XIVI）的技术博客：AI 应用、桌面工具、自动化脚本与部署实践。",

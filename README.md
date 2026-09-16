@@ -1,4 +1,4 @@
-# XiviBlog · 曦微博客
+# 曦微博客（XiviBlog）开源博客系统
 
 一个跑在 **Cloudflare Workers** 上的轻量级博客系统——可以理解为「手搓版 WordPress」：完整的后台管理、Markdown 写作、主题切换、评论、访问统计，全部零服务器成本，部署即用。
 
