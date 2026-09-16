@@ -12,7 +12,7 @@
 - **Markdown 编辑器**：16 个工具栏动作、实时预览、粘贴/拖拽传图、分屏滚动同步。
 - **多主题**：`--brand` CSS 变量驱动，内置 **7 套配色 × 明暗模式**一键切换，后台保存后即时生效。
 
-  ![主题预览](public/screenshots/themes.jpg)
+  ![主题预览](https://cdn.jsdelivr.net/gh/yangxivi/XiviBlog@main/public/screenshots/themes.jpg)
 - **三端自适应**：桌面 / 平板 / 手机，侧边栏可左右互换。
 - **边缘缓存**：`custom-worker.ts` 用 Cloudflare Cache API 缓存整页 HTML / RSC / 分页 JSON，重复访问 TTFB 从 1~2.6s 降到 0.25~0.5s。
 - **AI 封面**：后台可调用 agnes 等图像模型生成文章封面（密钥存 D1 设置，前端直连生图避免 Workers 出口 IP 限流）。
@@ -277,7 +277,7 @@ bash setup-nginx.sh blog.yourdomain.com   # Nginx 反代 + 免费 HTTPS 证书
 
 浏览器打开 **`http://服务器IP:3000/install`**（已绑域名则用域名），这是全站唯一的入口——未安装前访问任何页面都会被引导到这里：
 
-![XiviBlog 安装向导](public/shots/xiviblog-install-wizard.png)
+![XiviBlog 安装向导](https://cdn.jsdelivr.net/gh/yangxivi/XiviBlog@main/public/shots/xiviblog-install-wizard.png)
 
 填写站点名称（可选）、管理员邮箱、管理员密码（≥6 位），点击「完成安装」。向导会自动：
 
@@ -287,21 +287,21 @@ bash setup-nginx.sh blog.yourdomain.com   # Nginx 反代 + 免费 HTTPS 证书
 
 看到下面这个页面就说明装好了：
 
-![安装成功](public/shots/xiviblog-install-done.png)
+![安装成功](https://cdn.jsdelivr.net/gh/yangxivi/XiviBlog@main/public/shots/xiviblog-install-done.png)
 
 ### 第 7 步：开始使用
 
 打开 **`/admin`** 用刚才的邮箱密码登录后台。「站点设置」里可以改站名 / LOGO 文字 / 简介、**7 套主题配色**、导航、页脚、友链等，保存即时生效：
 
-![后台站点设置](public/shots/xiviblog-admin-settings.png)
+![后台站点设置](https://cdn.jsdelivr.net/gh/yangxivi/XiviBlog@main/public/shots/xiviblog-admin-settings.png)
 
 回到前台，你的博客已经就绪——首页带轮播、推荐位与样本文章：
 
-![博客首页](public/shots/xiviblog-homepage.png)
+![博客首页](https://cdn.jsdelivr.net/gh/yangxivi/XiviBlog@main/public/shots/xiviblog-homepage.png)
 
 「关于本站」也已预填好完整内容（可在后台自由修改）：
 
-![关于本站](public/shots/xiviblog-about-page.png)
+![关于本站](https://cdn.jsdelivr.net/gh/yangxivi/XiviBlog@main/public/shots/xiviblog-about-page.png)
 
 > 与 Cloudflare 版的区别：运行环境（Workers vs Node）、数据库（D1 vs 本地 SQLite）、缓存（边缘 vs 反向代理）、安装方式（无界面 vs 网页向导）。两者功能、主题、编辑器完全一致。
 >
