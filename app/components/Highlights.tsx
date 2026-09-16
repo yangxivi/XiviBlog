@@ -106,13 +106,13 @@ export default function Highlights({
                 </span>
                 <span
                   title={s.title}
-                  className={`truncate whitespace-nowrap text-[0.95rem] font-medium leading-[1.4] ${
+                  className={`min-w-0 truncate whitespace-nowrap text-[0.95rem] font-medium leading-[1.4] ${
                     i === cur
                       ? "text-[var(--brand-deep)]"
                       : "text-[var(--c-text)]"
                   } sm:text-[1.05rem]`}
                 >
-                  {s.title.length > 15 ? s.title.slice(0, 15) + "…" : s.title}
+                  {s.title}
                 </span>
               </SlideLink>
             </li>

@@ -37,7 +37,8 @@ export default function Highlights({
   slides: Slide[];
   interval?: number;
 }) {
-  // 图片（封面原图 base64）由客户端异步拉取，初始用无图占位，避免大图进首屏 RSC flight 破坏 hydration
+  // 初始 slides 已带 cover_thumb 小图（SSR 首屏即显示真实封面，无占位图）；
+  // 客户端再拉 /api/carousel 换成封面原图（240px 小图在轮播大尺寸下发糊）
   const [imgSlides, setImgSlides] = useState<Slide[]>(slides);
   const [idx, setIdx] = useState(0);
   const [hoverCarousel, setHoverCarousel] = useState(false);
@@ -105,13 +106,13 @@ export default function Highlights({
                 </span>
                 <span
                   title={s.title}
-                  className={`truncate whitespace-nowrap text-[0.95rem] font-medium leading-[1.4] ${
+                  className={`min-w-0 truncate whitespace-nowrap text-[0.95rem] font-medium leading-[1.4] ${
                     i === cur
                       ? "text-[var(--brand-deep)]"
                       : "text-[var(--c-text)]"
                   } sm:text-[1.05rem]`}
                 >
-                  {s.title.length > 15 ? s.title.slice(0, 15) + "…" : s.title}
+                  {s.title}
                 </span>
               </SlideLink>
             </li>
