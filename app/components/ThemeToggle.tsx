@@ -33,6 +33,7 @@ export default function ThemeToggle() {
   return (
     <button
       type="button"
+      data-xivi-ui
       onClick={toggle}
       aria-label="切换明暗主题"
       title="切换明暗主题"

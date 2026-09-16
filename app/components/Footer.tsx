@@ -81,7 +81,9 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
   );
 
   return (
-    <footer className="border-t border-[var(--c-border)] bg-[var(--c-soft)]">
+    // mt-auto：body 是 flex 列，把页脚顶到最底部（main 的 flex-1 之外的双保险），
+    // 内容不足一屏时页脚下方也不会露出空白
+    <footer className="mt-auto border-t border-[var(--c-border)] bg-[var(--c-soft)]">
       <div className="mx-auto max-w-[var(--page-outer)] px-4 py-10 md:px-6 md:py-12">
         {/* 移动端：品牌独占一行，下面 4 列 2×2；桌面端：5 等分，加大品牌与分组间距 */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-5 lg:gap-x-10">

@@ -30,6 +30,7 @@ export default function BackToTop() {
   return (
     <button
       type="button"
+      data-xivi-ui
       onClick={backToTop}
       aria-label="返回顶部"
       title="返回顶部"

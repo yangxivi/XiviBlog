@@ -113,6 +113,10 @@ body {
     oxygen, ubuntu, cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* 页脚贴底兜底：body 至少占满一屏。用视口单位而不是 100%，
+     不依赖 html 的百分比链，个别环境下算不出高度时会露白。
+     主样式来自 layout 里的 min-h-dvh，这行只是老浏览器的退路。 */
+  min-height: 100vh;
 }
 
 /* 主题切换时的柔和过渡（仅在切换瞬间挂 .theme-anim，避免影响其它动画） */

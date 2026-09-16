@@ -28,7 +28,10 @@ export default function SideAd() {
   if (!visible) return null;
 
   return (
-    <aside className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 min-[1800px]:block">
+    <aside
+      data-xivi-ui
+      className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 min-[1800px]:block"
+    >
       <div className="relative w-60 overflow-hidden rounded-2xl border border-[var(--c-brand-border)] bg-[var(--c-card)] shadow-lg">
         <button
           type="button"

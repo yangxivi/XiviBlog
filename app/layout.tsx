@@ -73,8 +73,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       data-theme={settings.theme ?? "meituan"}
       suppressHydrationWarning
     >
-      {/* relative：作为停靠按钮（absolute）的定位参照，锚定文档底部而非初始包含块 */}
-      <body className="relative flex min-h-full flex-col bg-[var(--c-page)] text-[var(--c-text)]">
+      {/* relative：作为停靠按钮（absolute）的定位参照，锚定文档底部而非初始包含块
+          min-h-dvh：直接用视口高度撑满一屏，不依赖 html 的百分比链——
+          链一断 body 就只剩内容高度，页脚会被顶起来、下方露白（globals.css 里还有
+          一条 100vh 兜底）。配合 main 的 flex-1 与 Footer 的 mt-auto，页脚永远贴底。 */}
+      <body className="relative flex min-h-dvh flex-col bg-[var(--c-page)] text-[var(--c-text)]">
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
         <script dangerouslySetInnerHTML={{ __html: SIDEBAR_INIT }} />
         <script dangerouslySetInnerHTML={{ __html: SCROLL_INIT }} />
