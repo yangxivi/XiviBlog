@@ -51,8 +51,9 @@ export default async function Home({ searchParams }: Props) {
   const car = settings.carousel;
 
   // 轮播：自定义优先，否则取最新 N 篇文章。
-  // 注意：封面原图（base64 大图）不再随首屏 RSC 序列化，避免 flight 体积过大破坏 hydration。
-  // 文本字段随 SSR 渲染，图片由 <Highlights> 在客户端异步拉取 /api/carousel 填充。
+  // 初始 slides 携带 cover_thumb（240×135 WebP，单张 2-3KB）：SSR 首屏直接渲染真实封面，
+  // 不再出现纯色渐变占位图；客户端再由 <Highlights> 拉 /api/carousel 换成清晰原图。
+  // 注意：封面原图（30KB+ base64 大图）仍不进首屏 RSC flight，避免 hydration 被超大属性破坏。
   let slides: Slide[] = [];
   if (car.mode === "custom" && car.slides.length > 0) {
     slides = car.slides
@@ -62,6 +63,7 @@ export default async function Home({ searchParams }: Props) {
         title: s.title,
         excerpt: s.excerpt,
         badge: s.badge,
+        image: s.image,
         href: s.href || "/",
       }));
   } else {
@@ -70,6 +72,7 @@ export default async function Home({ searchParams }: Props) {
       title: p.title,
       excerpt: p.excerpt,
       badge: p.tag,
+      image: p.cover_image,
       href: `/blog/${p.slug}`,
     }));
   }
