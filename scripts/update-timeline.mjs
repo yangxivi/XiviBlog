@@ -1,5 +1,8 @@
 // 把本次迭代追加到「关于本站」页面的时间轴里。
-// 用法：node scripts/update-timeline.mjs
+// 用法：
+//   node scripts/update-timeline.mjs            追加/改名/去重（会写 D1）
+//   node scripts/update-timeline.mjs --audit    只体检：列出疑似「同一件事写了多次」的条目，不写库
+// 需 CLOUDFLARE_API_TOKEN（写入时）。
 const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || "b433825d809e0bb7e7ba0bb3946ced9f";
 const DATABASE_ID = process.env.CLOUDFLARE_DATABASE_ID || "0a6dacad-4281-4016-aa90-ce912fe9fa6a";
 const TOKEN = process.env.CLOUDFLARE_API_TOKEN || "";
@@ -22,20 +25,112 @@ const bullets = [
 // 任务 C 推翻了任务 B 的两项设计，移除已不准确的时间轴条目
 const stalePhrases = ["「编辑页眉」按钮", "「站点设置」可编辑"];
 
-/** 去掉时间轴里逐字重复的条目（多次追加脚本跑出来的重复） */
+/**
+ * 归一化一个条目：剥掉空白与常见中英标点，只留实义字符。
+ * 用途有两个：① 去重时当 key；② 审计时算相似度。
+ */
+const normBullet = (s) =>
+  s
+    .replace(/^-\s+/, "")
+    .replace(/[\s、，,。：:；;「」『』（）()【】\[\]\-·—…~!！?？"'"'*#/]/g, "");
+
+/**
+ * 去掉时间轴里重复的条目（保留首次出现的那条）。
+ *
+ * ⚠️ 这里只做「归一化后完全相同」的保守去重 —— 它只能收掉纯标点/空格差异，
+ * 收不掉真正的麻烦：同一件事被反复追加、但每次措辞都换了一点（例如
+ * 「白底灰描边」「白底主题色描边」「白底描边」其实是一件事）。
+ * 那种要靠 auditSimilar() 报出来人工合并，不能自动删 —— 自动删会误伤
+ * 「今天修了 A，后来又把 A 修了一遍」这类正常记录。
+ */
 function dedupeBullets(text) {
   const seen = new Set();
-  return text
+  const dropped = [];
+  const out = text
     .split("\n")
     .filter((line) => {
       const t = line.trim();
       if (!t.startsWith("- ")) return true;
-      const key = t.replace(/^-\s+/, "").replace(/\s+/g, " ");
-      if (seen.has(key)) return false;
+      const key = normBullet(t);
+      if (seen.has(key)) {
+        dropped.push(t.slice(2, 42));
+        return false;
+      }
       seen.add(key);
       return true;
     })
     .join("\n");
+  if (dropped.length) {
+    console.log(`时间轴去重：移除 ${dropped.length} 条重复条目`);
+    for (const d of dropped) console.log(`  - ${d}…`);
+  }
+  return out;
+}
+
+/**
+ * 审计：把「疑似同一件事写了多次」的条目列出来供人工合并，**不自动删**。
+ *
+ * 判据（满足其一即报）：
+ *   ① 归一化后共同前缀 ≥ 15 字 —— 开头整句都一样，基本可以断定是同一件事；
+ *   ② 去重字符集 Jaccard 相似度 ≥ 0.75 —— 换了措辞但用词高度重合。
+ * 阈值的来历：拿 09-16 那份攒了 4 组的原文实测过，前缀≥5 字会报 8 对
+ * （「侧栏「推荐阅读」…」「封面/缩略图…」这类同主题不同事的正常条目全被误报），
+ * 收紧到上面两个值正好只报该报的 4 组、零误报。**别再往回放松。**
+ *
+ * 每条都会标出所在小节，且区分「同小节」「跨小节」——**跨小节的命中多数不用管**：
+ * 「## 主要功能 → ### 评论系统」里的功能说明和「## 迭代时间轴」里那天新增该功能的
+ * 记录本来就该各有一条，措辞撞车是正常的。真正要合并的基本都在同一小节里。
+ */
+function auditSimilar(text) {
+  const rows = [];
+  let section = "";
+  for (const line of text.split("\n")) {
+    const t = line.trim();
+    if (t.startsWith("### ") || t.startsWith("## ")) {
+      section = t.replace(/^#+\s*/, "");
+      continue;
+    }
+    if (t.startsWith("- ")) rows.push({ text: t.slice(2), section });
+  }
+
+  const pairs = [];
+  for (let i = 0; i < rows.length; i++) {
+    for (let j = i + 1; j < rows.length; j++) {
+      const a = normBullet(rows[i].text);
+      const b = normBullet(rows[j].text);
+      if (!a || !b) continue;
+      let p = 0;
+      while (p < a.length && p < b.length && a[p] === b[p]) p++;
+      const sa = new Set(a);
+      const sb = new Set(b);
+      let inter = 0;
+      for (const c of sa) if (sb.has(c)) inter++;
+      const jac = inter / (sa.size + sb.size - inter);
+      if (p >= 15 || jac >= 0.75) {
+        pairs.push({
+          i: i + 1,
+          j: j + 1,
+          a: rows[i],
+          b: rows[j],
+          p,
+          jac,
+          same: rows[i].section === rows[j].section,
+        });
+      }
+    }
+  }
+
+  const same = pairs.filter((r) => r.same);
+  console.log(`\n时间轴相似条目审计：共 ${rows.length} 条`);
+  console.log(`  同小节命中 ${same.length} 对（基本都该合并）`);
+  console.log(`  跨小节命中 ${pairs.length - same.length} 对（多半是「功能说明 vs 时间轴」的正常重复，看看即可）`);
+  if (!pairs.length) console.log("  ✓ 没有需要人工处理的条目");
+  for (const r of pairs.sort((x, y) => Number(y.same) - Number(x.same))) {
+    console.log(`\n  ${r.same ? "★ 同小节" : "  跨小节"} [${r.i} ↔ ${r.j}] 前缀${r.p}字/相似度${r.jac.toFixed(2)}`);
+    console.log(`      A（${r.a.section}）: ${r.a.text}`);
+    console.log(`      B（${r.b.section}）: ${r.b.text}`);
+  }
+  return pairs;
 }
 
 async function main() {
@@ -71,6 +166,14 @@ async function main() {
 
   let content = row.content;
   const before = content;
+
+  // --audit：只体检不写入。时间轴会随迭代不断追加条目，同一件事换措辞写第二遍
+  // 时不会逐字重复、去重抓不到，所以要定期跑一次审计、人工合并。
+  if (process.argv.includes("--audit")) {
+    auditSimilar(content);
+    console.log("\n（--audit 只读不写，未修改线上内容）");
+    return;
+  }
 
   // 先剔除已被推翻的旧条目，避免时间轴出现互相矛盾的说明
   const lines = content.split("\n").filter((l) => {
