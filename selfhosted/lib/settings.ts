@@ -271,21 +271,26 @@ function normColumns(v: unknown, fallback: FooterColumn[]): FooterColumn[] {
 const PROMO_VARIANTS: PromoCard["variant"][] = ["outline", "brand", "dark"];
 
 /** 侧边橱窗：丢掉没标题的项，最多 8 张（允许清空） */
+/** 侧边橱窗：纯图片橱窗卡是合法场景（标题可空），仅当四项全空才视为废卡丢弃，最多 8 张（允许清空） */
 function normPromos(v: unknown, fallback: PromoCard[]): PromoCard[] {
   if (!Array.isArray(v)) return fallback;
   const out: PromoCard[] = [];
   for (const it of v) {
     if (!isObj(it)) continue;
     const title = str(it.title, "", 120);
-    if (!title) continue;
+    const image = str(it.image, "", 2000000);
+    const badge = str(it.badge, "", 30);
+    const subtitle = str(it.subtitle, "", 120);
+    // 标题可空：只放图的橱窗卡也要保留；仅全部为空才丢弃
+    if (!title && !image && !badge && !subtitle) continue;
     out.push({
       variant: PROMO_VARIANTS.includes(it.variant as PromoCard["variant"])
         ? (it.variant as PromoCard["variant"])
         : "outline",
-      badge: str(it.badge, "", 30),
+      badge,
       title,
-      subtitle: str(it.subtitle, "", 120),
-      image: str(it.image, "", 2000000),
+      subtitle,
+      image,
       href: str(it.href, "", 500),
     });
     if (out.length >= 8) break;
