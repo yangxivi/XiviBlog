@@ -7,6 +7,7 @@ const WRAP: Record<PromoCard["variant"], string> = {
   outline: "rounded-2xl border-2 border-[var(--brand)] bg-[var(--c-card)]",
   brand: "rounded-2xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-2)]",
   dark: "rounded-2xl border border-[var(--c-border)] bg-[var(--c-invert)]",
+  plain: "rounded-2xl border-2 border-[var(--c-border-2)] bg-[var(--c-card)]",
 };
 
 /** 有图时图片自己撑满，不要额外内边距 */
@@ -14,6 +15,7 @@ const PAD: Record<PromoCard["variant"], string> = {
   outline: "p-4",
   brand: "p-5",
   dark: "p-5",
+  plain: "p-5",
 };
 
 /** 品牌卡（黄底渐变）与深色卡都用固定文字色，不随明暗主题变 */
@@ -21,18 +23,21 @@ const BADGE: Record<PromoCard["variant"], string> = {
   outline: "text-[var(--c-text-3)]",
   brand: "text-[var(--brand-ink)]/70",
   dark: "text-white/60",
+  plain: "text-[var(--c-text-3)]",
 };
 
 const TITLE: Record<PromoCard["variant"], string> = {
   outline: "text-[var(--c-text)]",
   brand: "text-[var(--brand-ink)]",
   dark: "text-white",
+  plain: "text-[var(--c-text)]",
 };
 
 const SUB: Record<PromoCard["variant"], string> = {
   outline: "text-[var(--c-text-3)]",
   brand: "text-[var(--brand-ink)]/70",
   dark: "text-white/60",
+  plain: "text-[var(--c-text-3)]",
 };
 
 function isExternal(href: string) {
@@ -104,8 +109,7 @@ export default function PromoStack({
                   )}
                 </>
               )}
-            </div>
-          </>
+            </div>          </>
         );
 
         const base = `block overflow-hidden transition ${WRAP[c.variant]} ${

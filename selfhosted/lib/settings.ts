@@ -27,7 +27,7 @@ export type CarouselConfig = {
 /** 侧边栏橱窗卡：样式 / 图片 / 角标 / 标题 / 副标题 / 链接都可配 */
 export type PromoCard = {
   /** outline = 白底描边；brand = 品牌色渐变；dark = 深色（颜色均随站点主题切换） */
-  variant: "outline" | "brand" | "dark";
+  variant: "outline" | "brand" | "dark" | "plain";
   badge: string;
   /** 主标题，支持换行（前台按行渲染） */
   title: string;
@@ -268,7 +268,7 @@ function normColumns(v: unknown, fallback: FooterColumn[]): FooterColumn[] {
   return out.length ? out : fallback;
 }
 
-const PROMO_VARIANTS: PromoCard["variant"][] = ["outline", "brand", "dark"];
+const PROMO_VARIANTS: PromoCard["variant"][] = ["outline", "brand", "dark", "plain"];
 
 /** 侧边橱窗：丢掉没标题的项，最多 8 张（允许清空） */
 /** 侧边橱窗：纯图片橱窗卡是合法场景（标题可空），仅当四项全空才视为废卡丢弃，最多 8 张（允许清空） */

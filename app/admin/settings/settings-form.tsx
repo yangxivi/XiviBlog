@@ -624,6 +624,7 @@ export default function SettingsForm({
                   }
                 >
                   <option value="outline">白底描边</option>
+                  <option value="plain">白底描边·无LOGO</option>
                   <option value="brand">品牌色渐变</option>
                   <option value="dark">深色</option>
                 </select>
