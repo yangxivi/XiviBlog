@@ -80,9 +80,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: SCROLL_INIT }} />
         <header className="sticky top-0 z-50 border-b border-[var(--c-border)] bg-[var(--c-header)] backdrop-blur">
           <div className="relative mx-auto grid h-[3.6rem] max-w-[var(--page-outer)] grid-cols-[1fr_auto_1fr] items-center px-4 md:px-6 lg:px-8">
-            <Link href="/" className="flex shrink-0 items-center gap-2 justify-self-start md:gap-2.5">
+            {/* min-w-0 允许在窄视口被压缩；站名 truncate 防止换行撑出页头压到公告栏 */}
+            <Link
+              href="/"
+              className="flex min-w-0 shrink-0 items-center gap-2 justify-self-start md:gap-2.5"
+            >
               <LogoMark text={settings.logoText} fontClass={BRAND_TEXT_CLASS} />
-              <span className={`${BRAND_TEXT_CLASS} hidden text-[var(--c-text)] sm:inline`}>
+              <span
+                className={`${BRAND_TEXT_CLASS} hidden truncate text-[var(--c-text)] sm:inline`}
+              >
                 {settings.siteName}
               </span>
             </Link>
