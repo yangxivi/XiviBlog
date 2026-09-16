@@ -443,12 +443,25 @@ export async function saveSettings(patch: unknown): Promise<SiteSettings> {
   }
   const merged = normalizeSettings({ ...current, ...p });
   const db = await getDB();
-  await db
-    .prepare(
-      "INSERT INTO settings (key, value, updated_at) VALUES (?1, ?2, datetime('now')) " +
-        "ON CONFLICT(key) DO UPDATE SET value=?2, updated_at=datetime('now')"
-    )
-    .bind(SETTINGS_KEY, JSON.stringify(merged))
-    .run();
+  try {
+    await db
+      .prepare(
+        "INSERT INTO settings (key, value, updated_at) VALUES (?1, ?2, datetime('now')) " +
+          "ON CONFLICT(key) DO UPDATE SET value=?2, updated_at=datetime('now')"
+      )
+      .bind(SETTINGS_KEY, JSON.stringify(merged))
+      .run();
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    // D1 单值大小上限：设置项（含橱窗/轮播内嵌图片）过大时会触发。
+    // 前端已把上传图压到 640px WebP，正常用量远不会触顶；一旦真触发，给出可操作提示
+    // 而不是把底层 SQLITE_TOOBIG 抛给用户。
+    if (/TOOBIG|too big|string or blob/i.test(msg)) {
+      throw new Error(
+        "设置数据过大（主要是橱窗/轮播图片）。请减少图片数量，或改用外链图片地址（填 https:// 链接而非上传），即可正常保存。"
+      );
+    }
+    throw e;
+  }
   return merged;
 }

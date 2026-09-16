@@ -58,6 +58,7 @@ export default function SettingsForm({
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(
     null
   );
+  const [loginExpired, setLoginExpired] = useState(false);
 
   const set = <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) =>
     setS((p) => ({ ...p, [k]: v }));
@@ -165,6 +166,7 @@ export default function SettingsForm({
   const save = async () => {
     setSaving(true);
     setMsg(null);
+    setLoginExpired(false);
     try {
       const res = await fetch("/api/settings", {
         method: "PUT",
@@ -177,11 +179,13 @@ export default function SettingsForm({
         error?: string;
       };
       if (res.status === 401) {
+        setLoginExpired(true);
         throw new Error("登录已过期，请重新登录后再保存（当前编辑内容未丢失）");
       }
       if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
       if (j.settings) {
-        setS(j.settings);
+        // 合并而非整体覆盖：即便服务端返回缺字段也不会清掉本地刚编辑的内容
+        setS((prev) => ({ ...prev, ...j.settings }));
         // 立即把新主题套用到当前页面：无需等待整页重载即可看到配色变化，
         // 解决「后台切主题刷新看不到、必须关浏览器重开」的体感问题
         if (j.settings.theme) {
@@ -1215,7 +1219,18 @@ export default function SettingsForm({
         </button>
         {msg?.type === "err" && (
           <div className="fixed inset-x-0 top-0 z-[100] bg-red-600 px-4 py-3 text-center text-sm font-medium text-white shadow-lg">
-            ⚠️ 保存失败：{msg.text}（当前页面内容未丢失，可直接重试）
+            ⚠️ 保存失败：{msg.text}
+            {loginExpired && (
+              <a
+                href="/admin/login"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-3 inline-block rounded bg-white/20 px-2 py-1 text-xs underline hover:bg-white/30"
+              >
+                新标签页重新登录
+              </a>
+            )}
+            （当前页面内容未丢失，可直接重试）
           </div>
         )}
         {msg && (

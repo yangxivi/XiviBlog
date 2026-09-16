@@ -80,7 +80,23 @@ async function handleWithEdgeCache(req, env, ctx) {
   }
 
   const kind = classify(req, url);
-  if (!kind) return handler.fetch(req, env, ctx);
+  if (!kind) {
+    const res = await handler.fetch(req, env, ctx);
+    // 站点设置保存成功后，首页边缘缓存可能还停着旧橱窗/轮播，
+    // 不主动清掉用户会以为「保存后橱窗卡消失」。这里清一次首页 HTML 缓存。
+    if (req.method === "PUT" && url.pathname === "/api/settings" && res.ok) {
+      try {
+        const key = new Request(
+          new URL(url.origin + "/?__v=html").toString(),
+          { method: "GET" }
+        );
+        ctx.waitUntil(caches.default.delete(key).catch(() => {}));
+      } catch {
+        /* 清缓存失败不影响保存结果 */
+      }
+    }
+    return res;
+  }
 
   let cache;
   try {
