@@ -50,7 +50,9 @@ next-env.d.ts
 .dev.vars
 
 # 文章配图（部署后走 /shots 外链，不入库）
-/public/shots/
+/public/shots/*
+# README 说明性截图除外（GitHub 用仓库相对路径渲染，随仓库走）
+!/public/shots/xiviblog-*.png
 
 # 临时构建 / 验证产物（仓库根目录，不入库）
 /*.log
