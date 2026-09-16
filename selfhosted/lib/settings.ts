@@ -1,5 +1,4 @@
 import { getDB } from "./db";
-import { THEME_IDS } from "./themes";
 
 /** 单个链接（内部以 / 开头，外部写完整 URL） */
 export type LinkItem = { label: string; href: string };
@@ -27,10 +26,24 @@ export type CarouselConfig = {
 
 /** 侧边栏橱窗卡：样式 / 图片 / 角标 / 标题 / 副标题 / 链接都可配 */
 export type PromoCard = {
-  /** outline = 白底描边；brand = 品牌色渐变；dark = 深色（颜色均随站点主题切换） */
-  variant: "outline" | "brand" | "dark" | "plain";
-  /** plain 变体描边色："" = 跟随站点主题色；否则为 lib/themes.ts 里的主题 id（自选固定色） */
-  accent?: string;
+  /**
+   * 样式变体：
+   * outline = 白底描边（带 LOGO）；plain = 白底描边·无LOGO；
+   * brand = 品牌色渐变；dark = 深色；
+   * meituan/wechat/zhihu/tencent/xiaohongshu/purple/cyan = 七种主题色实色卡（与品牌色、深色并列）
+   */
+  variant:
+    | "outline"
+    | "plain"
+    | "brand"
+    | "dark"
+    | "meituan"
+    | "wechat"
+    | "zhihu"
+    | "tencent"
+    | "xiaohongshu"
+    | "purple"
+    | "cyan";
   badge: string;
   /** 主标题，支持换行（前台按行渲染） */
   title: string;
@@ -271,7 +284,19 @@ function normColumns(v: unknown, fallback: FooterColumn[]): FooterColumn[] {
   return out.length ? out : fallback;
 }
 
-const PROMO_VARIANTS: PromoCard["variant"][] = ["outline", "brand", "dark", "plain"];
+const PROMO_VARIANTS: PromoCard["variant"][] = [
+  "outline",
+  "plain",
+  "brand",
+  "dark",
+  "meituan",
+  "wechat",
+  "zhihu",
+  "tencent",
+  "xiaohongshu",
+  "purple",
+  "cyan",
+];
 
 /** 侧边橱窗：丢掉没标题的项，最多 8 张（允许清空） */
 /** 侧边橱窗：纯图片橱窗卡是合法场景（标题可空），仅当四项全空才视为废卡丢弃，最多 8 张（允许清空） */
@@ -295,8 +320,6 @@ function normPromos(v: unknown, fallback: PromoCard[]): PromoCard[] {
       subtitle,
       image,
       href: str(it.href, "", 500),
-      // plain 变体自选描边色：合法主题 id 保留，其它一律视为「跟随主题」
-      accent: THEME_IDS.includes(it.accent as string) ? (it.accent as string) : "",
     });
     if (out.length >= 8) break;
   }

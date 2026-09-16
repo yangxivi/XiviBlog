@@ -5,14 +5,25 @@ import CoverThumb from "./CoverThumb";
 import type { PromoCard } from "@/lib/settings";
 import { THEMES } from "@/lib/themes";
 
-/** plain 卡自选描边色：accent 为主题 id 时返回该主题品牌色；否则 undefined（跟随站点主题 CSS 变量） */
-function accentStyle(c: PromoCard): CSSProperties | undefined {
-  if (c.variant !== "plain" || !c.accent) return undefined;
-  const hex = THEMES.find((t) => t.id === c.accent)?.brand;
-  return hex ? { borderColor: hex } : undefined;
+/** 七种主题色作为独立橱窗卡变体，与「品牌色」「深色」并列 */
+const THEME_VARIANTS: PromoCard["variant"][] = [
+  "meituan",
+  "wechat",
+  "zhihu",
+  "tencent",
+  "xiaohongshu",
+  "purple",
+  "cyan",
+];
+
+/** 主题色实色卡：内联背景色 = 该主题品牌色，文字色 = 该主题的 ink（保证对比度） */
+function themeFill(v: string): CSSProperties | undefined {
+  const t = THEMES.find((x) => x.id === v);
+  return t ? { backgroundColor: t.brand, color: t.ink } : undefined;
 }
 
-const WRAP: Record<PromoCard["variant"], string> = {
+/** 七种主题色实色卡的容器样式只给圆角，背景色与文字色由内联样式（themeFill）提供 */
+const WRAP: Partial<Record<PromoCard["variant"], string>> = {
   outline: "rounded-2xl border-2 border-[var(--brand)] bg-[var(--c-card)]",
   brand: "rounded-2xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-2)]",
   dark: "rounded-2xl border border-[var(--c-border)] bg-[var(--c-invert)]",
@@ -20,34 +31,42 @@ const WRAP: Record<PromoCard["variant"], string> = {
 };
 
 /** 有图时图片自己撑满，不要额外内边距 */
-const PAD: Record<PromoCard["variant"], string> = {
+const PAD: Partial<Record<PromoCard["variant"], string>> = {
   outline: "p-4",
   brand: "p-5",
   dark: "p-5",
   plain: "p-5",
 };
 
-/** 品牌卡（黄底渐变）与深色卡都用固定文字色，不随明暗主题变 */
-const BADGE: Record<PromoCard["variant"], string> = {
+/** 品牌卡（黄底渐变）、深色卡、主题色实色卡都用固定文字色，不随明暗主题变 */
+const BADGE: Partial<Record<PromoCard["variant"], string>> = {
   outline: "text-[var(--c-text-3)]",
   brand: "text-[var(--brand-ink)]/70",
   dark: "text-white/60",
   plain: "text-[var(--c-text-3)]",
 };
 
-const TITLE: Record<PromoCard["variant"], string> = {
+const TITLE: Partial<Record<PromoCard["variant"], string>> = {
   outline: "text-[var(--c-text)]",
   brand: "text-[var(--brand-ink)]",
   dark: "text-white",
   plain: "text-[var(--c-text)]",
 };
 
-const SUB: Record<PromoCard["variant"], string> = {
+const SUB: Partial<Record<PromoCard["variant"], string>> = {
   outline: "text-[var(--c-text-3)]",
   brand: "text-[var(--brand-ink)]/70",
   dark: "text-white/60",
   plain: "text-[var(--c-text-3)]",
 };
+
+/** 主题色实色卡的文字用 text-current 继承内联 color（即该主题 ink）；其余变体取各自配色 */
+function textClass(
+  v: PromoCard["variant"],
+  map: Partial<Record<PromoCard["variant"], string>>
+) {
+  return THEME_VARIANTS.includes(v) ? "text-current" : (map[v] ?? "text-current");
+}
 
 function isExternal(href: string) {
   return /^https?:\/\//i.test(href);
@@ -132,14 +151,14 @@ export default function PromoStack({
           </>
         );
 
-        const base = `block overflow-hidden transition ${WRAP[c.variant]} ${
-          c.image ? "" : PAD[c.variant]
+        const base = `block overflow-hidden transition ${WRAP[c.variant] ?? "rounded-2xl"} ${
+          c.image ? "" : PAD[c.variant] ?? "p-5"
         }`;
-        const accentCss = accentStyle(c);
+        const themeCss = themeFill(c.variant);
 
         if (!c.href) {
           return (
-            <div key={idx} className={base} style={accentCss}>
+            <div key={idx} className={base} style={themeCss}>
               {body}
             </div>
           );
@@ -152,7 +171,7 @@ export default function PromoStack({
             target="_blank"
             rel="noopener noreferrer"
             className={`${base} hover:brightness-105`}
-            style={accentCss}
+            style={themeCss}
           >
             {body}
           </a>
@@ -161,7 +180,7 @@ export default function PromoStack({
             key={idx}
             href={c.href}
             className={`${base} hover:brightness-105`}
-            style={accentCss}
+            style={themeCss}
           >
             {body}
           </Link>
