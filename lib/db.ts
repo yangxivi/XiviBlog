@@ -179,6 +179,9 @@ export async function listAll(): Promise<PostMeta[]> {
   return results ?? [];
 }
 
+const POST_SELECT =
+  "SELECT *, (SELECT COUNT(*) FROM page_views WHERE page_views.path = '/blog/' || posts.slug) AS view_count FROM posts ";
+
 export async function getBySlug(
   slug: string,
   includeDraft = false
@@ -186,12 +189,47 @@ export async function getBySlug(
   const db = await getDB();
   const row = await db
     .prepare(
-      `SELECT *, (SELECT COUNT(*) FROM page_views WHERE page_views.path = '/blog/' || posts.slug) AS view_count FROM posts WHERE slug=?1` +
+      POST_SELECT +
+        `WHERE slug=?1` +
         (includeDraft ? "" : ` AND ${LIVE}`)
     )
     .bind(slug)
     .first<PostRow>();
   return row ?? null;
+}
+
+/** 安全解码 URL 段（解码失败时返回原值） */
+export function safeDecode(s: string): string {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+}
+
+/**
+ * 详情页专用兜底查找：依次按 slug 原值 → URL 解码值 → 标题匹配。
+ * 背景：Workers 环境下中文路由段 params 不自动解码，导致中文 slug 查不到；
+ * 标题兜底用于兼容外链把标题直接当 slug 的情况。
+ */
+export async function getBySlugFlexible(
+  raw: string,
+  includeDraft = false
+): Promise<PostRow | null> {
+  const tried = new Set<string>([raw, safeDecode(raw)]);
+  for (const c of tried) {
+    const row = await getBySlug(c, includeDraft);
+    if (row) return row;
+  }
+  const db = await getDB();
+  for (const t of tried) {
+    const row = await db
+      .prepare(POST_SELECT + `WHERE title=?1` + (includeDraft ? "" : ` AND ${LIVE}`))
+      .bind(t)
+      .first<PostRow>();
+    if (row) return row;
+  }
+  return null;
 }
 
 export async function getById(id: number): Promise<PostRow | null> {

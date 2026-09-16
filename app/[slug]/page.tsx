@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import SiteAside from "@/app/components/SiteAside";
 import Comments from "@/app/components/Comments";
 import AdminEditButton from "@/app/components/AdminEditButton";
-import { listLatest, listRecommended, type PostMeta } from "@/lib/db";
+import { listLatest, listRecommended, safeDecode, type PostMeta } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { getPageBySlug } from "@/lib/pages";
 import { renderMarkdown } from "@/lib/markdown";
@@ -14,8 +14,8 @@ export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const page = await getPageBySlug(slug).catch(() => null);
+  const { slug: raw } = await params;
+  const page = await getPageBySlug(safeDecode(raw)).catch(() => null);
   if (!page) return { title: "页面未找到" };
   return {
     title: page.title,
@@ -24,8 +24,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CustomPage({ params }: Props) {
-  const { slug } = await params;
-  const page = await getPageBySlug(slug).catch(() => null);
+  const { slug: raw } = await params;
+  const page = await getPageBySlug(safeDecode(raw)).catch(() => null);
   if (!page) notFound();
 
   const settings = await getSettings();

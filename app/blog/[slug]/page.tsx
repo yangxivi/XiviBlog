@@ -6,7 +6,7 @@ import SiteAside from "@/app/components/SiteAside";
 import ShareBar from "@/app/components/ShareBar";
 import Comments from "@/app/components/Comments";
 import {
-  getBySlug,
+  getBySlugFlexible,
   getNeighbors,
   listLatest,
   listRecommended,
@@ -26,7 +26,7 @@ function originOf(h: Headers): string {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const [post, settings, h] = await Promise.all([
-    getBySlug(slug),
+    getBySlugFlexible(slug),
     getSettings(),
     headers(),
   ]);
@@ -66,10 +66,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostPage({ params }: Props) {
   const { slug } = await params;
-  const post = await getBySlug(slug);
+  const post = await getBySlugFlexible(slug);
   if (!post) notFound();
 
-  const { prev, next } = await getNeighbors(slug);
+  const { prev, next } = await getNeighbors(post.slug);
   const html = renderMarkdown(post.content);
   const origin = originOf(await headers());
 
