@@ -16,6 +16,8 @@ type Props = {
   imgClassName?: string;
   /** 关闭水印 */
   watermark?: boolean;
+  /** 图片适配方式：cover=填满裁切（默认），contain=完整显示居中 */
+  fit?: "cover" | "contain";
   loading?: "lazy" | "eager";
   onError?: ReactEventHandler<HTMLImageElement>;
 };
@@ -26,6 +28,7 @@ export default function CoverThumb({
   className = "",
   imgClassName = "",
   watermark = true,
+  fit = "cover",
   loading = "lazy",
   onError,
 }: Props) {
@@ -39,7 +42,7 @@ export default function CoverThumb({
         alt={alt}
         loading={loading}
         onError={onError}
-        className={`h-full w-full object-cover ${imgClassName}`}
+        className={`h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"} ${imgClassName}`}
       />
       {watermark && (
         <span

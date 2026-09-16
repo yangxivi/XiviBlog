@@ -59,12 +59,21 @@ export default function PromoStack({
       {cards.map((c, idx) => {
         const lines = c.title.split("\n").map((l) => l.trim()).filter(Boolean);
         const isOutline = c.variant === "outline";
+        const hasText = lines.length > 0 || !!c.badge || !!c.subtitle;
 
         const body = (
           <>
-            {/* 橱窗卡是站长自己的宣传图，不加 XIVI 水印 */}
-            {c.image && <CoverThumb src={c.image} className="h-[92px] w-full" watermark={false} />}
-            <div className={c.image ? "p-4" : ""}>
+            {/* 橱窗卡是站长自己的宣传图，不加 XIVI 水印；contain 完整显示、居中不裁切 */}
+            {c.image && (
+              <CoverThumb
+                src={c.image}
+                className="h-[92px] w-full"
+                watermark={false}
+                fit="contain"
+              />
+            )}
+            {hasText && (
+              <div className={c.image ? "p-4" : ""}>
               {isOutline ? (
                 <div className="flex items-center gap-3">
                   <LogoMark text={logoText} />
@@ -109,7 +118,8 @@ export default function PromoStack({
                   )}
                 </>
               )}
-            </div>
+              </div>
+            )}
           </>
         );
 
