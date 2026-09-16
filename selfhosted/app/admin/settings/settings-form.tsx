@@ -118,7 +118,9 @@ export default function SettingsForm({
     const i = promoUploadTarget.current;
     if (!f || i < 0) return;
     try {
-      const dataUrl = await compressImage(f, 800, 0.82);
+      // 橱窗图前台只以 92px 高展示，640px WebP 足够清晰，
+      // 同时把内嵌 base64 控制在小几十 KB，避免设置项膨胀拖慢全站页面
+      const dataUrl = await compressImage(f, 640, 0.75, undefined, "image/webp");
       patchPromo(i, { image: dataUrl });
       setMsg({ type: "ok", text: "橱窗图片已上传并压缩" });
     } catch {

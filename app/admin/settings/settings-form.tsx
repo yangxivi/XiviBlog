@@ -118,7 +118,9 @@ export default function SettingsForm({
     const i = promoUploadTarget.current;
     if (!f || i < 0) return;
     try {
-      const dataUrl = await compressImage(f, 800, 0.82);
+      // 橱窗图前台只以 92px 高展示，640px WebP 足够清晰，
+      // 同时把内嵌 base64 控制在小几十 KB，避免设置项膨胀拖慢全站页面
+      const dataUrl = await compressImage(f, 640, 0.75, undefined, "image/webp");
       patchPromo(i, { image: dataUrl });
       setMsg({ type: "ok", text: "橱窗图片已上传并压缩" });
     } catch {
@@ -706,7 +708,7 @@ export default function SettingsForm({
                 </div>
                 <div className="h-[68px] w-[100px] shrink-0 overflow-hidden rounded-lg border border-[var(--c-border-3)] bg-[var(--c-soft)]">
                   {c.image ? (
-                    <CoverThumb src={c.image} className="h-full w-full" />
+                    <CoverThumb src={c.image} className="h-full w-full" watermark={false} />
                   ) : (
                     <div className="flex h-full items-center justify-center text-[10px] text-[var(--c-text-4)]">
                       纯色卡

@@ -439,7 +439,13 @@ export function clearSettingsCache(): void {
 /** 保存设置（整体覆盖，返回规范化后的结果） */
 export async function saveSettings(patch: unknown): Promise<SiteSettings> {
   const current = await getSettings();
-  const merged = normalizeSettings({ ...current, ...(isObj(patch) ? patch : {}) });
+  let p = isObj(patch) ? patch : {};
+  // GET /api/settings 对所有请求（包括登录后台）都会把 aiCoverApiKey 脱敏成 "***" 回显，
+  // 表单原样保存会把真实密钥覆盖成 "***"。这里把 "***" 视为「未修改」，回填库内真实值。
+  if ((p as Record<string, unknown>).aiCoverApiKey === "***") {
+    p = { ...p, aiCoverApiKey: current.aiCoverApiKey };
+  }
+  const merged = normalizeSettings({ ...current, ...p });
   const db = await getDB();
   await db
     .prepare(

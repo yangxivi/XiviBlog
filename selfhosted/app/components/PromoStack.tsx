@@ -57,7 +57,8 @@ export default function PromoStack({
 
         const body = (
           <>
-            {c.image && <CoverThumb src={c.image} className="h-[92px] w-full" />}
+            {/* 橱窗卡是站长自己的宣传图，不加 XIVI 水印 */}
+            {c.image && <CoverThumb src={c.image} className="h-[92px] w-full" watermark={false} />}
             <div className={c.image ? "p-4" : ""}>
               {isOutline ? (
                 <div className="flex items-center gap-3">
