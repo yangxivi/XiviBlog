@@ -7,7 +7,7 @@ const WRAP: Record<PromoCard["variant"], string> = {
   outline: "rounded-2xl border-2 border-[var(--brand)] bg-[var(--c-card)]",
   brand: "rounded-2xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-2)]",
   dark: "rounded-2xl border border-[var(--c-border)] bg-[var(--c-invert)]",
-  plain: "rounded-2xl border-2 border-[var(--c-border-2)] bg-[var(--c-card)]",
+  plain: "rounded-2xl border-2 border-[var(--brand)] bg-[var(--c-card)]",
 };
 
 /** 有图时图片自己撑满，不要额外内边距 */
