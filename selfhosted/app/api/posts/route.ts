@@ -11,6 +11,7 @@ import {
   normPublishAt,
   snapshotRevision,
 } from "@/lib/db";
+import { englishSlugFromTitle, hasCJK } from "@/lib/slug-en";
 
 function slugify(title: string): string {
   const t = title
@@ -93,11 +94,19 @@ export async function POST(req: NextRequest) {
 
   const db = await getDB();
   let slug = body.slug?.trim() ? slugify(body.slug) : slugify(body.title);
-  const exists = await db
-    .prepare("SELECT id FROM posts WHERE slug=?1")
-    .bind(slug)
-    .first();
-  if (exists) slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
+  // slug 含中文时自动翻译成英文（中文 URL 段不友好且部分环境需解码）
+  if (hasCJK(slug)) {
+    const en = await englishSlugFromTitle(body.slug?.trim() || body.title);
+    if (en) slug = en;
+  }
+  // 唯一性：-2、-3 递增
+  const slugTaken = async (s: string) =>
+    !!(await db.prepare("SELECT id FROM posts WHERE slug=?1").bind(s).first());
+  if (await slugTaken(slug)) {
+    let i = 2;
+    while (await slugTaken(`${slug}-${i}`)) i++;
+    slug = `${slug}-${i}`;
+  }
 
   const r = await db
     .prepare(
