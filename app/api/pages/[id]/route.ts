@@ -43,6 +43,10 @@ export async function PUT(
   if (body.show_in_nav !== undefined) patch.show_in_nav = body.show_in_nav ? 1 : 0;
   if (body.nav_order !== undefined) patch.nav_order = num(body.nav_order);
   if (body.allow_comments !== undefined) patch.allow_comments = body.allow_comments ? 1 : 0;
+  if (body.header_title !== undefined) patch.header_title = String(body.header_title).slice(0, 60);
+  if (body.header_tagline !== undefined)
+    patch.header_tagline = String(body.header_tagline).slice(0, 120);
+  if (body.header_desc !== undefined) patch.header_desc = String(body.header_desc).slice(0, 500);
 
   if (body.slug !== undefined) {
     const raw = String(body.slug).trim();

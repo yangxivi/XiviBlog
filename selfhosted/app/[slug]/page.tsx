@@ -46,17 +46,21 @@ export default async function CustomPage({ params }: Props) {
 
   return (
     <div>
-      {/* 黄底横幅（整屏通栏）；右上角「编辑」直达该页面编辑器（改标题即改页眉） */}
-      <section className="relative bg-gradient-to-b from-[var(--c-brand-tint)] to-[var(--c-page)] px-4 py-12 text-center md:px-6 md:py-16">
-        <div className="absolute right-4 top-4 md:right-6 md:top-6">
-          <AdminEditButton href={`/admin/pages/edit/${page.id}`} label="编辑页眉" />
-        </div>
+      {/* 黄底横幅（整屏通栏）；页眉文案在「页面管理 → 编辑」里维护 */}
+      <section className="bg-gradient-to-b from-[var(--c-brand-tint)] to-[var(--c-page)] px-4 py-12 text-center md:px-6 md:py-16">
         <h1 className="text-3xl font-black tracking-tight text-[var(--c-text)] sm:text-4xl">
-          {page.title}
+          {page.header_title || page.title}
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[var(--c-text-2)]">
-          {settings.siteName}
-        </p>
+        {page.header_tagline && (
+          <p className="mt-4 text-lg font-bold text-[var(--c-text)]">
+            {page.header_tagline}
+          </p>
+        )}
+        {page.header_desc && (
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[var(--c-text-2)]">
+            {page.header_desc}
+          </p>
+        )}
       </section>
 
       {/* 正文：与首页/关于页共用同一套容器与两栏栅格 */}

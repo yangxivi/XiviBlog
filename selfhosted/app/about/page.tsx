@@ -34,25 +34,19 @@ export default async function About() {
 
   return (
     <div>
-      {/* 黄底横幅（整屏通栏）；右上角「编辑」直达页眉文案设置 */}
-      <section className="relative bg-gradient-to-b from-[var(--c-brand-tint)] to-[var(--c-page)] px-4 py-12 text-center md:px-6 md:py-16">
-        <div className="absolute right-4 top-4 md:right-6 md:top-6">
-          <AdminEditButton
-            href={aboutPage ? `/admin/pages/edit/${aboutPage.id}` : "/admin/settings"}
-            label="编辑页眉"
-          />
-        </div>
+      {/* 黄底横幅（整屏通栏）；页眉文案在「页面管理 → about」编辑器里维护 */}
+      <section className="bg-gradient-to-b from-[var(--c-brand-tint)] to-[var(--c-page)] px-4 py-12 text-center md:px-6 md:py-16">
         <h1 className="text-3xl font-black tracking-tight text-[var(--c-text)] sm:text-4xl">
-          {settings.siteName}
+          {aboutPage?.header_title || settings.siteName}
         </h1>
-        {settings.aboutTagline && (
+        {(aboutPage ? aboutPage.header_tagline : "") && (
           <p className="mt-4 text-lg font-bold text-[var(--c-text)]">
-            {settings.aboutTagline}
+            {aboutPage?.header_tagline}
           </p>
         )}
-        {settings.aboutDesc && (
+        {(aboutPage ? aboutPage.header_desc : "") && (
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[var(--c-text-2)]">
-            {settings.aboutDesc}
+            {aboutPage?.header_desc}
           </p>
         )}
       </section>

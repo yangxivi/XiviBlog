@@ -24,6 +24,9 @@ export type PageEditorInitial = {
   show_in_nav: number;
   nav_order: number;
   allow_comments: number;
+  header_title?: string;
+  header_tagline?: string;
+  header_desc?: string;
 };
 
 const FIELD =
@@ -47,6 +50,9 @@ export default function PageEditor({
   const [showInNav, setShowInNav] = useState(initial?.show_in_nav === 1);
   const [navOrder, setNavOrder] = useState(initial?.nav_order ?? 0);
   const [allowComments, setAllowComments] = useState(initial?.allow_comments === 1);
+  const [headerTitle, setHeaderTitle] = useState(initial?.header_title ?? "");
+  const [headerTagline, setHeaderTagline] = useState(initial?.header_tagline ?? "");
+  const [headerDesc, setHeaderDesc] = useState(initial?.header_desc ?? "");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -67,6 +73,9 @@ export default function PageEditor({
       show_in_nav: showInNav ? 1 : 0,
       nav_order: Number(navOrder) || 0,
       allow_comments: allowComments ? 1 : 0,
+      header_title: headerTitle.trim(),
+      header_tagline: headerTagline.trim(),
+      header_desc: headerDesc.trim(),
     };
     try {
       const res = await fetch(
@@ -167,6 +176,42 @@ export default function PageEditor({
           <p className="mt-1 text-xs text-[var(--c-text-4)]">
             访问地址：/{previewSlug || "（由标题生成）"}
           </p>
+        </div>
+      </div>
+
+      {/* 页眉（前台横幅文案） */}
+      <div className="rounded-xl border border-[var(--c-border-3)] bg-[var(--c-card)] p-4">
+        <p className="text-xs font-semibold text-[var(--c-text-2)]">
+          页眉横幅（页面顶部黄底横幅的文案，全部留空则只显示页面标题）
+        </p>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className={LABEL}>页眉大标题（留空显示页面标题）</label>
+            <input
+              value={headerTitle}
+              onChange={(e) => setHeaderTitle(e.target.value)}
+              placeholder={mode === "edit" && initial?.slug === "about" ? "曦微博客" : "留空显示页面标题"}
+              className={INPUT}
+            />
+          </div>
+          <div>
+            <label className={LABEL}>页眉标语（横幅第二行粗体，可空）</label>
+            <input
+              value={headerTagline}
+              onChange={(e) => setHeaderTagline(e.target.value)}
+              placeholder="用 AI 与自动化，把重复劳动交给机器"
+              className={INPUT}
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className={LABEL}>页眉描述（横幅第三行小字，可空）</label>
+            <textarea
+              value={headerDesc}
+              onChange={(e) => setHeaderDesc(e.target.value)}
+              placeholder="一句话或一小段介绍，留空隐藏"
+              className={`${INPUT} min-h-[56px] resize-y`}
+            />
+          </div>
         </div>
       </div>
 

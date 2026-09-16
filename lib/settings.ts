@@ -104,10 +104,6 @@ export type SiteSettings = {
   aboutTitle: string;
   /** 「关于」页正文（Markdown，留空则用内置文案） */
   aboutContent: string;
-  /** 「关于」页页眉标语（顶部横幅第二行粗体，留空不显示） */
-  aboutTagline: string;
-  /** 「关于」页页眉描述（横幅第三行小字，留空不显示） */
-  aboutDesc: string;
   /** AI 封面 API Key；留空则尝试读取环境变量 AGNES_API_KEY / AI_COVER_API_KEY */
   aiCoverApiKey: string;
   /** AI 封面模型 ID（agnes 默认 blog） */
@@ -192,9 +188,6 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   aboutTitle: "关于这个博客",
   /** 留空时前台用内置文案，后台填了就完全以后台为准 */
   aboutContent: "",
-  aboutTagline: "用 AI 与自动化，把重复劳动交给机器",
-  aboutDesc:
-    "这里记录做东西的过程 —— AI 应用、Windows 桌面工具、自动化脚本，以及各类部署实践。能自动化的绝不手动，能免费的绝不付费。",
   aiCoverApiKey: "",
   aiCoverModel: "agnes-image-2.0-flash",
   aiCoverBaseUrl: "https://apihub.agnes-ai.com/v1",
@@ -405,8 +398,6 @@ export function normalizeSettings(input: unknown): SiteSettings {
     latestComments: normLatestComments(input.latestComments, d.latestComments),
     aboutTitle: str(input.aboutTitle, d.aboutTitle, 40),
     aboutContent: str(input.aboutContent, d.aboutContent, 20000),
-    aboutTagline: str(input.aboutTagline, d.aboutTagline, 100),
-    aboutDesc: str(input.aboutDesc, d.aboutDesc, 300),
     aiCoverApiKey: str(input.aiCoverApiKey, d.aiCoverApiKey, 200),
     aiCoverModel: str(input.aiCoverModel, d.aiCoverModel, 60),
     aiCoverBaseUrl: str(input.aiCoverBaseUrl, d.aiCoverBaseUrl, 200),

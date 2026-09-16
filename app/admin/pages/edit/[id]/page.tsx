@@ -35,6 +35,9 @@ export default async function EditPage({
           show_in_nav: page.show_in_nav,
           nav_order: page.nav_order,
           allow_comments: page.allow_comments,
+          header_title: page.header_title,
+          header_tagline: page.header_tagline,
+          header_desc: page.header_desc,
         }}
       />
     </div>

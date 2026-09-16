@@ -16,6 +16,12 @@ export type PageRow = {
   nav_order: number;
   /** 1 = 允许留言评论 */
   allow_comments: number;
+  /** 页眉大标题（留空前台回退页面标题；about 页回退站点名） */
+  header_title: string;
+  /** 页眉第二行标语（留空隐藏） */
+  header_tagline: string;
+  /** 页眉第三行描述（留空隐藏） */
+  header_desc: string;
   created_at: string;
   updated_at: string;
 };
@@ -28,6 +34,9 @@ export type PageInput = {
   show_in_nav: number;
   nav_order: number;
   allow_comments: number;
+  header_title?: string;
+  header_tagline?: string;
+  header_desc?: string;
 };
 
 /** 全是已发布文章列表查询，失败就回退空数组，绝不让页面崩 */
@@ -104,9 +113,19 @@ export async function createPage(p: PageInput): Promise<number> {
   const db = await getDB();
   const r = await db
     .prepare(
-      "INSERT INTO pages (slug, title, content, show_in_nav, nav_order, allow_comments) VALUES (?1,?2,?3,?4,?5,?6)"
+      "INSERT INTO pages (slug, title, content, show_in_nav, nav_order, allow_comments, header_title, header_tagline, header_desc) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)"
     )
-    .bind(p.slug, p.title, p.content, p.show_in_nav, p.nav_order, p.allow_comments)
+    .bind(
+      p.slug,
+      p.title,
+      p.content,
+      p.show_in_nav,
+      p.nav_order,
+      p.allow_comments,
+      p.header_title ?? "",
+      p.header_tagline ?? "",
+      p.header_desc ?? ""
+    )
     .run();
   return r.meta.last_row_id ?? 0;
 }
@@ -127,6 +146,9 @@ export async function updatePage(id: number, p: Partial<PageInput>): Promise<voi
   if (p.show_in_nav !== undefined) add("show_in_nav", p.show_in_nav);
   if (p.nav_order !== undefined) add("nav_order", p.nav_order);
   if (p.allow_comments !== undefined) add("allow_comments", p.allow_comments);
+  if (p.header_title !== undefined) add("header_title", p.header_title);
+  if (p.header_tagline !== undefined) add("header_tagline", p.header_tagline);
+  if (p.header_desc !== undefined) add("header_desc", p.header_desc);
   if (!sets.length) return;
   binds.push(id);
   await db

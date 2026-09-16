@@ -5,15 +5,18 @@ const DATABASE_ID = process.env.CLOUDFLARE_DATABASE_ID || "0a6dacad-4281-4016-aa
 const TOKEN = process.env.CLOUDFLARE_API_TOKEN || "";
 
 const date = "2026-09-16";
-const heading = "橱窗卡与设置保存修复";
+const heading = "页眉编辑迁移与设置保存修复";
 const bullets = [
+  "去掉自定义页面与关于页横幅右上角的「编辑页眉」按钮，页眉编辑直接融入页面编辑器（页面标题下方），编辑页面即编辑页眉",
+  "页眉文案（大标题 / 标语 / 描述）从「站点设置」迁移到「页面编辑器」，每页独立维护，关于页也走页面记录，存入 pages 表 header_title / header_tagline / header_desc",
+  "后台保存设置失败时顶部悬浮红色横幅提示，并明确「登录已过期」等错误，内容不丢失可直接重试",
   "侧边栏橱窗卡上传图片后不再叠加左上角 XIVI 黑字水印，宣传图保持原样",
   "橱窗图上传压缩优化为 640px WebP，体积约为原来的 1/4，页面加载更快",
   "修复后台保存设置会把 AI 封面密钥覆盖成脱敏值导致 AI 封面失效的问题",
-  "后台保存失败时顶部悬浮醒目报错提示，明确提示内容未丢失、可重试保存",
-  "自定义页面与关于页的页眉横幅右上角新增「编辑页眉」按钮（仅站长登录可见），点击直达编辑",
-  "关于页页眉的标语与描述文案改为后台「站点设置」可编辑，不用再改代码",
 ];
+
+// 任务 C 推翻了任务 B 的两项设计，移除已不准确的时间轴条目
+const stalePhrases = ["「编辑页眉」按钮", "「站点设置」可编辑"];
 
 async function main() {
   if (!TOKEN) {
@@ -47,6 +50,12 @@ async function main() {
   }
 
   let content = row.content;
+  // 先剔除已被推翻的旧条目，避免时间轴出现互相矛盾的说明
+  const lines = content.split("\n").filter((l) => {
+    const t = l.replace(/^[-*\s]+/, "");
+    return !stalePhrases.some((p) => t.includes(p));
+  });
+  content = lines.join("\n");
   const sectionHeader = `### ${date}`;
   const newSection = `### ${date}｜${heading}\n\n${bullets.map((b) => `- ${b}`).join("\n")}`;
 

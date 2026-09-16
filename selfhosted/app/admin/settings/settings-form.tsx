@@ -176,6 +176,9 @@ export default function SettingsForm({
         settings?: SiteSettings;
         error?: string;
       };
+      if (res.status === 401) {
+        throw new Error("登录已过期，请重新登录后再保存（当前编辑内容未丢失）");
+      }
       if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
       if (j.settings) {
         setS(j.settings);
@@ -232,24 +235,6 @@ export default function SettingsForm({
               value={s.siteDesc}
               onChange={(e) => set("siteDesc", e.target.value)}
               placeholder="一句话介绍站点，用于 SEO 与分享卡片"
-            />
-          </div>
-          <div className="sm:col-span-2 mt-1 border-t border-[var(--c-border)] pt-4">
-            <label className={LABEL}>关于页页眉 · 标语（横幅第二行粗体，留空隐藏）</label>
-            <input
-              className={INPUT}
-              value={s.aboutTagline}
-              onChange={(e) => set("aboutTagline", e.target.value)}
-              placeholder="用 AI 与自动化，把重复劳动交给机器"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label className={LABEL}>关于页页眉 · 描述（横幅第三行小字，留空隐藏）</label>
-            <textarea
-              className={`${INPUT} min-h-[64px] resize-y`}
-              value={s.aboutDesc}
-              onChange={(e) => set("aboutDesc", e.target.value)}
-              placeholder="这里记录做东西的过程……"
             />
           </div>
         </div>
@@ -1245,6 +1230,12 @@ export default function SettingsForm({
           </span>
         )}
       </div>
+
+      {msg?.type === "err" && (
+        <div className="fixed inset-x-0 top-0 z-[100] bg-red-600 px-4 py-3 text-center text-sm font-medium text-white shadow-lg">
+          ⚠️ 保存失败：{msg.text}（当前页面内容未丢失，可直接重试）
+        </div>
+      )}
     </div>
   );
 }

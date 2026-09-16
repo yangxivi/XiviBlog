@@ -27,6 +27,9 @@ export async function POST(req: NextRequest) {
     show_in_nav: body.show_in_nav ? 1 : 0,
     nav_order: Number.isFinite(Number(body.nav_order)) ? Number(body.nav_order) : 0,
     allow_comments: body.allow_comments ? 1 : 0,
+    header_title: String(body.header_title ?? "").slice(0, 60),
+    header_tagline: String(body.header_tagline ?? "").slice(0, 120),
+    header_desc: String(body.header_desc ?? "").slice(0, 500),
   };
 
   try {
