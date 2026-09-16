@@ -14,12 +14,12 @@ function RankBadge({ n }: { n: number }) {
   const i = n - 1;
   return (
     <span
-      className={`shrink-0 text-center font-[Georgia,serif] text-[1.5rem] font-bold italic leading-none ${
+      className={`shrink-0 text-center font-[Georgia,serif] text-[1.25rem] font-bold italic leading-none ${
         i < 3
           ? `bg-gradient-to-br ${TOP_RANK[i]} bg-clip-text text-transparent`
           : "text-[#dcddde]"
       }`}
-      style={{ width: "24px", marginRight: "5px" }}
+      style={{ width: "20px", marginRight: "6px" }}
     >
       {n}
     </span>
@@ -90,7 +90,7 @@ export default function Highlights({
         {/* 每行等高等宽、均分总高度：flex-1 撑满；行数多到装不下时才出现滚动 */}
         <ul className="flex h-full flex-col">
           {slides.map((s, i) => (
-            <li key={s.key} className="flex min-h-[56px] flex-1">
+            <li key={s.key} className="flex min-h-[40px] flex-1">
               <SlideLink
                 href={s.href}
                 onMouseEnter={() => setIdx(i)}
@@ -105,11 +105,11 @@ export default function Highlights({
                 </span>
                 <span
                   title={s.title}
-                  className={`line-clamp-2 text-[1.1rem] font-semibold leading-[1.4] ${
+                  className={`truncate whitespace-nowrap text-[0.95rem] font-medium leading-[1.4] ${
                     i === cur
                       ? "text-[var(--brand-deep)]"
                       : "text-[var(--c-text)]"
-                  } sm:text-[1.25rem]`}
+                  } sm:text-[1.05rem]`}
                 >
                   {s.title.length > 15 ? s.title.slice(0, 15) + "…" : s.title}
                 </span>
