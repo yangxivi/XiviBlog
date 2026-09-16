@@ -234,6 +234,24 @@ export default function SettingsForm({
               placeholder="一句话介绍站点，用于 SEO 与分享卡片"
             />
           </div>
+          <div className="sm:col-span-2 mt-1 border-t border-[var(--c-border)] pt-4">
+            <label className={LABEL}>关于页页眉 · 标语（横幅第二行粗体，留空隐藏）</label>
+            <input
+              className={INPUT}
+              value={s.aboutTagline}
+              onChange={(e) => set("aboutTagline", e.target.value)}
+              placeholder="用 AI 与自动化，把重复劳动交给机器"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className={LABEL}>关于页页眉 · 描述（横幅第三行小字，留空隐藏）</label>
+            <textarea
+              className={`${INPUT} min-h-[64px] resize-y`}
+              value={s.aboutDesc}
+              onChange={(e) => set("aboutDesc", e.target.value)}
+              placeholder="这里记录做东西的过程……"
+            />
+          </div>
         </div>
       </section>
 

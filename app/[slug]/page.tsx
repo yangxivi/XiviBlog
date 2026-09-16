@@ -44,8 +44,11 @@ export default async function CustomPage({ params }: Props) {
 
   return (
     <div>
-      {/* 黄底横幅（整屏通栏） */}
-      <section className="bg-gradient-to-b from-[var(--c-brand-tint)] to-[var(--c-page)] px-4 py-12 text-center md:px-6 md:py-16">
+      {/* 黄底横幅（整屏通栏）；右上角「编辑」直达该页面编辑器（改标题即改页眉） */}
+      <section className="relative bg-gradient-to-b from-[var(--c-brand-tint)] to-[var(--c-page)] px-4 py-12 text-center md:px-6 md:py-16">
+        <div className="absolute right-4 top-4 md:right-6 md:top-6">
+          <AdminEditButton href={`/admin/pages/edit/${page.id}`} label="编辑页眉" />
+        </div>
         <h1 className="text-3xl font-black tracking-tight text-[var(--c-text)] sm:text-4xl">
           {page.title}
         </h1>

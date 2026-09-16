@@ -34,18 +34,27 @@ export default async function About() {
 
   return (
     <div>
-      {/* 黄底横幅（整屏通栏） */}
-      <section className="bg-gradient-to-b from-[var(--c-brand-tint)] to-[var(--c-page)] px-4 py-12 text-center md:px-6 md:py-16">
+      {/* 黄底横幅（整屏通栏）；右上角「编辑」直达页眉文案设置 */}
+      <section className="relative bg-gradient-to-b from-[var(--c-brand-tint)] to-[var(--c-page)] px-4 py-12 text-center md:px-6 md:py-16">
+        <div className="absolute right-4 top-4 md:right-6 md:top-6">
+          <AdminEditButton
+            href={aboutPage ? `/admin/pages/edit/${aboutPage.id}` : "/admin/settings"}
+            label="编辑页眉"
+          />
+        </div>
         <h1 className="text-3xl font-black tracking-tight text-[var(--c-text)] sm:text-4xl">
           {settings.siteName}
         </h1>
-        <p className="mt-4 text-lg font-bold text-[var(--c-text)]">
-          用 AI 与自动化，把重复劳动交给机器
-        </p>
-        <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[var(--c-text-2)]">
-          这里记录做东西的过程 —— AI 应用、Windows 桌面工具、自动化脚本，以及各类部署实践。
-          能自动化的绝不手动，能免费的绝不付费。
-        </p>
+        {settings.aboutTagline && (
+          <p className="mt-4 text-lg font-bold text-[var(--c-text)]">
+            {settings.aboutTagline}
+          </p>
+        )}
+        {settings.aboutDesc && (
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[var(--c-text-2)]">
+            {settings.aboutDesc}
+          </p>
+        )}
       </section>
 
       {/* 正文：与首页/历史/搜索共用同一套容器与两栏栅格 */}
