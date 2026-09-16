@@ -105,6 +105,8 @@ export default function Carousel({
                   alt=""
                   className="h-full w-full object-contain transition-transform duration-700 group-hover/slide:scale-[1.02]"
                   loading={i === 0 ? "eager" : "lazy"}
+                  fetchPriority={i === 0 ? "high" : "low"}
+                  decoding="async"
                 />
               ) : (
                 <div

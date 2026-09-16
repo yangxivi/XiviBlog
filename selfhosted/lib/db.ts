@@ -245,24 +245,6 @@ export async function listLatest(n = 5): Promise<PostMeta[]> {
   return results ?? [];
 }
 
-/**
- * 轮播用原图（前 n 篇，按 id 返回；无封面为空串，由前端回落渐变）。
- * 列表接口的 cover_image 是缩略图别名（保证列表体积），轮播大图必须单独取原图。
- */
-export async function listCoverMap(
-  n: number
-): Promise<Record<number, string>> {
-  const db = await getDB();
-  const { results } = await db
-    .prepare(
-      `SELECT id, cover_image FROM posts WHERE ${LIVE} ${ORDER} LIMIT ${Math.max(1, n)}`
-    )
-    .all<{ id: number; cover_image: string }>();
-  const map: Record<number, string> = {};
-  for (const r of results ?? []) map[r.id] = r.cover_image || "";
-  return map;
-}
-
 /** 全部文章（后台） */
 export async function listAll(): Promise<PostMeta[]> {
   const db = await getDB();

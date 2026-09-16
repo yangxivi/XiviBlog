@@ -37,28 +37,13 @@ export default function Highlights({
   slides: Slide[];
   interval?: number;
 }) {
-  // 初始 slides 已带 cover_thumb 小图（SSR 首屏即显示真实封面，无占位图）；
-  // 客户端再拉 /api/carousel 换成封面原图（240px 小图在轮播大尺寸下发糊）
-  const [imgSlides, setImgSlides] = useState<Slide[]>(slides);
+  // slides 由服务端给全（文章模式下的 image 已是 /api/posts/cover 的高清原图 URL），
+  // 首屏 <img> 就在 HTML 里，不再需要客户端二次换图。
   const [idx, setIdx] = useState(0);
   const [hoverCarousel, setHoverCarousel] = useState(false);
   const [hoverList, setHoverList] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
-    fetch("/api/carousel")
-      .then((r) => r.json() as Promise<{ slides?: Slide[] }>)
-      .then((d) => {
-        if (alive && Array.isArray(d.slides) && d.slides.length) {
-          setImgSlides(d.slides);
-        }
-      })
-      .catch(() => {});
-    return () => {
-      alive = false;
-    };
-  }, []);
-
+  const imgSlides = slides;
   const n = imgSlides.length;
 
   useEffect(() => {

@@ -12,6 +12,7 @@ import {
   type PostMeta,
 } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
+import { coverUrl } from "@/lib/cover-url";
 
 export const dynamic = "force-dynamic";
 
@@ -51,9 +52,10 @@ export default async function Home({ searchParams }: Props) {
   const car = settings.carousel;
 
   // 轮播：自定义优先，否则取最新 N 篇文章。
-  // 初始 slides 携带 cover_thumb（240×135 WebP，单张 2-3KB）：SSR 首屏直接渲染真实封面，
-  // 不再出现纯色渐变占位图；客户端再由 <Highlights> 拉 /api/carousel 换成清晰原图。
-  // 注意：封面原图（30KB+ base64 大图）仍不进首屏 RSC flight，避免 hydration 被超大属性破坏。
+  // 文章模式的 image 指向 /api/posts/cover 直出的**原图 URL**（不是 base64）：
+  // URL 只有几十字节，<img> 直接出现在 SSR 首屏 HTML 里，浏览器解析到就开始下载
+  // 高清封面，不会再出现「先虚 2-3 秒、再被客户端换成清晰图」。
+  // 列表小图仍然 base64 内联（240×135 WebP、2-3KB，零请求随首屏出现最划算）。
   let slides: Slide[] = [];
   if (car.mode === "custom" && car.slides.length > 0) {
     slides = car.slides
@@ -72,13 +74,24 @@ export default async function Home({ searchParams }: Props) {
       title: p.title,
       excerpt: p.excerpt,
       badge: p.tag,
-      image: p.cover_image,
+      image: p.cover_image ? coverUrl(p.id, p.cover_image, p.updated_at) : "",
       href: `/blog/${p.slug}`,
     }));
   }
 
+  // 首张轮播图预加载：它是首屏最大的一块内容，提前发起下载能跟 JS 解析并行。
+  // 自定义轮播可能填的是 base64（data:），那种情况绝不能塞进 href——会把大图
+  // 字符串重复进 DOM，白白撑大首屏。
+  const firstImage =
+    slides[0]?.image && !slides[0].image.startsWith("data:")
+      ? slides[0].image
+      : "";
+
   return (
     <div className="mx-auto max-w-[var(--page-outer)] px-4 py-6 md:px-6 md:py-8">
+      {firstImage && (
+        <link rel="preload" as="image" href={firstImage} fetchPriority="high" />
+      )}
       {dbError && (
         <div className="mb-8 rounded-xl border border-red-100 bg-red-50 p-5 text-sm text-red-600">
           数据库读取失败：{dbError}
