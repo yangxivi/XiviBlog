@@ -138,9 +138,13 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
 
           {settings.footerColumns.map((col, i) => (
             <div key={`${col.title}-${i}`} className="min-w-0">
-              <h4 className="text-[13px] font-bold tracking-tight text-[var(--brand)]">
-                {col.title}
-              </h4>
+              {/* 与品牌区标题「曦微博客」同一水平线：外层撑到 32px（= 品牌 LOGO 方块高）
+                  并垂直居中；字号/字重/字距与品牌标题保持一致 */}
+              <div className="flex h-8 items-center">
+                <h4 className="text-[15px] font-bold tracking-tight text-[var(--brand)]">
+                  {col.title}
+                </h4>
+              </div>
               <ul className="mt-3 space-y-2 text-[13px] sm:text-sm">
                 {col.links.map((l, j) => (
                   <li key={`${l.href}-${j}`} className="break-words">

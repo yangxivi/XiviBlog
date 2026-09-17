@@ -346,12 +346,12 @@ textarea::placeholder {
     order: 1;
   }
 }
-/* 页脚链接分组左缘与正文主列（文章列表 / 上一页按钮）左缘对齐。
+/* 页脚链接分组的横向位置固定：无论侧栏在左还是在右，都保持「侧栏在左时」的对齐位置。
    主列左缘 = 侧栏宽 280px + 栅格间距 64px = 344px（见上方 with-aside 分支）。
-   这里把品牌列拓宽到 304px，加上 40px 列间距（lg:gap-x-10）后，
-   第一组链接正好落在 344px；侧栏在右时不生效，保持原来的 5 等分排布。 */
+   这里把品牌列固定为 304px，加上 40px 列间距（lg:gap-x-10）后，
+   第一组链接恒定落在 344px，切换侧栏方向时不会跟着移动。 */
 @media (min-width: 1024px) {
-  html[data-sidebar="left"] .footer-cols {
+  .footer-cols {
     grid-template-columns: 304px repeat(4, minmax(0, 1fr));
   }
 }
