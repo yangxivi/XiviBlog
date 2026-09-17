@@ -4,7 +4,6 @@ import Footer from "./components/Footer";
 import LogoMark, { BRAND_TEXT_CLASS } from "./components/LogoMark";
 import Nav from "./components/Nav";
 import NoticeBar from "./components/NoticeBar";
-import SideAd from "./components/SideAd";
 import SidebarToggle from "./components/SidebarToggle";
 import BackToTop from "./components/BackToTop";
 import ThemeToggle from "./components/ThemeToggle";
@@ -176,7 +175,6 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </main>
         </AdminProvider>
 
-        <SideAd />
         <BackToTop />
         <ThemeToggle />
         <ViewTracker />
