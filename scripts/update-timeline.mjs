@@ -3,6 +3,9 @@
 //   node scripts/update-timeline.mjs            追加/改名/去重（会写 D1）
 //   node scripts/update-timeline.mjs --audit    只体检：列出疑似「同一件事写了多次」的条目，不写库
 // 需 CLOUDFLARE_API_TOKEN（写入时）。
+//
+// 排序约定：时间轴小节按**升序**排（09-09 → 09-10 → … → 最新一天在最后）。
+// 当天小节已存在 → 往该小节里追加；不存在 → 在整段**末尾**新建小节。详见下方 else 分支注释。
 const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || "b433825d809e0bb7e7ba0bb3946ced9f";
 const DATABASE_ID = process.env.CLOUDFLARE_DATABASE_ID || "0a6dacad-4281-4016-aa90-ce912fe9fa6a";
 const TOKEN = process.env.CLOUDFLARE_API_TOKEN || "";
@@ -226,8 +229,24 @@ async function main() {
         console.error("Timeline marker not found");
         process.exit(1);
       }
-      const insertAt = idx + marker.length;
-      content = content.slice(0, insertAt) + "\n\n" + newSection + content.slice(insertAt);
+      // 时间轴全段是「从项目启动到今天」的**升序**（线上现状：09-09 → 09-16），
+      // 所以新的一天必须追加到**末尾**。
+      //
+      // ⚠️ 别改回「插在 `## 迭代时间轴` 正下方」（2026-09-17 踩过）：那样最新一天会
+      // 孤零零飘在整段最上面，读者滚到时间轴末尾——也就是最新记录本该在的位置——
+      // 反而找不到当天的更新，会以为时间轴没更新。
+      //
+      // 末尾的判定：整段正文里最后一个 `---` 之前（`---` 后面那句
+      // 「如果你也想搭一个类似的博客…」要求永远钉在整页最底），没有就落到文末。
+      let insertAt = content.length;
+      const lastSep = content.lastIndexOf("\n---");
+      if (lastSep > idx) insertAt = lastSep;
+      content =
+        content.slice(0, insertAt).replace(/\s+$/, "") +
+        "\n\n" +
+        newSection +
+        "\n" +
+        content.slice(insertAt);
     }
   }
 
