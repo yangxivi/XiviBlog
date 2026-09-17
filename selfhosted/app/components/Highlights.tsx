@@ -60,7 +60,7 @@ export default function Highlights({
   const cur = ((idx % n) + n) % n;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_296px] lg:gap-0">
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_296px] lg:gap-5">
       <Carousel
         slides={imgSlides}
         index={cur}
