@@ -82,8 +82,8 @@ export default function Highlights({
                 onMouseEnter={() => setIdx(i)}
                 className={`flex w-full items-center overflow-hidden border-l-[3px] px-5 transition-colors ${
                   i === cur
-                    ? "border-[var(--brand)] bg-[var(--c-soft)]"
-                    : "border-transparent hover:bg-[var(--c-soft)]"
+                    ? "border-[var(--brand)] bg-[var(--c-brand-soft)]"
+                    : "border-transparent hover:bg-[var(--c-brand-soft)]"
                 }`}
               >
                 <span className="mr-3 shrink-0">
