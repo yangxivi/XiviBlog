@@ -93,12 +93,15 @@ html.dark {
 
 html {
   scroll-behavior: smooth;
-  /* 到达滚动边界后禁止回弹与滚动链传递，配合 ScrollLock 锁死页脚底边 */
+  /* 2026-09-17 布局重构硬保证：html/body 定高一屏 + overflow hidden，
+     文档级永不滚动，滚动只发生在 main#xivi-main 容器内——
+     「滚过页脚下边框 / 页脚下空白 / 无限下拉」在结构上不可能再发生。
+     这两条是 CSS 层兜底，主样式在 layout.tsx 的 body/main class 上。 */
+  height: 100%;
+  overflow: hidden;
+  /* 到达滚动边界后禁止回弹与滚动链传递 */
   overscroll-behavior-y: none;
-  /* 页脚下限的 CSS 兜底（2026-09-17）：body 自己有背景色，所以画布才轮到 html 上色。
-     万一「页脚底边以下」还剩一点点余量（容器自身高度之类，ScrollLock 够不着），
-     那片区域就会直接呈现页脚底色，页面上永远不会出现一条刺眼空白。
-     健康布局下 body 至少一屏高、把视口铺满，这一层完全看不到（零视觉影响）。 */
+  /* 页脚底色的画布兜底：万一容器外残留极小余量，呈现页脚底色而非刺眼空白 */
   background-color: var(--c-soft);
 }
 
@@ -118,10 +121,10 @@ body {
     oxygen, ubuntu, cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
-  /* 页脚贴底兜底：body 至少占满一屏。用视口单位而不是 100%，
-     不依赖 html 的百分比链，个别环境下算不出高度时会露白。
-     主样式来自 layout 里的 min-h-dvh，这行只是老浏览器的退路。 */
-  min-height: 100vh;
+  /* 文档级滚动锁死（CSS 兜底，主样式在 layout 的 h-dvh overflow-hidden）：
+     body 定高一屏，页脚在 main 滚动容器内部，文档本身无可滚动距离 */
+  height: 100%;
+  overflow: hidden;
 }
 
 /* 主题切换时的柔和过渡（仅在切换瞬间挂 .theme-anim，避免影响其它动画） */
@@ -166,11 +169,11 @@ html.dark .prose-xivi img {
   font-weight: 700;
   color: var(--c-text);
 }
-/* 目录锚点跳转后给标题留出上边距：页头是 sticky top-0（3.6rem + 1px 边框），
-   落点必须让开它，否则标题会被页头压住 */
+/* 目录锚点跳转落点留一点呼吸感：2026-09-17 布局重构后页头已移出滚动容器，
+   不再遮挡滚动区内容，5rem 的大让位不再需要 */
 .prose-xivi h2,
 .prose-xivi h3 {
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 1rem;
 }
 .prose-xivi h1 {
   font-size: 1.5rem;

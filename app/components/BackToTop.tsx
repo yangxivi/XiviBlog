@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useDockAboveFooter } from "./useDockAboveFooter";
+import { onMainScroll, scrollMainToTop, getMainScroller } from "./scrollContainer";
 
 /**
  * 返回顶部按钮（右下角，叠在主题切换按钮上方）。
@@ -15,16 +16,14 @@ export default function BackToTop() {
 
   useEffect(() => {
     const onScroll = () => {
-      // 滚动超过 200px 时显示，避免首屏就占用注意力
-      setVisible(window.scrollY > 200);
+      // 滚动超过 200px 时显示，避免首屏就占用注意力（新布局：滚动发生在 main 容器内）
+      setVisible((getMainScroller()?.scrollTop ?? window.scrollY) > 200);
     };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return onMainScroll(onScroll);
   }, []);
 
   const backToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollMainToTop();
   };
 
   return (

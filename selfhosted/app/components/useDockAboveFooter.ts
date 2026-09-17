@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { onMainScroll } from "./scrollContainer";
 
 const GAP = 16; // 按钮与页脚之间的间距
 const STEP = 56; // 两个按钮堆叠时的纵向间距（44~48 高度 + 间距）
@@ -32,12 +33,9 @@ export function useDockAboveFooter(stackIndex = 0) {
     };
 
     update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-    };
+    // 2026-09-17 布局重构：滚动发生在 main 容器内，footer 也在容器里，
+    // getBoundingClientRect 依旧以视口为参照，逻辑不变，只需换滚动事件源
+    return onMainScroll(update);
   }, [stackIndex]);
 
   return { docked, bottom };

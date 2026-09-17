@@ -35,7 +35,7 @@ export default async function SiteAside({
   }
 
   return (
-    <aside className={`space-y-5 aside-col lg:sticky lg:top-[4.5rem] lg:self-start lg:max-h-[calc(100vh-5rem)] lg:overflow-auto scrollbar-hide ${className}`}>
+    <aside className={`space-y-5 aside-col lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-auto scrollbar-hide ${className}`}>
       {/* 橱窗位：内容由后台「站点设置 → 侧边橱窗」配置 */}
       <PromoStack cards={promos} logoText={logoText} />
 

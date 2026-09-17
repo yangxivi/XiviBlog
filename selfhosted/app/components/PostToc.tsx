@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { onMainScroll } from "./scrollContainer";
 
 export type TocItemView = {
   id: string;
@@ -44,14 +45,9 @@ export default function PostToc({ items }: { items: TocItemView[] }) {
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
     };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
+    // 2026-09-17 布局重构：滚动发生在 main 容器内，换滚动事件源即可，
+    // 标题位置仍用 getBoundingClientRect（视口参照），判定线不变
+    return onMainScroll(onScroll);
   }, [items]);
 
   if (!items.length) return null;
@@ -62,8 +58,9 @@ export default function PostToc({ items }: { items: TocItemView[] }) {
   return (
     <nav
       aria-label="文章目录"
-      /* 吸顶偏移要压在 sticky 页头（3.6rem 高 + 边框）之下，否则首项被页头裁掉 */
-      className="sticky top-20 max-h-[calc(100vh-7rem)] overflow-y-auto pb-4"
+      /* 2026-09-17 布局重构：页头已移出滚动容器，不再遮挡内容，
+         吸顶偏移只需留一点呼吸感；max-h 扣掉页头高度留出余量 */
+      className="sticky top-4 max-h-[calc(100vh-6rem)] overflow-y-auto pb-4"
     >
       <p className="mb-3 text-xs font-semibold tracking-wide text-[var(--c-text-3)]">
         目录

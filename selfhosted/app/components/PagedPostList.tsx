@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import PostListItem from "./PostListItem";
+import { scrollMainToTop } from "./scrollContainer";
 import type { PostMeta } from "@/lib/db";
 
 const PAGE_SIZE = 30;
@@ -55,7 +56,7 @@ export default function PagedPostList({
     async (target: number) => {
       const t = Math.min(Math.max(1, target), totalPages);
       setPage(t);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollMainToTop();
       if (clientMode) return; // 数据已在本地，直接切页
       // 服务端模式：命中缓存直接渲染，否则拉取对应页
       const hit = cache.current.get(t);
