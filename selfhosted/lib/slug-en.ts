@@ -79,33 +79,14 @@ async function viaMyMemory(text: string): Promise<string> {
 }
 
 /**
- * Cloudflare Workers AI 内置翻译模型（m2m100）：免费额度、无需 API Key。
- * 仅 CF Workers 部署可用（依赖 AI 绑定）；不可用或失败时抛错，由调用方尝试下一端点。
- */
-async function viaWorkersAI(text: string): Promise<string> {
-  const { getCloudflareContext } = await import("@opennextjs/cloudflare");
-  const ctx = (await getCloudflareContext({ async: true })) as unknown as {
-    env?: { AI?: { run: (model: string, input: unknown) => Promise<{ translated_text?: string }> } };
-  };
-  const ai = ctx.env?.AI;
-  if (!ai) throw new Error("no AI binding");
-  const res = await ai.run("@cf/meta/m2m100-1.2b", {
-    text,
-    source_lang: "zh",
-    target_lang: "en",
-  });
-  const t = res?.translated_text?.trim();
-  if (!t) throw new Error("empty");
-  return t;
-}
-
-/**
- * 中文 → 英文翻译，多端点依次尝试（Workers AI 优先，免 Key 公开端点兜底）。
+ * 中文 → 英文翻译，多端点依次尝试（免 Key 公开端点兜底）。
  * 全部失败返回空串，由调用方回落。
+ * 注：CF 版多一个 Workers AI 端点（依赖 @opennextjs/cloudflare 的 AI 绑定），
+ * selfhosted 不引入该依赖，仅用免 Key 公开端点。
  */
 export async function translateToEn(text: string): Promise<string> {
   const q = text.slice(0, 300);
-  for (const fn of [viaWorkersAI, viaGtx, viaClients5, viaMyMemory]) {
+  for (const fn of [viaGtx, viaClients5, viaMyMemory]) {
     try {
       const out = await fn(q);
       if (out) return out;
@@ -120,8 +101,8 @@ export async function translateToEn(text: string): Promise<string> {
 export async function debugEndpoints(text: string): Promise<string[]> {
   const q = text.slice(0, 300);
   const out: string[] = [];
-  const names = ["workers-ai", "gtx", "clients5", "mymemory"];
-  const fns = [viaWorkersAI, viaGtx, viaClients5, viaMyMemory];
+  const names = ["gtx", "clients5", "mymemory"];
+  const fns = [viaGtx, viaClients5, viaMyMemory];
   for (let i = 0; i < fns.length; i++) {
     try {
       const r = await fns[i](q);
