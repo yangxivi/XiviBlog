@@ -10,14 +10,21 @@ const TOP_RANK = [
   "from-[var(--brand-2)] to-[var(--brand)]",
 ];
 
-function RankBadge({ n }: { n: number }) {
+/**
+ * 排名数字。active = 该行正压在实心主题色背景上（悬停/当前展示），
+ * 此时一律用正黑：彩色渐变数字（如第 3 名的主题色渐变）压在主题色底上
+ * 会直接糊成一片，浅灰数字同样发虚。
+ */
+function RankBadge({ n, active }: { n: number; active?: boolean }) {
   const i = n - 1;
   return (
     <span
       className={`shrink-0 text-center font-[Georgia,serif] text-[1.25rem] font-bold italic leading-none ${
-        i < 3
-          ? `bg-gradient-to-br ${TOP_RANK[i]} bg-clip-text text-transparent`
-          : "text-[#dcddde]"
+        active
+          ? "text-black"
+          : i < 3
+            ? `bg-gradient-to-br ${TOP_RANK[i]} bg-clip-text text-transparent`
+            : "text-[var(--c-text-3)]"
       }`}
       style={{ width: "20px", marginRight: "6px" }}
     >
@@ -82,19 +89,19 @@ export default function Highlights({
                 onMouseEnter={() => setIdx(i)}
                 className={`flex w-full items-center overflow-hidden border-l-[3px] px-5 transition-colors ${
                   i === cur
-                    ? "border-[var(--brand)] bg-[var(--c-brand-soft)]"
-                    : "border-transparent hover:bg-[var(--c-brand-soft)]"
+                    ? "border-[var(--brand)] bg-[var(--brand)]"
+                    : "border-transparent hover:bg-[var(--brand)]"
                 }`}
               >
                 <span className="mr-3 shrink-0">
-                  <RankBadge n={i + 1} />
+                  <RankBadge n={i + 1} active={i === cur} />
                 </span>
+                {/* 压在实心主题色底上时用正黑：原来用 --brand-deep（同色系深色），
+                    蓝底蓝字几乎糊在一起，对比度太差 */}
                 <span
                   title={s.title}
                   className={`min-w-0 truncate whitespace-nowrap text-[0.95rem] font-medium leading-[1.4] ${
-                    i === cur
-                      ? "text-[var(--brand-deep)]"
-                      : "text-[var(--c-text)]"
+                    i === cur ? "text-black" : "text-[var(--c-text)]"
                   } sm:text-[1.05rem]`}
                 >
                   {s.title}
