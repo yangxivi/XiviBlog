@@ -84,15 +84,16 @@ const Preview = forwardRef<
   );
 });
 
-/* ===================== AI 生图弹窗（Pollinations，免费无需 Key） ===================== */
+/* ===================== AI 生图弹窗（agnes，与 AI 封面共用 Key） ===================== */
 
 const GEN_SIZES: { key: string; label: string; w: number; h: number }[] = [
   { key: "1024x1024", label: "正方形 1:1", w: 1024, h: 1024 },
-  { key: "768x768", label: "方形小图 1:1", w: 768, h: 768 },
-  { key: "1280x720", label: "横版 16:9", w: 1280, h: 720 },
-  { key: "720x1280", label: "竖版 9:16", w: 720, h: 1280 },
-  { key: "1536x768", label: "宽屏 2:1", w: 1536, h: 768 },
+  { key: "1344x768", label: "横版 16:9", w: 1344, h: 768 },
+  { key: "768x1344", label: "竖版 9:16", w: 768, h: 1344 },
 ];
+
+/** 会话内记忆回落：所选比例不被模型支持时记住回落 1:1，避免每次都白打失败请求 */
+let genImageFallbackToSquare = false;
 
 function GenImageModal({
   onClose,
@@ -106,47 +107,84 @@ function GenImageModal({
   const [busy, setBusy] = useState(false);
   const [img, setImg] = useState<string | null>(null);
   const [err, setErr] = useState("");
-  const [seed, setSeed] = useState(() => Math.floor(Math.random() * 1_000_000_000));
 
-  const generate = async (regen = false) => {
+  const generate = async () => {
     if (!prompt.trim()) {
       setErr("请先描述要生成的图像");
       return;
     }
     setErr("");
     setBusy(true);
-    if (regen) setSeed(Math.floor(Math.random() * 1_000_000_000));
 
-    const dim = GEN_SIZES.find((s) => s.key === size) ?? GEN_SIZES[0];
-    const url =
-      `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt.trim())}` +
-      `?width=${dim.w}&height=${dim.h}&seed=${seed}&nologo=true&model=flux`;
-
-    // 浏览器直连 Pollinations（免费、无需 Key，且 CORS 开放）。
-    // 走客户端而非服务端，可绕过 Cloudflare 共享出口 IP 的限流（429 Queue full）。
-    const tryFetch = async () => {
-      const res = await fetch(url, { headers: { "User-Agent": "xivi-blog/1.0" } });
-      if (!res.ok) throw new Error(`生图服务返回 ${res.status}`);
-      return res.blob();
-    };
     try {
-      let blob: Blob;
-      try {
-        blob = await tryFetch();
-      } catch (e) {
-        // 偶发限流时退避 3 秒重试一次
-        await new Promise((r) => setTimeout(r, 3000));
-        blob = await tryFetch();
+      // ① 服务端只下发调用参数（Key 存在「站点设置 → AI 封面」，与封面共用）
+      const cfgRes = await fetch("/api/gen-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: prompt.trim() }),
+      });
+      const cfg = (await cfgRes.json().catch(() => null)) as {
+        ok?: boolean;
+        endpoint?: string;
+        key?: string;
+        model?: string;
+        prompt?: string;
+        error?: string;
+      } | null;
+      if (!cfgRes.ok || !cfg?.ok || !cfg.endpoint || !cfg.key) {
+        throw new Error(cfg?.error || `HTTP ${cfgRes.status}`);
       }
+
+      // ② 浏览器直连 agnes：Worker 的共享出口 IP 会被上游 Cloudflare 限流
+      //    （429 / 1015），浏览器用的是访客自己的 IP
+      const call = async (sz: string) => {
+        const r = await fetch(cfg.endpoint as string, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${cfg.key}`,
+          },
+          body: JSON.stringify({
+            model: cfg.model,
+            prompt: cfg.prompt,
+            n: 1,
+            size: sz,
+            response_format: "b64_json",
+          }),
+        });
+        if (!r.ok) {
+          const t = await r.text().catch(() => "");
+          throw new Error(`生图服务返回 ${r.status}：${t.slice(0, 160)}`);
+        }
+        return (await r.json()) as {
+          data?: Array<{ url?: string; b64_json?: string }>;
+        };
+      };
+
+      let json: { data?: Array<{ url?: string; b64_json?: string }> };
+      const want = genImageFallbackToSquare ? "1024x1024" : size;
+      try {
+        json = await call(want);
+      } catch {
+        // 所选比例不被模型支持时回落 1:1 并记住（与 AI 封面同款策略）
+        await new Promise((r) => setTimeout(r, 3000));
+        json = await call("1024x1024");
+        genImageFallbackToSquare = true;
+      }
+
+      const item = json.data?.[0];
+      if (!item?.b64_json && !item?.url) {
+        throw new Error("生图服务未返回图片，请重试");
+      }
+      const src = item.b64_json
+        ? `data:${item.b64_json.startsWith("/9j/") ? "image/jpeg" : "image/png"};base64,${item.b64_json}`
+        : (item.url as string);
+      const blob = await (await fetch(src)).blob();
       // 压缩后转 data URL，与正文其它插图一致（内嵌存储，无需图床）
       const dataUrl = await compressImage(blob, 1000, 0.82);
       setImg(dataUrl);
     } catch (e) {
-      setErr(
-        e instanceof Error
-          ? `生成失败：${e.message}（太频繁请稍候再试）`
-          : "生成失败"
-      );
+      setErr(e instanceof Error ? `生成失败：${e.message}` : "生成失败");
     } finally {
       setBusy(false);
     }
@@ -165,7 +203,7 @@ function GenImageModal({
           <h3 className="text-base font-bold text-[var(--c-text)]">
             AI 生图
             <span className="ml-2 text-xs font-normal text-[var(--c-text-3)]">
-              Pollinations · 免费无需 Key
+              agnes · 与 AI 封面共用 Key
             </span>
           </h3>
           <button
@@ -180,7 +218,7 @@ function GenImageModal({
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="描述你想要的图像，例如：a cute cat reading a book, flat illustration, soft colors"
+          placeholder="描述你想要的图像，例如：一只戴眼镜的柴犬在电脑前写代码，扁平插画风格，柔和配色"
           rows={3}
           className="w-full resize-none rounded-lg border border-[var(--c-border-3)] px-3 py-2 text-sm outline-none focus:border-[var(--brand)]"
         />
@@ -199,7 +237,7 @@ function GenImageModal({
           </select>
           <button
             type="button"
-            onClick={() => generate(false)}
+            onClick={() => generate()}
             disabled={busy}
             className="rounded-lg bg-[var(--brand)] px-4 py-1.5 text-sm font-medium text-[var(--brand-ink)] transition hover:bg-[var(--brand-hover)] disabled:opacity-60"
           >
@@ -208,7 +246,7 @@ function GenImageModal({
           {img && (
             <button
               type="button"
-              onClick={() => generate(true)}
+              onClick={() => generate()}
               disabled={busy}
               className="rounded-lg border border-[var(--c-border-3)] px-3 py-1.5 text-sm text-[var(--c-text-2)] transition hover:border-[var(--brand)] hover:text-[var(--brand-deep)] disabled:opacity-60"
             >
@@ -1213,7 +1251,7 @@ export default function Editor({ initial }: { initial: EditorPost }) {
           <span className="mx-1 h-5 w-px bg-[var(--c-border-2)]" />
           <button
             type="button"
-            title="AI 生图（Pollinations，免费无需 Key）"
+            title="AI 生图（agnes，与 AI 封面共用 Key）"
             onClick={() => setShowGen(true)}
             className="rounded-md p-2 text-[#FF8A00] transition hover:bg-[var(--c-card)] hover:shadow-sm"
           >
