@@ -68,6 +68,13 @@ export type FriendLink = {
   /** 一句话说明，留空只显示站名 */
   desc: string;
 };
+/** 页脚品牌区二维码模块：最多 2 张，用于放公众号 / 客服 / 社群等二维码 */
+export type QrItem = {
+  /** 图片地址：可上传（自动压缩内嵌）或填外链 https:// 地址，留空则不显示 */
+  image: string;
+  /** 二维码下方的标题，如「公众号」「加微信」 */
+  title: string;
+};
 
 /** 侧边栏「最新评论」模块（参照主流博客系统的“近期评论”组件） */
 export type LatestCommentsConfig = {
@@ -114,6 +121,8 @@ export type SiteSettings = {
   notice: NoticeConfig;
   /** 友情链接 */
   friends: FriendLink[];
+  /** 页脚品牌区二维码模块（最多 2 张）：上传/外链图片 + 标题 */
+  footerQr: QrItem[];
   /** 侧边栏「最新评论」模块 */
   latestComments: LatestCommentsConfig;
   /** 「关于」页标题（留空用默认） */
@@ -194,6 +203,10 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     href: "",
   },
   friends: [],
+  footerQr: [
+    { image: "", title: "" },
+    { image: "", title: "" },
+  ],
   latestComments: {
     enabled: true,
     title: "最新评论",
@@ -353,6 +366,22 @@ function normFriends(v: unknown, fallback: FriendLink[]): FriendLink[] {
 }
 
 /** 侧边栏最新评论：条数 3-10、摘要 30-120 字，开关缺省视为开启 */
+/** 页脚二维码：上传（内嵌）或外链 + 标题，最多 2 张，始终补满 2 槽位 */
+function normFooterQr(v: unknown, d: QrItem[]): QrItem[] {
+  if (!Array.isArray(v)) return d;
+  const out: QrItem[] = [];
+  for (const it of v) {
+    if (!isObj(it)) continue;
+    out.push({
+      image: str(it.image, "", 2000000),
+      title: str(it.title, "", 40),
+    });
+    if (out.length >= 2) break;
+  }
+  while (out.length < 2) out.push({ image: "", title: "" });
+  return out;
+}
+
 function normLatestComments(
   v: unknown,
   d: LatestCommentsConfig
@@ -431,6 +460,7 @@ export function normalizeSettings(input: unknown): SiteSettings {
     icp: str(input.icp, d.icp, 60),
     notice: normNotice(input.notice, d.notice),
     friends: normFriends(input.friends, d.friends),
+    footerQr: normFooterQr(input.footerQr, d.footerQr),
     latestComments: normLatestComments(input.latestComments, d.latestComments),
     aboutTitle: str(input.aboutTitle, d.aboutTitle, 40),
     aboutContent: str(input.aboutContent, d.aboutContent, 20000),

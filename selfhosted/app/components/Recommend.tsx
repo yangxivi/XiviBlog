@@ -60,7 +60,7 @@ export default function Recommend({ posts }: { posts: PostMeta[] }) {
             <Link
               href={`/blog/${p.slug}`}
               title={p.title}
-              className="block truncate text-[1rem] text-[var(--c-text)] transition-colors hover:text-[var(--brand-deep)]"
+              className="block truncate -mx-2 rounded-md px-2 py-0.5 text-[1rem] text-[var(--c-text)] transition-colors hover:bg-[var(--brand)]"
               style={{ lineHeight: "1.5rem" }}
             >
               {p.title}

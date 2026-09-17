@@ -110,7 +110,7 @@ export default function PostListItem({ post }: { post: PostMeta }) {
     <article className="border-b border-[var(--c-border)] py-3 last:border-0">
       <Link
         href={`/blog/${post.slug}`}
-        className="group flex flex-col gap-4 rounded-lg p-3 transition-colors hover:bg-[var(--c-soft)] sm:flex-row sm:gap-8"
+        className="group flex flex-col gap-4 rounded-lg p-3 transition-colors hover:bg-[var(--brand)] sm:flex-row sm:gap-8"
       >
         <div className="flex min-w-0 flex-1 flex-col justify-between">
           <div>

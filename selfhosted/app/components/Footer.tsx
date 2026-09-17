@@ -84,9 +84,9 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
     // mt-auto：body 是 flex 列，把页脚顶到最底部（main 的 flex-1 之外的双保险），
     // 内容不足一屏时页脚下方也不会露出空白
     <footer className="mt-auto border-t border-[var(--c-border)] bg-[var(--c-soft)]">
-      <div className="mx-auto max-w-[var(--page-outer)] px-4 py-10 md:px-6 md:py-12">
+      <div className="mx-auto max-w-[var(--page-outer)] px-4 py-8 md:px-6 lg:px-8 md:py-10">
         {/* 移动端：品牌独占一行，下面 4 列 2×2；桌面端：5 等分，加大品牌与分组间距 */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-5 lg:gap-x-10">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-6 lg:grid-cols-5 lg:gap-x-10">
           <div className="col-span-2 min-w-0 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5">
               <LogoMark
@@ -102,6 +102,29 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
               <p className="mt-3 text-sm leading-6 text-[var(--c-text-3)]">
                 {settings.footerBrand}
               </p>
+            )}
+            {/* 页脚二维码模块：最多 2 张，放在品牌区右侧，标题在图下 */}
+            {settings.footerQr.some((q) => q.image) && (
+              <div className="mt-4 flex flex-wrap gap-4">
+                {settings.footerQr
+                  .filter((q) => q.image)
+                  .map((q, qi) => (
+                    <div key={qi} className="flex flex-col items-center">
+                      <div className="h-24 w-24 overflow-hidden rounded-lg border border-[var(--c-border-3)] bg-white">
+                        <img
+                          src={q.image}
+                          alt={q.title || "二维码"}
+                          className="h-full w-full object-contain"
+                        />
+                      </div>
+                      {q.title && (
+                        <span className="mt-1.5 text-xs text-[var(--c-text-3)]">
+                          {q.title}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+              </div>
             )}
           </div>
 
@@ -122,7 +145,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
         </div>
 
         {settings.friends.length > 0 && (
-          <div className="mt-10 border-t border-[var(--c-border)] pt-6">
+          <div className="mt-8 border-t border-[var(--c-border)] pt-5">
             <h4 className="text-[15px] font-bold tracking-tight text-[var(--brand)]">
               友情链接
             </h4>
@@ -149,7 +172,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
           </div>
         )}
 
-        <div className="mt-10 grid grid-cols-3 items-center gap-2 border-t border-[var(--c-border)] pt-6 text-xs text-[var(--c-text-4)]">
+        <div className="mt-8 grid grid-cols-3 items-center gap-2 border-t border-[var(--c-border)] pt-5 text-xs text-[var(--c-text-4)]">
           <span className="min-w-0 break-words text-left">{withLinks(copyright, "cp")}</span>
           <span className="min-w-0 break-words text-center">
             {settings.icp &&

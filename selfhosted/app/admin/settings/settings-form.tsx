@@ -9,6 +9,7 @@ import type {
   LatestCommentsConfig,
   LinkItem,
   PromoCard,
+  QrItem,
   SiteSettings,
 } from "@/lib/settings";
 import { compressImage } from "../image-utils";
@@ -136,6 +137,31 @@ export default function SettingsForm({
   const patchLC = (p: Partial<LatestCommentsConfig>) =>
     set("latestComments", { ...lc, ...p });
 
+  /* ---------------- 页脚二维码模块 ---------------- */
+  const patchQr = (i: number, p: Partial<QrItem>) =>
+    set(
+      "footerQr",
+      s.footerQr.map((q, idx) => (idx === i ? { ...q, ...p } : q))
+    );
+
+  const qrFileRef = useRef<HTMLInputElement>(null);
+  const qrUploadTarget = useRef(-1);
+  const onQrFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    const i = qrUploadTarget.current;
+    if (!f || i < 0) return;
+    try {
+      const dataUrl = await compressImage(f, 640, 0.8, undefined, "image/webp");
+      patchQr(i, { image: dataUrl });
+      setMsg({ type: "ok", text: "二维码已上传并压缩" });
+    } catch {
+      setMsg({ type: "err", text: "图片读取失败" });
+    } finally {
+      if (qrFileRef.current) qrFileRef.current.value = "";
+      qrUploadTarget.current = -1;
+    }
+  };
+
   /* ---------------- 顶部导航 ---------------- */
   const patchNav = (i: number, p: Partial<LinkItem>) =>
     set(
@@ -841,6 +867,78 @@ export default function SettingsForm({
             onChange={(e) => set("footerBrand", e.target.value)}
             placeholder="记录 AI 应用、Windows 工具与自动化脚本的实践过程。"
           />
+        {/* 页脚二维码模块：最多 2 张，可上传或填外链，带标题 */}
+        <div className="mt-5 border-t border-[var(--c-border-2)] pt-4">
+          <div className="flex items-center justify-between">
+            <label className={LABEL + " mb-0"}>页脚二维码（最多 2 张）</label>
+            <span className="text-xs text-[var(--c-text-4)]">放公众号 / 客服 / 社群二维码</span>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            {s.footerQr.map((q, qi) => (
+              <div
+                key={qi}
+                className="rounded-xl border border-[var(--c-border-2)] bg-[var(--c-card)] p-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-[var(--c-border-3)] bg-[var(--c-page)]">
+                    {q.image ? (
+                      <img
+                        src={q.image}
+                        alt={q.title || "二维码"}
+                        className="h-full w-full object-contain"
+                      />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-xs text-[var(--c-text-4)]">
+                        无图
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <button
+                      type="button"
+                      className={BTN_GHOST}
+                      onClick={() => {
+                        qrUploadTarget.current = qi;
+                        qrFileRef.current?.click();
+                      }}
+                    >
+                      上传图片
+                    </button>
+                    {q.image && (
+                      <button
+                        type="button"
+                        className="ml-2 text-xs text-[var(--c-text-4)] underline"
+                        onClick={() => patchQr(qi, { image: "" })}
+                      >
+                        清除
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <input
+                  className={INPUT + " mt-2"}
+                  value={q.image.startsWith("data:") ? "" : q.image}
+                  onChange={(e) => patchQr(qi, { image: e.target.value })}
+                  placeholder="图片地址，或点左侧上传本地图片"
+                />
+                <input
+                  className={INPUT + " mt-2"}
+                  value={q.title}
+                  onChange={(e) => patchQr(qi, { title: e.target.value })}
+                  placeholder="二维码标题，如「公众号」「加微信」"
+                  maxLength={40}
+                />
+              </div>
+            ))}
+          </div>
+          <input
+            ref={qrFileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={onQrFile}
+          />
+        </div>
         </div>
       </section>
 

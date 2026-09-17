@@ -95,6 +95,11 @@ html {
   scroll-behavior: smooth;
   /* 到达滚动边界后禁止回弹与滚动链传递，配合 ScrollLock 锁死页脚底边 */
   overscroll-behavior-y: none;
+  /* 页脚下限的 CSS 兜底（2026-09-17）：body 自己有背景色，所以画布才轮到 html 上色。
+     万一「页脚底边以下」还剩一点点余量（容器自身高度之类，ScrollLock 够不着），
+     那片区域就会直接呈现页脚底色，页面上永远不会出现一条刺眼空白。
+     健康布局下 body 至少一屏高、把视口铺满，这一层完全看不到（零视觉影响）。 */
+  background-color: var(--c-soft);
 }
 
 /* 隐藏滚动条但保留滚动功能（用于侧边栏等需要滚动但不想显示滚动条的场景） */
