@@ -84,12 +84,17 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
     // mt-auto：body 是 flex 列，把页脚顶到最底部（main 的 flex-1 之外的双保险），
     // 内容不足一屏时页脚下方也不会露出空白
     <footer className="mt-auto border-t border-[var(--c-border)] bg-[var(--c-soft)]">
-      {/* 页脚横向内边距与正文一致（px-6）：品牌与四列链接的左缘都对齐轮播主列/
-          上一页按钮的左缘（正文左缘），不再各偏各的 */}
+      {/* 横向内边距与正文一致（px-6），页脚左缘与正文容器左缘对齐 */}
       <div className="mx-auto max-w-[var(--page-outer)] px-4 py-8 md:px-6 md:py-10">
-        {/* 品牌区独占一行（左），二维码在右；下面四列从正文左缘开始铺开 */}
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="min-w-0">
+        {/*
+          复用正文同款 .with-aside 栅格：品牌落在「侧栏列」，四列链接落在「主列」。
+          这样左侧栏时四列会自动右移一个侧栏宽度（280px + 间距），其左缘与
+          「上一页按钮 / 轮播主列」左缘精确对齐；侧栏切回右侧时四列自动回到
+          正文左缘，无需写死偏移量。
+        */}
+        <div className="with-aside grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-16">
+          {/* 品牌区（侧栏列） */}
+          <div className="aside-col min-w-0">
             <Link href="/" className="flex items-center gap-2.5">
               <LogoMark
                 text={settings.logoText}
@@ -101,53 +106,52 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
               </span>
             </Link>
             {settings.footerBrand && (
-              <p className="mt-3 max-w-md text-sm leading-6 text-[var(--c-text-3)]">
+              <p className="mt-3 text-sm leading-6 text-[var(--c-text-3)]">
                 {settings.footerBrand}
               </p>
             )}
+            {/* 页脚二维码模块：最多 2 张，放在品牌区下方，标题在图下 */}
+            {settings.footerQr.some((q) => q.image) && (
+              <div className="mt-4 flex flex-wrap gap-4">
+                {settings.footerQr
+                  .filter((q) => q.image)
+                  .map((q, qi) => (
+                    <div key={qi} className="flex flex-col items-center">
+                      <div className="h-24 w-24 overflow-hidden rounded-lg border border-[var(--c-border-3)] bg-white">
+                        <img
+                          src={q.image}
+                          alt={q.title || "二维码"}
+                          className="h-full w-full object-contain"
+                        />
+                      </div>
+                      {q.title && (
+                        <span className="mt-1.5 text-xs text-[var(--c-text-3)]">
+                          {q.title}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
 
-          {/* 页脚二维码模块：最多 2 张，放在品牌区右侧，标题在图下 */}
-          {settings.footerQr.some((q) => q.image) && (
-            <div className="flex flex-wrap gap-4">
-              {settings.footerQr
-                .filter((q) => q.image)
-                .map((q, qi) => (
-                  <div key={qi} className="flex flex-col items-center">
-                    <div className="h-24 w-24 overflow-hidden rounded-lg border border-[var(--c-border-3)] bg-white">
-                      <img
-                        src={q.image}
-                        alt={q.title || "二维码"}
-                        className="h-full w-full object-contain"
-                      />
-                    </div>
-                    {q.title && (
-                      <span className="mt-1.5 text-xs text-[var(--c-text-3)]">
-                        {q.title}
-                      </span>
-                    )}
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
-
-        {/* 四列链接：左缘与轮播主列/上一页按钮左缘对齐（桌面 4 等分，移动端 2×2） */}
-        <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-6 lg:grid-cols-4 lg:gap-x-10">
-          {settings.footerColumns.map((col, i) => (
-            <div key={`${col.title}-${i}`} className="min-w-0">
-              <h4 className="text-[13px] font-bold tracking-tight text-[var(--brand)]">
-                {col.title}
-              </h4>
-              <ul className="mt-3 space-y-2 text-[13px] sm:text-sm">
-                {col.links.map((l, j) => (
-                  <li key={`${l.href}-${j}`} className="break-words">
-                    <FooterLink item={l} />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* 四列链接（主列）：左缘与轮播主列/上一页按钮左缘对齐（桌面 4 等分，移动端 2×2） */}
+          <div className="main-col grid grid-cols-2 gap-x-6 gap-y-6 lg:grid-cols-4 lg:gap-x-10">
+            {settings.footerColumns.map((col, i) => (
+              <div key={`${col.title}-${i}`} className="min-w-0">
+                <h4 className="text-[13px] font-bold tracking-tight text-[var(--brand)]">
+                  {col.title}
+                </h4>
+                <ul className="mt-3 space-y-2 text-[13px] sm:text-sm">
+                  {col.links.map((l, j) => (
+                    <li key={`${l.href}-${j}`} className="break-words">
+                      <FooterLink item={l} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
 
         {settings.friends.length > 0 && (
