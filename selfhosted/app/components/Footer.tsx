@@ -84,10 +84,12 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
     // mt-auto：body 是 flex 列，把页脚顶到最底部（main 的 flex-1 之外的双保险），
     // 内容不足一屏时页脚下方也不会露出空白
     <footer className="mt-auto border-t border-[var(--c-border)] bg-[var(--c-soft)]">
-      <div className="mx-auto max-w-[var(--page-outer)] px-4 py-8 md:px-6 lg:px-8 md:py-10">
-        {/* 移动端：品牌独占一行，下面 4 列 2×2；桌面端：5 等分，加大品牌与分组间距 */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-6 lg:grid-cols-5 lg:gap-x-10">
-          <div className="col-span-2 min-w-0 lg:col-span-1">
+      {/* 页脚横向内边距与正文一致（px-6）：品牌与四列链接的左缘都对齐轮播主列/
+          上一页按钮的左缘（正文左缘），不再各偏各的 */}
+      <div className="mx-auto max-w-[var(--page-outer)] px-4 py-8 md:px-6 md:py-10">
+        {/* 品牌区独占一行（左），二维码在右；下面四列从正文左缘开始铺开 */}
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <div className="min-w-0">
             <Link href="/" className="flex items-center gap-2.5">
               <LogoMark
                 text={settings.logoText}
@@ -99,35 +101,39 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
               </span>
             </Link>
             {settings.footerBrand && (
-              <p className="mt-3 text-sm leading-6 text-[var(--c-text-3)]">
+              <p className="mt-3 max-w-md text-sm leading-6 text-[var(--c-text-3)]">
                 {settings.footerBrand}
               </p>
             )}
-            {/* 页脚二维码模块：最多 2 张，放在品牌区右侧，标题在图下 */}
-            {settings.footerQr.some((q) => q.image) && (
-              <div className="mt-4 flex flex-wrap gap-4">
-                {settings.footerQr
-                  .filter((q) => q.image)
-                  .map((q, qi) => (
-                    <div key={qi} className="flex flex-col items-center">
-                      <div className="h-24 w-24 overflow-hidden rounded-lg border border-[var(--c-border-3)] bg-white">
-                        <img
-                          src={q.image}
-                          alt={q.title || "二维码"}
-                          className="h-full w-full object-contain"
-                        />
-                      </div>
-                      {q.title && (
-                        <span className="mt-1.5 text-xs text-[var(--c-text-3)]">
-                          {q.title}
-                        </span>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            )}
           </div>
 
+          {/* 页脚二维码模块：最多 2 张，放在品牌区右侧，标题在图下 */}
+          {settings.footerQr.some((q) => q.image) && (
+            <div className="flex flex-wrap gap-4">
+              {settings.footerQr
+                .filter((q) => q.image)
+                .map((q, qi) => (
+                  <div key={qi} className="flex flex-col items-center">
+                    <div className="h-24 w-24 overflow-hidden rounded-lg border border-[var(--c-border-3)] bg-white">
+                      <img
+                        src={q.image}
+                        alt={q.title || "二维码"}
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                    {q.title && (
+                      <span className="mt-1.5 text-xs text-[var(--c-text-3)]">
+                        {q.title}
+                      </span>
+                    )}
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+
+        {/* 四列链接：左缘与轮播主列/上一页按钮左缘对齐（桌面 4 等分，移动端 2×2） */}
+        <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-6 lg:grid-cols-4 lg:gap-x-10">
           {settings.footerColumns.map((col, i) => (
             <div key={`${col.title}-${i}`} className="min-w-0">
               <h4 className="text-[13px] font-bold tracking-tight text-[var(--brand)]">
@@ -145,7 +151,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
         </div>
 
         {settings.friends.length > 0 && (
-          <div className="mt-8 border-t border-[var(--c-border)] pt-5">
+          <div className="mt-10 border-t border-[var(--c-border)] pt-6">
             <h4 className="text-[15px] font-bold tracking-tight text-[var(--brand)]">
               友情链接
             </h4>
@@ -172,7 +178,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
           </div>
         )}
 
-        <div className="mt-8 grid grid-cols-3 items-center gap-2 border-t border-[var(--c-border)] pt-5 text-xs text-[var(--c-text-4)]">
+        <div className="mt-10 grid grid-cols-3 items-center gap-2 border-t border-[var(--c-border)] pt-6 text-xs text-[var(--c-text-4)]">
           <span className="min-w-0 break-words text-left">{withLinks(copyright, "cp")}</span>
           <span className="min-w-0 break-words text-center">
             {settings.icp &&

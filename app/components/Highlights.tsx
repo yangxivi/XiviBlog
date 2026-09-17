@@ -17,7 +17,7 @@ function RankBadge({ n }: { n: number }) {
       className={`shrink-0 text-center font-[Georgia,serif] text-[1.25rem] font-bold italic leading-none ${
         i < 3
           ? `bg-gradient-to-br ${TOP_RANK[i]} bg-clip-text text-transparent`
-          : "text-[#dcddde]"
+          : "text-[var(--c-text-3)]"
       }`}
       style={{ width: "20px", marginRight: "6px" }}
     >
@@ -82,8 +82,8 @@ export default function Highlights({
                 onMouseEnter={() => setIdx(i)}
                 className={`flex w-full items-center overflow-hidden border-l-[3px] px-5 transition-colors ${
                   i === cur
-                    ? "border-[var(--brand)] bg-[var(--c-brand-soft)]"
-                    : "border-transparent hover:bg-[var(--c-brand-soft)]"
+                    ? "border-[var(--brand)] bg-[var(--brand)]"
+                    : "border-transparent hover:bg-[var(--brand)]"
                 }`}
               >
                 <span className="mr-3 shrink-0">
