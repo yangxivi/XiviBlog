@@ -84,17 +84,18 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
     // mt-auto：body 是 flex 列，把页脚顶到最底部（main 的 flex-1 之外的双保险），
     // 内容不足一屏时页脚下方也不会露出空白
     <footer className="mt-auto border-t border-[var(--c-border)] bg-[var(--c-soft)]">
-      {/* 横向内边距与正文一致（px-6），页脚左缘与正文容器左缘对齐 */}
+      {/* 横向内边距与正文容器一致（px-6）：品牌区左缘才能与侧栏/文章列表
+          第一条左参考线重合（原本 lg:px-8 会比正文右偏 8px） */}
       <div className="mx-auto max-w-[var(--page-outer)] px-4 py-8 md:px-6 md:py-10">
         {/*
-          复用正文同款 .with-aside 栅格：品牌落在「侧栏列」，四列链接落在「主列」。
-          这样左侧栏时四列会自动右移一个侧栏宽度（280px + 间距），其左缘与
-          「上一页按钮 / 轮播主列」左缘精确对齐；侧栏切回右侧时四列自动回到
-          正文左缘，无需写死偏移量。
+          两个独立区块并排：品牌区（含二维码） + 链接分组。
+          - 品牌区左缘 = 容器左缘，即侧栏在左时与侧栏左侧对齐、
+            侧栏在右时与文章列表左侧对齐；
+          - 链接分组左缘由 globals.css 里 footer-cols 的侧栏在左分支负责：
+            把品牌列调宽，使第一组链接正好落在正文主列（文章列表/上一页按钮）左缘。
         */}
-        <div className="with-aside grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-16">
-          {/* 品牌区（侧栏列） */}
-          <div className="aside-col min-w-0">
+        <div className="footer-cols grid grid-cols-2 gap-x-6 gap-y-6 lg:grid-cols-5 lg:gap-x-10">
+          <div className="col-span-2 min-w-0 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5">
               <LogoMark
                 text={settings.logoText}
@@ -110,7 +111,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
                 {settings.footerBrand}
               </p>
             )}
-            {/* 页脚二维码模块：最多 2 张，放在品牌区下方，标题在图下 */}
+            {/* 页脚二维码模块：最多 2 张，与站名/简介同属品牌区，标题在图下 */}
             {settings.footerQr.some((q) => q.image) && (
               <div className="mt-4 flex flex-wrap gap-4">
                 {settings.footerQr
@@ -135,23 +136,20 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
             )}
           </div>
 
-          {/* 四列链接（主列）：左缘与轮播主列/上一页按钮左缘对齐（桌面 4 等分，移动端 2×2） */}
-          <div className="main-col grid grid-cols-2 gap-x-6 gap-y-6 lg:grid-cols-4 lg:gap-x-10">
-            {settings.footerColumns.map((col, i) => (
-              <div key={`${col.title}-${i}`} className="min-w-0">
-                <h4 className="text-[13px] font-bold tracking-tight text-[var(--brand)]">
-                  {col.title}
-                </h4>
-                <ul className="mt-3 space-y-2 text-[13px] sm:text-sm">
-                  {col.links.map((l, j) => (
-                    <li key={`${l.href}-${j}`} className="break-words">
-                      <FooterLink item={l} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          {settings.footerColumns.map((col, i) => (
+            <div key={`${col.title}-${i}`} className="min-w-0">
+              <h4 className="text-[13px] font-bold tracking-tight text-[var(--brand)]">
+                {col.title}
+              </h4>
+              <ul className="mt-3 space-y-2 text-[13px] sm:text-sm">
+                {col.links.map((l, j) => (
+                  <li key={`${l.href}-${j}`} className="break-words">
+                    <FooterLink item={l} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
         {settings.friends.length > 0 && (
