@@ -155,6 +155,12 @@ export type SiteSettings = {
    *   12-13 南京大屠杀死难者国家公祭日
    */
   memorialDays: string;
+  /**
+   * 页脚「下一个公祭日」提醒的提前量（天，0-60）。
+   * 距离最近一个纪念日 ≤ 该天数时，页脚底部会多出一行小字提醒；
+   * 设为 0 则只在纪念日当天提醒。超出范围的输入会被夹回区间。
+   */
+  memorialLeadDays: number;
 };
 
 export const SETTINGS_KEY = "site";
@@ -243,6 +249,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   memorialAuto: true,
   /** 留空 = 使用 lib/memorial.ts 里的内置纪念日表 */
   memorialDays: "",
+  /** 页脚公祭日提醒的提前量：默认提前 7 天开始提示 */
+  memorialLeadDays: 7,
   carousel: {
     mode: "auto",
     count: 5,
@@ -433,7 +441,8 @@ function normSlides(v: unknown, fallback: CarouselSlide[]): CarouselSlide[] {
   return out;
 }
 
-function clampInt(v: unknown, fallback: number, min: number, max: number) {  const n = Number(v);
+function clampInt(v: unknown, fallback: number, min: number, max: number) {
+  const n = Number(v);
   if (!Number.isFinite(n)) return fallback;
   return Math.min(max, Math.max(min, Math.round(n)));
 }
@@ -491,6 +500,8 @@ export function normalizeSettings(input: unknown): SiteSettings {
     autoUpdate: input.autoUpdate === true,
     memorialAuto: input.memorialAuto !== false,
     memorialDays: str(input.memorialDays, d.memorialDays, 600),
+    // 0-60 天：0 = 仅当天提醒；负值/超范围/非数字都会被夹回或回退默认值
+    memorialLeadDays: clampInt(input.memorialLeadDays, d.memorialLeadDays, 0, 60),
   };
 }
 

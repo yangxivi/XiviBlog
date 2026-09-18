@@ -437,6 +437,42 @@ export default function SettingsForm({
           </p>
         </div>
 
+        {/* 页脚提醒提前量：控制前台页脚那行小字从几天前开始出现 */}
+        <div className="mt-4">
+          <label className={LABEL}>页脚提醒提前量（天，0-60）</label>
+          <input
+            type="number"
+            min={0}
+            max={60}
+            className={INPUT}
+            value={s.memorialLeadDays}
+            onChange={(e) => set("memorialLeadDays", Number(e.target.value))}
+          />
+          <p className="mt-2 text-xs leading-relaxed text-[var(--c-text-3)]">
+            距离最近一个纪念日 ≤ 该天数时，页脚底部会多出一行小字提醒（今天 / 明天 /
+            还有 N 天）；设为 0 则只在纪念日当天提醒。
+          </p>
+          {nextDay && (
+            <p className="mt-1 text-xs leading-relaxed">
+              {!s.memorialAuto ? (
+                <span className="text-[var(--c-text-3)]">
+                  已关闭自动素灰，页脚不会显示提醒。
+                </span>
+              ) : nextDay.inDays <= s.memorialLeadDays ? (
+                <span className="font-medium text-[var(--c-text)]">
+                  按当前设置，页脚提醒正在显示（
+                  {nextDay.inDays === 0 ? "今天" : `还有 ${nextDay.inDays} 天`}）。
+                </span>
+              ) : (
+                <span className="text-[var(--c-text-3)]">
+                  按当前设置，页脚提醒暂不显示；还差{" "}
+                  {nextDay.inDays - s.memorialLeadDays} 天进入提醒区间。
+                </span>
+              )}
+            </p>
+          )}
+        </div>
+
         {/* 自检 + 预览：不用等到公祭日当天，也能确认日期表与素灰效果 */}
         <div className="mt-4 rounded-lg border border-[var(--c-border-3)] bg-[var(--c-card)] p-3">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">

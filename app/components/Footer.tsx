@@ -18,12 +18,9 @@ const FOOTER_BRAND_CLASS = "text-[15px] font-bold tracking-tight";
 const MINI_LINK_CLS = "transition hover:text-[var(--brand-deep)]";
 
 /**
- * 前台「下一个公祭日」提醒的提前量（天）。
- * 只在距离公祭日 ≤ 7 天时露一行小字，平时完全不渲染，保持页脚干净。
+ * 提醒文案：今天 / 明天 / 还有几天，三种语气略有区分。
+ * 触发时机由后台设置 `memorialLeadDays` 控制（0 = 仅当天）。
  */
-const MEMORIAL_NOTICE_LEAD_DAYS = 7;
-
-/** 提醒文案：今天 / 明天 / 还有几天，三种语气略有区分 */
 function memorialNoticeText(day: MemorialDay, inDays: number): string {
   if (inDays === 0) return `今天是${day.name}，本站以素灰致哀`;
   if (inDays === 1) return `明天是${day.name}，本站将以素灰致哀`;
@@ -96,9 +93,10 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
 
   // 临近公祭日时在页脚最底部露一行提醒（后台关掉自动公祭则不显示）。
   // 与 layout.tsx 同一套东八区口径，避免边缘节点时区导致文案和整站变灰不同步。
+  // memorialLeadDays 已在 normalizeSettings 里夹到 0-60，这里可直接比较。
   const upcoming = settings.memorialAuto ? nextMemorial(settings.memorialDays) : null;
   const memorialNotice =
-    upcoming && upcoming.inDays <= MEMORIAL_NOTICE_LEAD_DAYS
+    upcoming && upcoming.inDays <= settings.memorialLeadDays
       ? memorialNoticeText(upcoming.day, upcoming.inDays)
       : null;
 
