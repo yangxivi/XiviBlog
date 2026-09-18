@@ -85,6 +85,20 @@ export function resolveMemorialDays(custom?: unknown): MemorialDay[] {
   return parsed.length ? parsed : MEMORIAL_DAYS;
 }
 
+/**
+ * 返回自定义日期串里「无法解析」的原始条目，供后台标红提示，避免静默丢弃。
+ * 只挑真正解析不了的（格式错、日期越界）；重复项会被去重但不算错误。
+ */
+export function invalidMemorialLines(raw: unknown): string[] {
+  if (typeof raw !== "string" || !raw.trim()) return [];
+  const out: string[] = [];
+  for (const piece of raw.split(/[\n,，;；]+/)) {
+    const text = piece.trim();
+    if (text && !parseOne(text)) out.push(text);
+  }
+  return out;
+}
+
 /** 查某个 MM-DD 的纪念日名称（供后台回显用） */
 export function memorialName(md: string): string {
   return MEMORIAL_DAYS.find((d) => d.md === md)?.name ?? "纪念日";

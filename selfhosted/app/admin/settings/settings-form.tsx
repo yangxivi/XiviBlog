@@ -15,7 +15,7 @@ import type {
 import { compressImage } from "../image-utils";
 import FriendCheckPanel from "./friend-check";
 import { THEMES } from "@/lib/themes";
-import { MEMORIAL_DAYS, MEMORIAL_THEME_ID, memorialToday, nextMemorial, type MemorialDay } from "@/lib/memorial";
+import { MEMORIAL_DAYS, MEMORIAL_THEME_ID, memorialToday, nextMemorial, invalidMemorialLines, type MemorialDay } from "@/lib/memorial";
 
 export type PostOption = {
   id: number;
@@ -78,6 +78,8 @@ export default function SettingsForm({
     day: MemorialDay;
     inDays: number;
   } | null>(null);
+  // 自定义日期表里解析不了的条目，用于标红提示（避免静默丢弃）。
+  const [invalidLines, setInvalidLines] = useState<string[]>([]);
   // 「整站素灰」本地预览开关：临时给 <html> 套上纪念灰 + data-memorial，
   // 纯客户端、可逆，只影响本机浏览器，不影响线上访客。
   const [previewing, setPreviewing] = useState(false);
@@ -94,6 +96,7 @@ export default function SettingsForm({
       { label: "后天", day: memorialToday(s.memorialDays, -2) },
     ]);
     setNextDay(nextMemorial(s.memorialDays));
+    setInvalidLines(invalidMemorialLines(s.memorialDays));
   }, [s.memorialDays]);
 
   // 离开本页时务必还原，避免预览的素灰状态残留到其它页面。
@@ -421,6 +424,12 @@ export default function SettingsForm({
               "每行一项，格式 MM-DD 或 MM-DD 名称，例如：\n09-18 九一八事变纪念日\n12-13 南京大屠杀死难者国家公祭日"
             }
           />
+          {invalidLines.length > 0 && (
+            <p className="mt-2 text-xs leading-relaxed text-red-500">
+              无法识别的条目（已忽略）：{invalidLines.join("、")}。请用「MM-DD」或
+              「MM-DD 名称」格式，分隔符可用换行 / 逗号 / 分号。
+            </p>
+          )}
           <p className="mt-2 text-xs leading-relaxed text-[var(--c-text-3)]">
             填了内容会<strong className="font-medium">整体替换</strong>
             内置表（不是追加）。当前内置：
