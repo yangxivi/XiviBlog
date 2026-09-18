@@ -15,7 +15,7 @@ import type {
 import { compressImage } from "../image-utils";
 import FriendCheckPanel from "./friend-check";
 import { THEMES } from "@/lib/themes";
-import { MEMORIAL_DAYS, memorialToday, type MemorialDay } from "@/lib/memorial";
+import { MEMORIAL_DAYS, MEMORIAL_THEME_ID, memorialToday, type MemorialDay } from "@/lib/memorial";
 
 export type PostOption = {
   id: number;
@@ -70,9 +70,61 @@ export default function SettingsForm({
   // 浏览器跑在本地时区，渲染期计算容易出现水合文本不一致；放在 effect 里
   // 还能随自定义日期输入实时刷新。
   const [todayMemorial, setTodayMemorial] = useState<MemorialDay | null>(null);
+  // 今天 / 明天 / 后天的自检结果，方便站长确认自定义日期表有没有写对。
+  const [upcoming, setUpcoming] = useState<
+    { label: string; day: MemorialDay | null }[]
+  >([]);
+  // 「整站素灰」本地预览开关：临时给 <html> 套上纪念灰 + data-memorial，
+  // 纯客户端、可逆，只影响本机浏览器，不影响线上访客。
+  const [previewing, setPreviewing] = useState(false);
+  const previewSaved = useRef<{
+    theme: string | null;
+    memorial: string | null;
+  } | null>(null);
+
   useEffect(() => {
     setTodayMemorial(memorialToday(s.memorialDays));
+    setUpcoming([
+      { label: "今天", day: memorialToday(s.memorialDays, 0) },
+      { label: "明天", day: memorialToday(s.memorialDays, -1) },
+      { label: "后天", day: memorialToday(s.memorialDays, -2) },
+    ]);
   }, [s.memorialDays]);
+
+  // 离开本页时务必还原，避免预览的素灰状态残留到其它页面。
+  useEffect(() => {
+    return () => {
+      const root = document.documentElement;
+      if (!previewSaved.current) return;
+      if (previewSaved.current.theme)
+        root.setAttribute("data-theme", previewSaved.current.theme);
+      if (previewSaved.current.memorial)
+        root.setAttribute("data-memorial", previewSaved.current.memorial);
+      else root.removeAttribute("data-memorial");
+    };
+  }, []);
+
+  const toggleMemorialPreview = () => {
+    const root = document.documentElement;
+    if (!previewing) {
+      previewSaved.current = {
+        theme: root.getAttribute("data-theme"),
+        memorial: root.getAttribute("data-memorial"),
+      };
+      root.setAttribute("data-theme", MEMORIAL_THEME_ID);
+      root.setAttribute("data-memorial", "1");
+      setPreviewing(true);
+    } else {
+      if (previewSaved.current) {
+        if (previewSaved.current.theme)
+          root.setAttribute("data-theme", previewSaved.current.theme);
+        if (previewSaved.current.memorial)
+          root.setAttribute("data-memorial", previewSaved.current.memorial);
+        else root.removeAttribute("data-memorial");
+      }
+      setPreviewing(false);
+    }
+  };
 
   /* ---------------- 首页轮播 ---------------- */
   const car = s.carousel;
@@ -372,6 +424,38 @@ export default function SettingsForm({
             填了内容会<strong className="font-medium">整体替换</strong>
             内置表（不是追加）。当前内置：
             {MEMORIAL_DAYS.map((d) => `${d.md} ${d.name}`).join("、")}
+          </p>
+        </div>
+
+        {/* 自检 + 预览：不用等到公祭日当天，也能确认日期表与素灰效果 */}
+        <div className="mt-4 rounded-lg border border-[var(--c-border-3)] bg-[var(--c-card)] p-3">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
+            <span className="text-[var(--c-text-3)]">日期自检</span>
+            {upcoming.map(({ label, day }) => (
+              <span key={label} className="text-[var(--c-text-3)]">
+                {label}
+                <span
+                  className={
+                    day
+                      ? "ml-1 font-medium text-[var(--c-text)]"
+                      : "ml-1 text-[var(--c-text-4)]"
+                  }
+                >
+                  {day ? day.name : "非纪念日"}
+                </span>
+              </span>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={toggleMemorialPreview}
+            className={`${BTN_GHOST} mt-3`}
+          >
+            {previewing ? "退出素灰预览" : "预览整站素灰效果"}
+          </button>
+          <p className="mt-2 text-xs leading-relaxed text-[var(--c-text-4)]">
+            点「预览」会临时给当前页面套上「纪念灰 + 整站去色」，方便确认效果；
+            仅本机浏览器可见，不影响线上访客，再点一次退出。
           </p>
         </div>
       </section>
