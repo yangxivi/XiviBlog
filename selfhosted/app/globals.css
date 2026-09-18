@@ -528,13 +528,13 @@ html.dark[data-theme="cyan"] {
 /* 纪念灰主题：全站素灰配色，由站长在后台「站点主题」里手动选定。
    除配色变量外再加一层全站灰度滤镜：连封面图 / 头像 / 页面背景一起去色，
    切到其它主题即自动恢复彩色（滤镜随 data-theme 选择器生效/失效）。
-   只写标准 filter，-webkit- 前缀交给构建期 autoprefixer 按目标浏览器补；
+   用 saturate(0) 而不是 grayscale(1)：本构建链的 Lightning CSS 有 bug，会把 grayscale 的参数整个丢弃产出无效声明 grayscale()，浏览器直接忽略整条规则；saturate(0) 同为全去色，视觉完全等价。
    手写双属性会被 Lightning CSS 同义去重只留后写的，导致 Firefox 不灰。
    定位安全：html/body 已定高一屏（h-dvh + overflow-hidden），filter 使
    <html> 成为 fixed 元素的包含块，但该包含块与视口完全重合，header、
    返回顶部等 fixed 元素位置不受影响。 */
 html[data-theme="memorial"] {
-  filter: grayscale(1);
+  filter: saturate(0);
   --brand: #6b7280;
   --brand-2: #4b5563;
   --brand-ink: #ffffff;
