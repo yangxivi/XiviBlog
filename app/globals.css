@@ -563,7 +563,9 @@ html.dark[data-theme="memorial"] {
    也不会出现「fixed 元素跟着滚」的问题。
    ============================================================ */
 html[data-memorial="1"] {
+  /* 只写标准属性：-webkit- 前缀交给构建期 autoprefixer 按目标浏览器补。
+     手写 filter + -webkit-filter 会被 Lightning CSS 视为同义去重，只保留后写的
+     -webkit-filter，导致 Firefox（不支持该前缀）看不到灰度。 */
   filter: grayscale(1);
-  -webkit-filter: grayscale(1);
 }
 
