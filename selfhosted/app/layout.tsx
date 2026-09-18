@@ -10,6 +10,7 @@ import ThemeToggle from "./components/ThemeToggle";
 import ViewTracker from "./components/ViewTracker";
 import ScrollToTop from "./components/ScrollToTop";
 import { getSettings, type LinkItem } from "@/lib/settings";
+import { MEMORIAL_THEME_ID, memorialToday } from "@/lib/memorial";
 import { isAuthenticated } from "@/lib/auth";
 import { countUsers } from "@/lib/users";
 import { listNavPages } from "@/lib/pages";
@@ -73,7 +74,9 @@ const SIDEBAR_INIT = `(function(){try{var s=localStorage.getItem('xivi-sidebar')
     （新布局下滚动发生在 #xivi-main 容器内部，所以要一并重置） */
 const SCROLL_INIT = `(function(){try{if(!window.location.hash){window.scrollTo(0,0);var m=document.getElementById('xivi-main');if(m)m.scrollTop=0;}}catch(e){}})();`;
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   // 未安装（users 表为空，或表尚未建立）时输出「裸」布局：只有安装向导本身，
   // 不渲染导航 / 搜索 / 公告 / 悬浮按钮 / 页脚等任何站点元素。
   const installed = (await countUsers().catch(() => 0)) > 0;
@@ -98,12 +101,23 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   }));
   const navItems: LinkItem[] = [...settings.nav, ...pageNav];
 
+  // 国家公祭日：命中纪念日当天，整站强制切到「纪念灰」并整体去色，
+  // 覆盖站长手动选定的主题（这是公祭日的刚性要求，不是个性化偏好）。
+  // 日期按东八区判定，见 lib/memorial.ts。
+  const memorial = settings.memorialAuto
+    ? memorialToday(settings.memorialDays)
+    : null;
+  const effectiveTheme = memorial
+    ? MEMORIAL_THEME_ID
+    : (settings.theme ?? "meituan");
+
   return (
     <html
       lang="zh-CN"
       className="h-full antialiased"
       data-sidebar="right"
-      data-theme={settings.theme ?? "meituan"}
+      data-theme={effectiveTheme}
+      data-memorial={memorial ? "1" : undefined}
       suppressHydrationWarning
     >
       {/* 全站布局（2026-09-17 重构，前台后台共用）：

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import CoverThumb from "@/app/components/CoverThumb";
 import type {
   CarouselConfig,
@@ -15,6 +15,7 @@ import type {
 import { compressImage } from "../image-utils";
 import FriendCheckPanel from "./friend-check";
 import { THEMES } from "@/lib/themes";
+import { MEMORIAL_DAYS, memorialToday, type MemorialDay } from "@/lib/memorial";
 
 export type PostOption = {
   id: number;
@@ -62,6 +63,15 @@ export default function SettingsForm({
 
   const set = <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) =>
     setS((p) => ({ ...p, [k]: v }));
+
+  /* ---------------- 国家公祭日 ---------------- */
+  // 今日是否命中纪念日。放在 effect 里算而不是渲染期直接算：服务端与浏览器
+  // 时区可能不同，渲染期计算容易出现水合文本不一致；放在 effect 里还能随
+  // 自定义日期输入实时刷新。
+  const [todayMemorial, setTodayMemorial] = useState<MemorialDay | null>(null);
+  useEffect(() => {
+    setTodayMemorial(memorialToday(s.memorialDays));
+  }, [s.memorialDays]);
 
   /* ---------------- 首页轮播 ---------------- */
   const car = s.carousel;
@@ -137,31 +147,31 @@ export default function SettingsForm({
   const patchLC = (p: Partial<LatestCommentsConfig>) =>
     set("latestComments", { ...lc, ...p });
 
-  /* ---------------- 页脚二维码模块 ---------------- */
-  const patchQr = (i: number, p: Partial<QrItem>) =>
-    set(
-      "footerQr",
-      s.footerQr.map((q, idx) => (idx === i ? { ...q, ...p } : q))
-    );
-
-  const qrFileRef = useRef<HTMLInputElement>(null);
-  const qrUploadTarget = useRef(-1);
-  const onQrFile = async (e: ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    const i = qrUploadTarget.current;
-    if (!f || i < 0) return;
-    try {
-      const dataUrl = await compressImage(f, 640, 0.8, undefined, "image/webp");
-      patchQr(i, { image: dataUrl });
-      setMsg({ type: "ok", text: "二维码已上传并压缩" });
-    } catch {
-      setMsg({ type: "err", text: "图片读取失败" });
-    } finally {
-      if (qrFileRef.current) qrFileRef.current.value = "";
-      qrUploadTarget.current = -1;
-    }
-  };
-
+  /* ---------------- 页脚二维码模块 ---------------- */
+  const patchQr = (i: number, p: Partial<QrItem>) =>
+    set(
+      "footerQr",
+      s.footerQr.map((q, idx) => (idx === i ? { ...q, ...p } : q))
+    );
+
+  const qrFileRef = useRef<HTMLInputElement>(null);
+  const qrUploadTarget = useRef(-1);
+  const onQrFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    const i = qrUploadTarget.current;
+    if (!f || i < 0) return;
+    try {
+      const dataUrl = await compressImage(f, 640, 0.8, undefined, "image/webp");
+      patchQr(i, { image: dataUrl });
+      setMsg({ type: "ok", text: "二维码已上传并压缩" });
+    } catch {
+      setMsg({ type: "err", text: "图片读取失败" });
+    } finally {
+      if (qrFileRef.current) qrFileRef.current.value = "";
+      qrUploadTarget.current = -1;
+    }
+  };
+
   /* ---------------- 顶部导航 ---------------- */
   const patchNav = (i: number, p: Partial<LinkItem>) =>
     set(
@@ -301,6 +311,63 @@ export default function SettingsForm({
               </button>
             );
           })}
+        </div>
+      </section>
+
+      {/* 国家公祭日 */}
+      <section className={CARD}>
+        <h2 className={TITLE}>国家公祭日</h2>
+        <p className="mt-1 text-xs text-[var(--c-text-3)]">
+          命中纪念日当天，整站自动切换为「纪念灰」并整体去色（连封面图一起变灰），
+          覆盖上方选定的主题。日期按北京时间（东八区）判定，跨过零点即生效。
+        </p>
+
+        <label className="mt-4 flex cursor-pointer items-center gap-2.5">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-[var(--brand)]"
+            checked={s.memorialAuto}
+            onChange={(e) => set("memorialAuto", e.target.checked)}
+          />
+          <span className="text-sm text-[var(--c-text-2)]">
+            开启纪念日自动素灰
+          </span>
+        </label>
+
+        {/* 今日状态：一眼看出今天会不会素灰 */}
+        <div className="mt-3 rounded-lg border border-[var(--c-border-3)] bg-[var(--c-card)] px-3 py-2 text-xs">
+          {!s.memorialAuto ? (
+            <span className="text-[var(--c-text-3)]">
+              已关闭，不会自动素灰（仍可手动选择「纪念灰」主题）
+            </span>
+          ) : todayMemorial ? (
+            <span className="font-medium text-[var(--c-text)]">
+              今天是「{todayMemorial.name}」，整站正在素灰。
+            </span>
+          ) : (
+            <span className="text-[var(--c-text-3)]">
+              今天不是纪念日，站点按上方选定的主题显示。
+            </span>
+          )}
+        </div>
+
+        <div className="mt-4">
+          <label className={LABEL}>
+            自定义纪念日（留空则使用内置日期表）
+          </label>
+          <textarea
+            className={`${INPUT} min-h-[92px] resize-y font-mono`}
+            value={s.memorialDays}
+            onChange={(e) => set("memorialDays", e.target.value)}
+            placeholder={
+              "每行一项，格式 MM-DD 或 MM-DD 名称，例如：\n09-18 九一八事变纪念日\n12-13 南京大屠杀死难者国家公祭日"
+            }
+          />
+          <p className="mt-2 text-xs leading-relaxed text-[var(--c-text-3)]">
+            填了内容会<strong className="font-medium">整体替换</strong>
+            内置表（不是追加）。当前内置：
+            {MEMORIAL_DAYS.map((d) => `${d.md} ${d.name}`).join("、")}
+          </p>
         </div>
       </section>
 
@@ -867,77 +934,77 @@ export default function SettingsForm({
             onChange={(e) => set("footerBrand", e.target.value)}
             placeholder="记录 AI 应用、Windows 工具与自动化脚本的实践过程。"
           />
-        {/* 页脚二维码模块：最多 2 张，可上传或填外链，带标题 */}
-        <div className="mt-5 border-t border-[var(--c-border-2)] pt-4">
-          <div className="flex items-center justify-between">
-            <label className={LABEL + " mb-0"}>页脚二维码（最多 2 张）</label>
-            <span className="text-xs text-[var(--c-text-4)]">放公众号 / 客服 / 社群二维码</span>
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            {s.footerQr.map((q, qi) => (
-              <div
-                key={qi}
-                className="rounded-xl border border-[var(--c-border-2)] bg-[var(--c-card)] p-3"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-[var(--c-border-3)] bg-[var(--c-page)]">
-                    {q.image ? (
-                      <img
-                        src={q.image}
-                        alt={q.title || "二维码"}
-                        className="h-full w-full object-contain"
-                      />
-                    ) : (
-                      <span className="flex h-full w-full items-center justify-center text-xs text-[var(--c-text-4)]">
-                        无图
-                      </span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <button
-                      type="button"
-                      className={BTN_GHOST}
-                      onClick={() => {
-                        qrUploadTarget.current = qi;
-                        qrFileRef.current?.click();
-                      }}
-                    >
-                      上传图片
-                    </button>
-                    {q.image && (
-                      <button
-                        type="button"
-                        className="ml-2 text-xs text-[var(--c-text-4)] underline"
-                        onClick={() => patchQr(qi, { image: "" })}
-                      >
-                        清除
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <input
-                  className={INPUT + " mt-2"}
-                  value={q.image.startsWith("data:") ? "" : q.image}
-                  onChange={(e) => patchQr(qi, { image: e.target.value })}
-                  placeholder="图片地址，或点左侧上传本地图片"
-                />
-                <input
-                  className={INPUT + " mt-2"}
-                  value={q.title}
-                  onChange={(e) => patchQr(qi, { title: e.target.value })}
-                  placeholder="二维码标题，如「公众号」「加微信」"
-                  maxLength={40}
-                />
-              </div>
-            ))}
-          </div>
-          <input
-            ref={qrFileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={onQrFile}
-          />
+        {/* 页脚二维码模块：最多 2 张，可上传或填外链，带标题 */}
+        <div className="mt-5 border-t border-[var(--c-border-2)] pt-4">
+          <div className="flex items-center justify-between">
+            <label className={LABEL + " mb-0"}>页脚二维码（最多 2 张）</label>
+            <span className="text-xs text-[var(--c-text-4)]">放公众号 / 客服 / 社群二维码</span>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            {s.footerQr.map((q, qi) => (
+              <div
+                key={qi}
+                className="rounded-xl border border-[var(--c-border-2)] bg-[var(--c-card)] p-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-[var(--c-border-3)] bg-[var(--c-page)]">
+                    {q.image ? (
+                      <img
+                        src={q.image}
+                        alt={q.title || "二维码"}
+                        className="h-full w-full object-contain"
+                      />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-xs text-[var(--c-text-4)]">
+                        无图
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <button
+                      type="button"
+                      className={BTN_GHOST}
+                      onClick={() => {
+                        qrUploadTarget.current = qi;
+                        qrFileRef.current?.click();
+                      }}
+                    >
+                      上传图片
+                    </button>
+                    {q.image && (
+                      <button
+                        type="button"
+                        className="ml-2 text-xs text-[var(--c-text-4)] underline"
+                        onClick={() => patchQr(qi, { image: "" })}
+                      >
+                        清除
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <input
+                  className={INPUT + " mt-2"}
+                  value={q.image.startsWith("data:") ? "" : q.image}
+                  onChange={(e) => patchQr(qi, { image: e.target.value })}
+                  placeholder="图片地址，或点左侧上传本地图片"
+                />
+                <input
+                  className={INPUT + " mt-2"}
+                  value={q.title}
+                  onChange={(e) => patchQr(qi, { title: e.target.value })}
+                  placeholder="二维码标题，如「公众号」「加微信」"
+                  maxLength={40}
+                />
+              </div>
+            ))}
+          </div>
+          <input
+            ref={qrFileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={onQrFile}
+          />
         </div>
         </div>
       </section>

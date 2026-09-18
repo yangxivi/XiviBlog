@@ -5,6 +5,9 @@
  *
  * 这里是后台「主题切换」UI 用的元信息（名称 + 预览色），
  * 真实配色一律在 globals.css 里以变量形式定义，前端不写死颜色。
+ *
+ * 其中 memorial（纪念灰）除手动选择外，还会在国家公祭日被自动强制启用，
+ * 见 lib/memorial.ts。
  */
 
 export type ThemeMeta = {
@@ -76,6 +79,20 @@ export const THEMES: ThemeMeta[] = [
     brand2: "#0891b2",
     ink: "#ffffff",
     desc: "青蓝渐变，通透清凉",
+  },
+  {
+    /**
+     * 第八种主题：纪念灰。
+     * 既可在后台手动选定，也会在国家公祭日由 layout.tsx 自动强制启用
+     * （判定逻辑见 lib/memorial.ts，整站去色样式见 globals.css 的
+     * html[data-memorial="1"]）。
+     */
+    id: "memorial",
+    name: "纪念灰",
+    brand: "#6b7280",
+    brand2: "#4b5563",
+    ink: "#ffffff",
+    desc: "素灰沉静，公祭日整站致哀",
   },
 ];
 

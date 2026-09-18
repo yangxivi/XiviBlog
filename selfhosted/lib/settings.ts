@@ -1,4 +1,5 @@
 import { getDB } from "./db";
+import { normalizeTheme } from "./themes";
 
 /** 单个链接（内部以 / 开头，外部写完整 URL） */
 export type LinkItem = { label: string; href: string };
@@ -137,10 +138,23 @@ export type SiteSettings = {
   aiCoverBaseUrl: string;
   /** 分类英文别名：中文分类名 → 英文别名（/category/ 别名 URL 也会解析） */
   categoryAliases: Record<string, string>;
-  /** 站点主题（品牌色方案）：meituan / wechat / zhihu / tencent / xiaohongshu / purple / cyan */
+  /** 站点主题（品牌色方案）：meituan / wechat / zhihu / tencent / xiaohongshu / purple / cyan / memorial */
   theme: string;
   /** 自动检测更新：开启后后台访问时自动对比 GitHub 最新版本（静默、不自动安装） */
   autoUpdate: boolean;
+  /**
+   * 国家公祭日自动素灰：开启后，命中纪念日（如九一八、南京大屠杀死难者国家公祭日）
+   * 当天整站自动切到「纪念灰」并整体去色，与手动选定的主题无关。
+   * 日期表见 lib/memorial.ts。
+   */
+  memorialAuto: boolean;
+  /**
+   * 自定义纪念日（可留空）。非空时**整体替换**内置日期表。
+   * 每行一项，格式 `MM-DD` 或 `MM-DD 名称`，例如：
+   *   09-18 九一八事变纪念日
+   *   12-13 南京大屠杀死难者国家公祭日
+   */
+  memorialDays: string;
 };
 
 export const SETTINGS_KEY = "site";
@@ -225,6 +239,10 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   categoryAliases: {},
   theme: "meituan",
   autoUpdate: false,
+  /** 默认开启：国家公祭日自动整站素灰 */
+  memorialAuto: true,
+  /** 留空 = 使用 lib/memorial.ts 里的内置纪念日表 */
+  memorialDays: "",
   carousel: {
     mode: "auto",
     count: 5,
@@ -468,8 +486,11 @@ export function normalizeSettings(input: unknown): SiteSettings {
     aiCoverModel: str(input.aiCoverModel, d.aiCoverModel, 60),
     aiCoverBaseUrl: str(input.aiCoverBaseUrl, d.aiCoverBaseUrl, 200),
     categoryAliases: normCategoryAliases(input.categoryAliases),
-    theme: str(input.theme, d.theme, 20),
+    // 用主题注册表校验：非法 id 回退默认主题，避免落库一个没有对应 CSS 变量的主题名
+    theme: normalizeTheme(str(input.theme, d.theme, 20)),
     autoUpdate: input.autoUpdate === true,
+    memorialAuto: input.memorialAuto !== false,
+    memorialDays: str(input.memorialDays, d.memorialDays, 600),
   };
 }
 

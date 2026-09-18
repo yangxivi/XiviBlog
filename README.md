@@ -10,7 +10,8 @@
 
 - **完整后台**：文章（增删改、置顶、定时发布、版本历史）、标签、媒体库、访问统计（含搜索词看板）、站点设置、数据备份。
 - **Markdown 编辑器**：16 个工具栏动作、实时预览、粘贴/拖拽传图、分屏滚动同步。
-- **多主题**：`--brand` CSS 变量驱动，内置 **7 套配色 × 明暗模式**一键切换，后台保存后即时生效。
+- **多主题**：`--brand` CSS 变量驱动，内置 **8 套配色 × 明暗模式**一键切换，后台保存后即时生效。
+- **国家公祭日自动素灰**：命中九一八事变纪念日、南京大屠杀死难者国家公祭日等纪念日当天，整站自动切换为「纪念灰」并整体去色（连封面图一起变灰），跨过北京时间零点即生效；日期表可在后台自定义，也可一键关闭。
 
   ![主题预览](https://cdn.jsdelivr.net/gh/yangxivi/XiviBlog@main/public/screenshots/themes.jpg)
 - **三端自适应**：桌面 / 平板 / 手机，侧边栏可左右互换。
@@ -169,7 +170,7 @@ AI 会逐步执行上述步骤，期间可能需要你配合做以下简单操�
 
 部署完成后，你应该能：
 
-- [ ] 打开 `https://<你的域名>` 看到博客首页（7 套主题可切换）
+- [ ] 打开 `https://<你的域名>` 看到博客首页（8 套主题可切换）
 - [ ] 打开 `https://<你的域名>/admin` 用刚注册的账号登录后台
 - [ ] 后台写一篇测试文章并发布，前台能看到
 
@@ -291,7 +292,7 @@ bash setup-nginx.sh blog.yourdomain.com   # Nginx 反代 + 免费 HTTPS 证书
 
 ### 第 7 步：开始使用
 
-打开 **`/admin`** 用刚才的邮箱密码登录后台。「站点设置」里可以改站名 / LOGO 文字 / 简介、**7 套主题配色**、导航、页脚、友链等，保存即时生效：
+打开 **`/admin`** 用刚才的邮箱密码登录后台。「站点设置」里可以改站名 / LOGO 文字 / 简介、**8 套主题配色**、导航、页脚、友链等，保存即时生效：
 
 ![后台站点设置](https://cdn.jsdelivr.net/gh/yangxivi/XiviBlog@main/public/shots/xiviblog-admin-settings.png)
 
@@ -354,13 +355,15 @@ ADMIN_PASSWORD=dev-only-master
 blog/
 ├─ app/                  # Next.js App Router：页面 + /api 路由 + /admin 后台
 │  ├─ api/               # auth / posts / pages / media / cover / stats ...
-│  └─ admin/             # 登录、注册、编辑器、设置、统计等后台界面
+│  ├─ admin/             # 登录、注册、编辑器、设置、统计等后台界面
+│  ├─ components/        # UI 组件
+│  └─ globals.css        # 全站样式 + 8 套主题的 CSS 变量 + 公祭日灰度规则
 ├─ lib/                  # 核心逻辑：db（D1 封装）、auth、markdown、settings、revisions
-├─ components/           # UI 组件
+│                        #   themes.ts 主题注册表 / memorial.ts 国家公祭日判定
 ├─ custom-worker.ts      # Cloudflare 边缘缓存层（Cache API）
 ├─ open-next.config.ts   # OpenNext 构建配置
 ├─ wrangler.jsonc        # Cloudflare Workers / D1 / Assets / 路由 配置
-├─ migrations/           # D1 结构迁移（0001-0016）+ 两个 _seed_*.sql 种子
+├─ migrations/           # D1 结构迁移（0001-0018）+ 两个 _seed_*.sql 种子
 ├─ public/               # 静态资源（covers / svg；文章配图 shots/ 不入库）
 ├─ scripts/              # 运维脚本（见下）
 └─ .env.example          # 本地环境变量模板
@@ -382,6 +385,30 @@ blog/
 ### AI 封面（可选）
 
 后台「AI 生成封面」依赖一个图像生成 API（默认 agnes）。相关配置（Base URL / 模型 / Key）保存在 D1 的站点设置里（后台「站点设置 → AI 封面」），**不在代码或环境变量中**。前端拿到提示词后直连图像服务生图，避免 Workers 共享出口 IP 被限流。
+
+### 主题与国家公祭日
+
+站点主题在后台「站点设置 → 站点主题」切换，内置 8 套（每套都含明暗两态）：
+
+| 主题 id | 名称 | 说明 |
+| --- | --- | --- |
+| `meituan` | 美团黄 | 默认 |
+| `wechat` | 微信绿 | 清爽耐看 |
+| `zhihu` | 知乎蓝 | 理性专业 |
+| `tencent` | 腾讯蓝 | 沉稳大气 |
+| `xiaohongshu` | 小红书粉 | 活泼吸睛 |
+| `purple` | 优雅紫 | 气质独特 |
+| `cyan` | 青柠绿 | 通透清凉 |
+| `memorial` | 纪念灰 | 素灰；国家公祭日会自动启用 |
+
+**国家公祭日自动素灰**：命中纪念日当天，`app/layout.tsx` 会忽略后台选定的主题，强制给 `<html>` 加上 `data-theme="memorial"` 与 `data-memorial="1"`，后者由 `globals.css` 施加 `filter: grayscale(1)`。
+
+> 为什么用滤镜而不是只换主题变量：主题变量只能改 UI 配色，**封面图 / 头像 / 外链图片不会去色**；只有 `filter` 才能做到真正的整站去饱和。
+
+- 日期按**北京时间（东八区）**判定（`lib/memorial.ts` 复用 `lib/datetime.ts` 的 `cnDay()`），跨过零点即生效，不受 Worker 边缘节点时区影响。
+- 内置日期表：`05-12` 汶川地震纪念日、`07-07` 七七事变纪念日、`08-15` 日本宣布无条件投降纪念日、`09-03` 中国人民抗日战争胜利纪念日、`09-18` 九一八事变纪念日、`09-30` 烈士纪念日、`10-25` 抗美援朝纪念日、`12-13` 南京大屠杀死难者国家公祭日。
+- 后台「站点设置 → 国家公祭日」可开关该功能，并自定义日期：**填了内容会整体替换内置表**（不是追加），每行一项，格式 `MM-DD` 或 `MM-DD 名称`。
+- 关闭自动模式后，仍可在「站点主题」里手动选择「纪念灰」。
 
 ---
 
