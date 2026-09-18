@@ -122,7 +122,16 @@ export async function checkUpdate(
     latest: release?.tag ?? null,
     hasUpdate,
     release: hasUpdate ? release : null,
-    checkedAt: new Date().toISOString(),
+    checkedAt: new Date().toLocaleString("sv-SE", {
+      timeZone: "Asia/Shanghai",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }).replace(" ", "T"),
   };
   // 缓存到 data/update-check.json，供自动检测节流
   if (force || true) {
