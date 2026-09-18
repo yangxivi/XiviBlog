@@ -100,3 +100,30 @@ export function memorialToday(custom?: unknown, offsetDays = 0): MemorialDay | n
   const md = day.slice(5); // MM-DD
   return resolveMemorialDays(custom).find((d) => d.md === md) ?? null;
 }
+
+/**
+ * 距今天最近的下一个纪念日（含今天，inDays=0）。
+ * 用于后台「还有几天」提示；以**东八区**为基准，跨年自动顺延到明年。
+ * 日期表为空返回 null。非法日期（如 02-30）自动跳过。
+ */
+export function nextMemorial(
+  custom?: unknown
+): { day: MemorialDay; inDays: number } | null {
+  const days = resolveMemorialDays(custom);
+  if (!days.length) return null;
+  const today = cnDay(); // YYYY-MM-DD（东八区）
+  const year = Number(today.slice(0, 4));
+  const todayUtc = Date.parse(`${today}T00:00:00Z`);
+  let best: { day: MemorialDay; inDays: number } | null = null;
+  for (const d of days) {
+    const [mm, dd] = d.md.split("-").map(Number);
+    let t = Date.UTC(year, mm - 1, dd);
+    const dt = new Date(t);
+    // 校验合法日期（如 02-30 / 非闰年的 02-29 会被 Date 顺延，这里剔除）
+    if (dt.getUTCMonth() + 1 !== mm || dt.getUTCDate() !== dd) continue;
+    if (t < todayUtc) t = Date.UTC(year + 1, mm - 1, dd); // 今年已过 → 明年
+    const inDays = Math.round((t - todayUtc) / 86_400_000);
+    if (!best || inDays < best.inDays) best = { day: d, inDays };
+  }
+  return best;
+}

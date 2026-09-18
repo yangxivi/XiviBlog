@@ -15,7 +15,7 @@ import type {
 import { compressImage } from "../image-utils";
 import FriendCheckPanel from "./friend-check";
 import { THEMES } from "@/lib/themes";
-import { MEMORIAL_DAYS, MEMORIAL_THEME_ID, memorialToday, type MemorialDay } from "@/lib/memorial";
+import { MEMORIAL_DAYS, MEMORIAL_THEME_ID, memorialToday, nextMemorial, type MemorialDay } from "@/lib/memorial";
 
 export type PostOption = {
   id: number;
@@ -74,6 +74,11 @@ export default function SettingsForm({
   const [upcoming, setUpcoming] = useState<
     { label: string; day: MemorialDay | null }[]
   >([]);
+  // 距今天最近的下一个纪念日（含今天），用于「还有几天」提示。
+  const [nextDay, setNextDay] = useState<{
+    day: MemorialDay;
+    inDays: number;
+  } | null>(null);
   // 「整站素灰」本地预览开关：临时给 <html> 套上纪念灰 + data-memorial，
   // 纯客户端、可逆，只影响本机浏览器，不影响线上访客。
   const [previewing, setPreviewing] = useState(false);
@@ -89,6 +94,7 @@ export default function SettingsForm({
       { label: "明天", day: memorialToday(s.memorialDays, -1) },
       { label: "后天", day: memorialToday(s.memorialDays, -2) },
     ]);
+    setNextDay(nextMemorial(s.memorialDays));
   }, [s.memorialDays]);
 
   // 离开本页时务必还原，避免预览的素灰状态残留到其它页面。
@@ -446,6 +452,17 @@ export default function SettingsForm({
               </span>
             ))}
           </div>
+          {nextDay && (
+            <div className="mt-2 text-xs text-[var(--c-text-3)]">
+              下一个公祭日
+              <span className="ml-1 font-medium text-[var(--c-text)]">
+                {nextDay.day.md} {nextDay.day.name}
+              </span>
+              <span className="ml-1">
+                （{nextDay.inDays === 0 ? "就是今天" : `还有 ${nextDay.inDays} 天`}）
+              </span>
+            </div>
+          )}
           <button
             type="button"
             onClick={toggleMemorialPreview}
