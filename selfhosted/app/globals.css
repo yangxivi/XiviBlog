@@ -525,9 +525,7 @@ html.dark[data-theme="cyan"] {
   --c-brand-tint: color-mix(in srgb, var(--brand) 10%, #1b1b1f);
 }
 
-/* 纪念灰（第八种主题）：全站素灰。
-   既可在后台「站点主题」里手动选定，也会在国家公祭日由 layout.tsx 自动强制启用
-   （日期判定见 lib/memorial.ts）。 */
+/* 纪念灰主题：全站素灰配色，由站长在后台「站点主题」里手动选定。 */
 html[data-theme="memorial"] {
   --brand: #6b7280;
   --brand-2: #4b5563;
@@ -548,23 +546,5 @@ html.dark[data-theme="memorial"] {
   --c-brand-soft-2: color-mix(in srgb, var(--brand) 30%, #1b1b1f);
   --c-brand-border: color-mix(in srgb, var(--brand) 40%, #1b1b1f);
   --c-brand-tint: color-mix(in srgb, var(--brand) 10%, #1b1b1f);
-}
-
-/* ============================================================
-   国家公祭日：整站灰度
-   layout.tsx 命中纪念日时给 <html> 加 data-memorial="1"。
-   只换主题变量无法让封面图 / 头像 / 外链图片去色，这里用 filter 做真正的
-   整站去饱和（连图片一起变灰），这是国内站点公祭日的通行做法。
-
-   关于定位：filter 会让 <html> 成为 fixed 元素的包含块。本站 html/body 已
-   定高一屏（h-dvh + overflow-hidden），包含块与视口完全重合，因此 header、
-   返回顶部、主题按钮等 fixed 元素位置不受影响；滚动发生在 main 容器内部，
-   也不会出现「fixed 元素跟着滚」的问题。
-   ============================================================ */
-html[data-memorial="1"] {
-  /* 只写标准属性：-webkit- 前缀交给构建期 autoprefixer 按目标浏览器补。
-     手写 filter + -webkit-filter 会被 Lightning CSS 视为同义去重，只保留后写的
-     -webkit-filter，导致 Firefox（不支持该前缀）看不到灰度。 */
-  filter: grayscale(1);
 }
 

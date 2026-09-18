@@ -141,25 +141,6 @@ export type SiteSettings = {
   categoryAliases: Record<string, string>;
   /** 站点主题（品牌色方案）：meituan / wechat / zhihu / tencent / xiaohongshu / purple / cyan / memorial */
   theme: string;
-  /**
-   * 国家公祭日自动素灰：开启后，命中纪念日（如九一八、南京大屠杀死难者国家公祭日）
-   * 当天整站自动切到「纪念灰」并整体去色，与手动选定的主题无关。
-   * 日期表见 lib/memorial.ts。
-   */
-  memorialAuto: boolean;
-  /**
-   * 自定义纪念日（可留空）。非空时**整体替换**内置日期表。
-   * 每行一项，格式 `MM-DD` 或 `MM-DD 名称`，例如：
-   *   09-18 九一八事变纪念日
-   *   12-13 南京大屠杀死难者国家公祭日
-   */
-  memorialDays: string;
-  /**
-   * 页脚「下一个公祭日」提醒的提前量（天，0-60）。
-   * 距离最近一个纪念日 ≤ 该天数时，页脚底部会多出一行小字提醒；
-   * 设为 0 则只在纪念日当天提醒。超出范围的输入会被夹回区间。
-   */
-  memorialLeadDays: number;
 };
 
 export const SETTINGS_KEY = "site";
@@ -243,12 +224,6 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   aiCoverBaseUrl: "https://apihub.agnes-ai.com/v1",
   categoryAliases: {},
   theme: "meituan",
-  /** 默认开启：国家公祭日自动整站素灰 */
-  memorialAuto: true,
-  /** 留空 = 使用 lib/memorial.ts 里的内置纪念日表 */
-  memorialDays: "",
-  /** 页脚公祭日提醒的提前量：默认提前 7 天开始提示 */
-  memorialLeadDays: 7,
   carousel: {
     mode: "auto",
     count: 5,
@@ -291,11 +266,6 @@ function str(v: unknown, fallback: string, max = 300): string {
   if (typeof v !== "string") return fallback;
   const t = v.trim();
   return t.length > max ? t.slice(0, max) : t;
-}
-
-/** 布尔项：只有明确传入布尔值才采纳，否则回退默认（避免 "false" 字符串被当成 true） */
-function bool(v: unknown, fallback: boolean): boolean {
-  return typeof v === "boolean" ? v : fallback;
 }
 
 function normLinks(v: unknown, fallback: LinkItem[]): LinkItem[] {
@@ -499,10 +469,6 @@ export function normalizeSettings(input: unknown): SiteSettings {
     categoryAliases: normCategoryAliases(input.categoryAliases),
     // 用主题注册表校验：非法 id 回退默认主题，避免落库一个没有对应 CSS 变量的主题名
     theme: normalizeTheme(str(input.theme, d.theme, 20)),
-    memorialAuto: bool(input.memorialAuto, d.memorialAuto),
-    memorialDays: str(input.memorialDays, d.memorialDays, 600),
-    // 0-60 天：0 = 仅当天提醒；负值/超范围/非数字都会被夹回或回退默认值
-    memorialLeadDays: clampInt(input.memorialLeadDays, d.memorialLeadDays, 0, 60),
   };
 }
 

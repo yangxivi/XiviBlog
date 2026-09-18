@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import LogoMark from "./LogoMark";
 import type { LinkItem, SiteSettings } from "@/lib/settings";
-import { nextMemorial, type MemorialDay } from "@/lib/memorial";
 
 function isExternal(href: string) {
   return /^https?:\/\//i.test(href) || href.startsWith("mailto:");
@@ -16,16 +15,6 @@ const FOOTER_BRAND_CLASS = "text-[15px] font-bold tracking-tight";
 
 /** 底部小字里的超链接样式 */
 const MINI_LINK_CLS = "transition hover:text-[var(--brand-deep)]";
-
-/**
- * 提醒文案：今天 / 明天 / 还有几天，三种语气略有区分。
- * 触发时机由后台设置 `memorialLeadDays` 控制（0 = 仅当天）。
- */
-function memorialNoticeText(day: MemorialDay, inDays: number): string {
-  if (inDays === 0) return `今天是${day.name}，本站以素灰致哀`;
-  if (inDays === 1) return `明天是${day.name}，本站将以素灰致哀`;
-  return `${inDays} 天后是${day.name}（${day.md}）`;
-}
 
 /**
  * 把文本里的 [文字](链接) 与裸 URL 渲染成超链接（统一新窗口打开）。
@@ -90,15 +79,6 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
     /\{year\}/g,
     String(year)
   );
-
-  // 临近公祭日时在页脚最底部露一行提醒（后台关掉自动公祭则不显示）。
-  // 与 layout.tsx 同一套东八区口径，避免边缘节点时区导致文案和整站变灰不同步。
-  // memorialLeadDays 已在 normalizeSettings 里夹到 0-60，这里可直接比较。
-  const upcoming = settings.memorialAuto ? nextMemorial(settings.memorialDays) : null;
-  const memorialNotice =
-    upcoming && upcoming.inDays <= settings.memorialLeadDays
-      ? memorialNoticeText(upcoming.day, upcoming.inDays)
-      : null;
 
   return (
     // mt-auto：body 是 flex 列，把页脚顶到最底部（main 的 flex-1 之外的双保险），
@@ -225,19 +205,6 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
             {settings.footnote && withLinks(settings.footnote, "fn")}
           </span>
         </div>
-
-        {/* 公祭日提醒：居中一行小字，仅临近时出现；不打断上面三栏的对齐关系 */}
-        {memorialNotice && (
-          <p className="mt-4 text-center text-xs text-[var(--c-text-4)]">
-            <span className="inline-flex items-center gap-1.5">
-              <span
-                aria-hidden
-                className="inline-block h-1 w-1 rounded-full bg-[var(--c-text-4)]"
-              />
-              {memorialNotice}
-            </span>
-          </p>
-        )}
       </div>
     </footer>
   );
