@@ -82,7 +82,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: SIDEBAR_INIT }} />
         <script dangerouslySetInnerHTML={{ __html: SCROLL_INIT }} />
         <header className="z-50 shrink-0 border-b border-[var(--c-border)] bg-[var(--c-header)] backdrop-blur">
-          <div className="mx-auto flex h-[3.6rem] max-w-[var(--page-outer)] items-center px-4 md:px-6 lg:px-8">
+          <div className="mx-auto flex h-[3.6rem] max-w-[var(--page-outer)] items-center px-4 md:px-6">
             {/* LOGO + 站名：紧贴左边缘 */}
             <Link
               href="/"
