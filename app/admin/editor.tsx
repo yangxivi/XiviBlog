@@ -1189,67 +1189,69 @@ export default function Editor({ initial }: { initial: EditorPost }) {
               </button>
             )}
           </div>
-          <div className="flex items-start gap-3">
-            <div className="shrink-0">
-              {post.cover_image ? (
-                <CoverThumb
-                  src={post.cover_image}
-                  alt="封面预览"
-                  className="h-20 w-20 rounded-xl ring-1 ring-[var(--c-border-2)]"
-                />
-              ) : (
-                <div className="flex h-20 w-20 flex-col items-center justify-center rounded-xl bg-[var(--c-soft)] text-[10px] text-[var(--c-text-4)]">
-                  暂无
-                </div>
-              )}
-            </div>
-            <div className="flex flex-1 flex-col gap-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={onPickImage}
-                />
-                <button
-                  type="button"
-                  onClick={() => fileRef.current?.click()}
-                  className="rounded-lg border border-[var(--c-border-3)] px-3 py-1.5 text-sm text-[var(--c-text-2)] transition hover:border-[var(--brand)] hover:text-[var(--brand-deep)]"
-                >
-                  上传图片
-                </button>
-                <button
-                  type="button"
-                  onClick={genCover}
-                  disabled={aiBusy}
-                  className="rounded-lg border border-[var(--brand)] bg-[var(--c-brand-soft)] px-3 py-1.5 text-sm font-medium text-[var(--brand-deep)] transition hover:bg-[var(--c-brand-soft-2)] disabled:opacity-60"
-                >
-                  {aiBusy
-                    ? "生成中…"
-                    : post.cover_image
-                      ? "AI 换一张"
-                      : "AI 生成封面"}
-                </button>
-                <span className="text-xs text-[var(--c-text-3)]">建议 ≤ 1MB</span>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-start gap-3">
+              <div className="shrink-0">
+                {post.cover_image ? (
+                  <CoverThumb
+                    src={post.cover_image}
+                    alt="封面预览"
+                    className="h-20 w-20 rounded-xl ring-1 ring-[var(--c-border-2)]"
+                  />
+                ) : (
+                  <div className="flex h-20 w-20 flex-col items-center justify-center rounded-xl bg-[var(--c-soft)] text-[10px] text-[var(--c-text-4)]">
+                    暂无
+                  </div>
+                )}
               </div>
-              <input
-                value={
-                  post.cover_image.startsWith("data:") ? "" : post.cover_image
-                }
-                onChange={(e) => set("cover_image", e.target.value)}
-                placeholder="或粘贴图片外链 URL"
-                className="w-full rounded-lg border border-[var(--c-border-3)] px-3 py-2 text-sm outline-none focus:border-[var(--brand)]"
-              />
-              <p className="text-xs text-[var(--c-text-3)]">
-                AI 封面由 agnes 按「标题 + 内容 + 分类/标签」生成与文章主题相关的图；首次使用需在「站点设置 →
-                AI 封面」填入 agnes 的 API
-                Key。上传图片会自动压缩后内嵌存储，无需图床；留空则按分类生成渐变色占位图。
-              </p>
+              <div className="flex flex-1 flex-col gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={onPickImage}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="rounded-lg border border-[var(--c-border-3)] px-3 py-1.5 text-sm text-[var(--c-text-2)] transition hover:border-[var(--brand)] hover:text-[var(--brand-deep)]"
+                  >
+                    上传图片
+                  </button>
+                  <button
+                    type="button"
+                    onClick={genCover}
+                    disabled={aiBusy}
+                    className="rounded-lg border border-[var(--brand)] bg-[var(--c-brand-soft)] px-3 py-1.5 text-sm font-medium text-[var(--brand-deep)] transition hover:bg-[var(--c-brand-soft-2)] disabled:opacity-60"
+                  >
+                    {aiBusy
+                      ? "生成中…"
+                      : post.cover_image
+                        ? "AI 换一张"
+                        : "AI 生成封面"}
+                  </button>
+                  <span className="text-xs text-[var(--c-text-3)]">建议 ≤ 1MB</span>
+                </div>
+                <input
+                  value={
+                    post.cover_image.startsWith("data:") ? "" : post.cover_image
+                  }
+                  onChange={(e) => set("cover_image", e.target.value)}
+                  placeholder="或粘贴图片外链 URL"
+                  className="w-full rounded-lg border border-[var(--c-border-3)] px-3 py-2 text-sm outline-none focus:border-[var(--brand)]"
+                />
+                <p className="text-xs text-[var(--c-text-3)]">
+                  AI 封面由 agnes 按「标题 + 内容 + 分类/标签」生成与文章主题相关的图；首次使用需在「站点设置 →
+                  AI 封面」填入 agnes 的 API
+                  Key。上传图片会自动压缩后内嵌存储，无需图床；留空则按分类生成渐变色占位图。
+                </p>
+              </div>
             </div>
 
             {/* AI 自动排版 */}
-            <div className="mt-8 rounded-xl border border-[var(--c-border-2)] p-5">
+            <div className="rounded-xl border border-[var(--c-border-2)] p-5">
               <h3 className="mb-4 text-sm font-semibold text-[var(--c-text)]">AI 自动排版</h3>
               <div className="flex items-center gap-3">
                 <button
