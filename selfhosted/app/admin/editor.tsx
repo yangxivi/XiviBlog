@@ -799,17 +799,46 @@ export default function Editor({ initial }: { initial: EditorPost }) {
         setMsg(j.error || "保存失败");
         return;
       }
+      // 自动 AI 生图：发布新文章且无封面时自动生成
+      const isNewPost = !post.id;
+      const shouldAutoGenCover = status === "published" && isNewPost && !body.cover_image;
+      if (shouldAutoGenCover && body.title.trim()) {
+        try {
+          setMsg("正在生成 AI 封面...");
+          const dataUrl = await generateAiCover({
+            title: body.title,
+            excerpt: body.excerpt || "",
+            content: body.content || "",
+            category: body.tag || "",
+            tags: body.tags || "",
+          });
+          const thumb = await makeThumb(dataUrl);
+          // 更新数据库中的封面
+          await fetch(`/api/posts/${j.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...body, cover_image: dataUrl, cover_thumb: thumb }),
+          });
+          set("cover_image", dataUrl);
+          set("cover_thumb", thumb);
+          setMsg("已发布，AI 封面已自动生成");
+        } catch (coverErr) {
+          console.error("AI 封面生成失败:", coverErr);
+          setMsg(status === "published" ? "已发布（封面生成失败，可手动生成）" : "已保存");
+        }
+      } else {
+        if (post.id) {
+          setMsg(status === "published" ? "已发布" : "已保存");
+        } else {
+          router.replace(`/admin/edit/${j.id}`);
+          setMsg("已创建");
+        }
+      }
       lastSavedRef.current = snapshotOf(post);
       dirtyRef.current = false;
       setDirty(false);
       setAutoState("idle");
       setAutoErr("");
-      if (post.id) {
-        setMsg(status === "published" ? "已发布" : "已保存");
-      } else {
-        router.replace(`/admin/edit/${j.id}`);
-        setMsg("已创建");
-      }
       router.refresh();
     } catch {
       setMsg("网络错误");
