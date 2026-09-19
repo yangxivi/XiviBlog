@@ -228,6 +228,12 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   aiCoverApiKey: "",
   aiCoverModel: "agnes-image-2.0-flash",
   aiCoverBaseUrl: "https://apihub.agnes-ai.com/v1",
+  /** AI 排版 API Key（默认与封面共用，留空则尝试读取环境变量） */
+  aiFormatApiKey: "",
+  /** AI 排版模型 ID（默认 glm-4.7-flash 免费） */
+  aiFormatModel: "glm-4.7-flash",
+  /** AI 排版 API Base URL（末尾不带 /v1） */
+  aiFormatBaseUrl: "https://api.anthropic.com/v1",
   categoryAliases: {},
   theme: "meituan",
   carousel: {

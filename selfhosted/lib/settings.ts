@@ -69,6 +69,7 @@ export type FriendLink = {
   /** 一句话说明，留空只显示站名 */
   desc: string;
 };
+
 /** 页脚品牌区二维码模块：最多 2 张，用于放公众号 / 客服 / 社群等二维码 */
 export type QrItem = {
   /** 图片地址：可上传（自动压缩内嵌）或填外链 https:// 地址，留空则不显示 */
@@ -136,12 +137,16 @@ export type SiteSettings = {
   aiCoverModel: string;
   /** AI 封面 API Base URL（末尾不带 /images/generations） */
   aiCoverBaseUrl: string;
+  /** AI 排版 API Key（与封面共用同一 agnes 服务） */
+  aiFormatApiKey: string;
+  /** AI 排版模型 ID（默认用 glm-4.7-flash 免费模型） */
+  aiFormatModel: string;
+  /** AI 排版 API Base URL */
+  aiFormatBaseUrl: string;
   /** 分类英文别名：中文分类名 → 英文别名（/category/ 别名 URL 也会解析） */
   categoryAliases: Record<string, string>;
   /** 站点主题（品牌色方案）：meituan / wechat / zhihu / tencent / xiaohongshu / purple / cyan / memorial */
   theme: string;
-  /** 自动检测更新：开启后后台访问时自动对比 GitHub 最新版本（静默、不自动安装） */
-  autoUpdate: boolean;
 };
 
 export const SETTINGS_KEY = "site";
@@ -166,7 +171,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   nav: [
     { label: "首页", href: "/" },
     { label: "历史文章", href: "/history" },
-    { label: "关于本站", href: "/about" },
+    { label: "关于我们", href: "/about" },
   ],
   footerBrand: "记录 AI 应用、Windows 工具与自动化脚本的实践过程。能自动化的绝不手动。",
   footerColumns: [
@@ -175,7 +180,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
       links: [
         { label: "首页", href: "/" },
         { label: "历史文章", href: "/history" },
-        { label: "关于本站", href: "/about" },
+        { label: "关于我们", href: "/about" },
         { label: "后台管理", href: "/admin" },
       ],
     },
@@ -195,8 +200,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
       ],
     },
   ],
-  copyright: "© {year} 曦微博客系统 XiviBlogSystem",
-  footnote: "By [XiviBlog](https://blog.aixivi.cn/)",
+  copyright: "© {year} 曦微 XIVI",
+  footnote: "部署于 Cloudflare Workers",
   icp: "",
   notice: {
     enabled: false,
@@ -231,7 +236,6 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   aiFormatBaseUrl: "https://api.anthropic.com/v1",
   categoryAliases: {},
   theme: "meituan",
-  autoUpdate: false,
   carousel: {
     mode: "auto",
     count: 5,
@@ -243,7 +247,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
       variant: "outline",
       badge: "",
       title: "CODE A BETTER LIFE",
-      subtitle: "曦微博客系统 XiviBlogSystem · 技术笔记",
+      subtitle: "曦微 XIVI · 技术笔记",
       image: "",
       href: "",
     },
@@ -318,7 +322,6 @@ const PROMO_VARIANTS: PromoCard["variant"][] = [
   "cyan",
 ];
 
-/** 侧边橱窗：丢掉没标题的项，最多 8 张（允许清空） */
 /** 侧边橱窗：纯图片橱窗卡是合法场景（标题可空），仅当四项全空才视为废卡丢弃，最多 8 张（允许清空） */
 function normPromos(v: unknown, fallback: PromoCard[]): PromoCard[] {
   if (!Array.isArray(v)) return fallback;
@@ -372,8 +375,7 @@ function normFriends(v: unknown, fallback: FriendLink[]): FriendLink[] {
   return out;
 }
 
-/** 侧边栏最新评论：条数 3-10、摘要 30-120 字，开关缺省视为开启 */
-/** 页脚二维码：上传（内嵌）或外链 + 标题，最多 2 张，始终补满 2 槽位 */
+/** 页脚二维码模块：图片（上传内嵌或外链）+ 标题，最多 2 张，始终补满 2 槽位 */
 function normFooterQr(v: unknown, d: QrItem[]): QrItem[] {
   if (!Array.isArray(v)) return d;
   const out: QrItem[] = [];
@@ -389,6 +391,7 @@ function normFooterQr(v: unknown, d: QrItem[]): QrItem[] {
   return out;
 }
 
+/** 侧边栏最新评论：条数 3-10、摘要 30-120 字，开关缺省视为开启 */
 function normLatestComments(
   v: unknown,
   d: LatestCommentsConfig
@@ -481,7 +484,6 @@ export function normalizeSettings(input: unknown): SiteSettings {
     categoryAliases: normCategoryAliases(input.categoryAliases),
     // 用主题注册表校验：非法 id 回退默认主题，避免落库一个没有对应 CSS 变量的主题名
     theme: normalizeTheme(str(input.theme, d.theme, 20)),
-    autoUpdate: input.autoUpdate === true,
   };
 }
 
@@ -522,12 +524,25 @@ export async function saveSettings(patch: unknown): Promise<SiteSettings> {
   }
   const merged = normalizeSettings({ ...current, ...p });
   const db = await getDB();
-  await db
-    .prepare(
-      "INSERT INTO settings (key, value, updated_at) VALUES (?1, ?2, datetime('now')) " +
-        "ON CONFLICT(key) DO UPDATE SET value=?2, updated_at=datetime('now')"
-    )
-    .bind(SETTINGS_KEY, JSON.stringify(merged))
-    .run();
+  try {
+    await db
+      .prepare(
+        "INSERT INTO settings (key, value, updated_at) VALUES (?1, ?2, datetime('now')) " +
+          "ON CONFLICT(key) DO UPDATE SET value=?2, updated_at=datetime('now')"
+      )
+      .bind(SETTINGS_KEY, JSON.stringify(merged))
+      .run();
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    // D1 单值大小上限：设置项（含橱窗/轮播内嵌图片）过大时会触发。
+    // 前端已把上传图压到 640px WebP，正常用量远不会触顶；一旦真触发，给出可操作提示
+    // 而不是把底层 SQLITE_TOOBIG 抛给用户。
+    if (/TOOBIG|too big|string or blob/i.test(msg)) {
+      throw new Error(
+        "设置数据过大（主要是橱窗/轮播图片）。请减少图片数量，或改用外链图片地址（填 https:// 链接而非上传），即可正常保存。"
+      );
+    }
+    throw e;
+  }
   return merged;
 }
