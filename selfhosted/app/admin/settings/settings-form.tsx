@@ -59,6 +59,7 @@ export default function SettingsForm({
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(
     null
   );
+  const [loginExpired, setLoginExpired] = useState(false);
 
   const set = <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) =>
     setS((p) => ({ ...p, [k]: v }));
@@ -132,11 +133,6 @@ export default function SettingsForm({
     }
   };
 
-  /* ---------------- 最新评论模块 ---------------- */
-  const lc = s.latestComments;
-  const patchLC = (p: Partial<LatestCommentsConfig>) =>
-    set("latestComments", { ...lc, ...p });
-
   /* ---------------- 页脚二维码模块 ---------------- */
   const patchQr = (i: number, p: Partial<QrItem>) =>
     set(
@@ -151,6 +147,7 @@ export default function SettingsForm({
     const i = qrUploadTarget.current;
     if (!f || i < 0) return;
     try {
+      // 二维码前台以 96px 展示，640px WebP 足够清晰且体积小
       const dataUrl = await compressImage(f, 640, 0.8, undefined, "image/webp");
       patchQr(i, { image: dataUrl });
       setMsg({ type: "ok", text: "二维码已上传并压缩" });
@@ -161,6 +158,11 @@ export default function SettingsForm({
       qrUploadTarget.current = -1;
     }
   };
+
+  /* ---------------- 最新评论模块 ---------------- */
+  const lc = s.latestComments;
+  const patchLC = (p: Partial<LatestCommentsConfig>) =>
+    set("latestComments", { ...lc, ...p });
 
   /* ---------------- 顶部导航 ---------------- */
   const patchNav = (i: number, p: Partial<LinkItem>) =>
@@ -191,6 +193,7 @@ export default function SettingsForm({
   const save = async () => {
     setSaving(true);
     setMsg(null);
+    setLoginExpired(false);
     try {
       const res = await fetch("/api/settings", {
         method: "PUT",
@@ -203,11 +206,13 @@ export default function SettingsForm({
         error?: string;
       };
       if (res.status === 401) {
+        setLoginExpired(true);
         throw new Error("登录已过期，请重新登录后再保存（当前编辑内容未丢失）");
       }
       if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
       if (j.settings) {
-        setS(j.settings);
+        // 合并而非整体覆盖：即便服务端返回缺字段也不会清掉本地刚编辑的内容
+        setS((prev) => ({ ...prev, ...j.settings }));
         // 立即把新主题套用到当前页面：无需等待整页重载即可看到配色变化，
         // 解决「后台切主题刷新看不到、必须关浏览器重开」的体感问题
         if (j.settings.theme) {
@@ -242,7 +247,7 @@ export default function SettingsForm({
               className={INPUT}
               value={s.siteName}
               onChange={(e) => set("siteName", e.target.value)}
-              placeholder="曦微博客系统 XiviBlogSystem"
+              placeholder="曦微 XIVI"
             />
           </div>
           <div>
@@ -700,7 +705,7 @@ export default function SettingsForm({
                     className={`${INPUT} min-h-[64px] resize-y`}
                     value={c.title}
                     onChange={(e) => patchPromo(i, { title: e.target.value })}
-                    placeholder={"CODE A BETTER LIFE\n曦微博客系统 · 技术笔记"}
+                    placeholder={"CODE A BETTER LIFE\n曦微 XIVI · 技术笔记"}
                   />
                 </div>
                 <div>
@@ -745,7 +750,7 @@ export default function SettingsForm({
                 </div>
                 <div className="h-[68px] w-[100px] shrink-0 overflow-hidden rounded-lg border border-[var(--c-border-3)] bg-[var(--c-soft)]">
                   {c.image ? (
-                    <CoverThumb src={c.image} className="h-full w-full" />
+                    <CoverThumb src={c.image} className="h-full w-full" watermark={false} />
                   ) : (
                     <div className="flex h-full items-center justify-center text-[10px] text-[var(--c-text-4)]">
                       纯色卡
@@ -867,6 +872,8 @@ export default function SettingsForm({
             onChange={(e) => set("footerBrand", e.target.value)}
             placeholder="记录 AI 应用、Windows 工具与自动化脚本的实践过程。"
           />
+        </div>
+
         {/* 页脚二维码模块：最多 2 张，可上传或填外链，带标题 */}
         <div className="mt-5 border-t border-[var(--c-border-2)] pt-4">
           <div className="flex items-center justify-between">
@@ -916,13 +923,13 @@ export default function SettingsForm({
                   </div>
                 </div>
                 <input
-                  className={INPUT + " mt-2"}
+                  className={`${INPUT} mt-2`}
                   value={q.image.startsWith("data:") ? "" : q.image}
                   onChange={(e) => patchQr(qi, { image: e.target.value })}
                   placeholder="图片地址，或点左侧上传本地图片"
                 />
                 <input
-                  className={INPUT + " mt-2"}
+                  className={`${INPUT} mt-2`}
                   value={q.title}
                   onChange={(e) => patchQr(qi, { title: e.target.value })}
                   placeholder="二维码标题，如「公众号」「加微信」"
@@ -938,7 +945,6 @@ export default function SettingsForm({
             className="hidden"
             onChange={onQrFile}
           />
-        </div>
         </div>
       </section>
 
@@ -1274,6 +1280,49 @@ export default function SettingsForm({
         </div>
       </section>
 
+      {/* AI 排版 */}
+      <section className={CARD}>
+        <h2 className={TITLE}>AI 排版</h2>
+        <p className="mt-1 text-xs text-[var(--c-text-3)]">
+          后台「编辑器 → AI 自动排版」会按曦微风格自动格式化 Markdown（标题层级、引用、分割线、强调等）。
+          默认使用 glm-4.7-flash 免费模型，也可改为其它 OpenAI 兼容接口。
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label className={LABEL}>API Key</label>
+            <input
+              type="password"
+              autoComplete="off"
+              className={INPUT}
+              value={s.aiFormatApiKey || s.aiCoverApiKey || ""}
+              onChange={(e) => set("aiFormatApiKey", e.target.value)}
+              placeholder="粘贴 LLM API Key（形如 sk-... 或 z-...）"
+            />
+            <p className="mt-1 text-xs text-[var(--c-text-4)]">
+              也可在部署时设置环境变量 AI_FORMAT_API_KEY，不会进入数据库。留空则尝试读取环境变量。
+            </p>
+          </div>
+          <div>
+            <label className={LABEL}>模型 ID</label>
+            <input
+              className={INPUT}
+              value={s.aiFormatModel}
+              onChange={(e) => set("aiFormatModel", e.target.value)}
+              placeholder="glm-4.7-flash"
+            />
+          </div>
+          <div>
+            <label className={LABEL}>API Base URL</label>
+            <input
+              className={INPUT}
+              value={s.aiFormatBaseUrl}
+              onChange={(e) => set("aiFormatBaseUrl", e.target.value)}
+              placeholder="https://api.anthropic.com/v1"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* 版权行 */}
       <section className={CARD}>
         <h2 className={TITLE}>页脚 · 底部信息</h2>
@@ -1284,7 +1333,7 @@ export default function SettingsForm({
               className={INPUT}
               value={s.copyright}
               onChange={(e) => set("copyright", e.target.value)}
-              placeholder="© {year} 曦微博客系统 XiviBlogSystem"
+              placeholder="© {year} 曦微 XIVI"
             />
           </div>
           <div>
@@ -1311,16 +1360,7 @@ export default function SettingsForm({
       </section>
 
       {/* 保存 */}
-      <div className="sticky bottom-4 flex flex-wrap items-center gap-4 rounded-xl border border-[var(--c-border-2)] bg-[var(--c-card)] px-4 py-3 shadow-sm">
-        <label className="flex cursor-pointer select-none items-center gap-2 text-sm text-[var(--c-text-2)]">
-          <input
-            type="checkbox"
-            checked={s.autoUpdate === true}
-            onChange={(e) => set("autoUpdate", e.target.checked)}
-            className="h-4 w-4 accent-[var(--brand)]"
-          />
-          自动检测更新（后台访问时静默对比 GitHub，不会自动安装）
-        </label>
+      <div className="sticky bottom-4 flex items-center gap-4 rounded-xl border border-[var(--c-border-2)] bg-[var(--c-card)] px-4 py-3 shadow-sm">
         <button
           onClick={save}
           disabled={saving}
@@ -1328,6 +1368,22 @@ export default function SettingsForm({
         >
           {saving ? "保存中…" : "保存设置"}
         </button>
+        {msg?.type === "err" && (
+          <div className="fixed inset-x-0 top-0 z-[100] bg-red-600 px-4 py-3 text-center text-sm font-medium text-white shadow-lg">
+            ⚠️ 保存失败：{msg.text}
+            {loginExpired && (
+              <a
+                href="/admin/login"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-3 inline-block rounded bg-white/20 px-2 py-1 text-xs underline hover:bg-white/30"
+              >
+                新标签页重新登录
+              </a>
+            )}
+            （当前页面内容未丢失，可直接重试）
+          </div>
+        )}
         {msg && (
           <span
             className={`text-sm ${msg.type === "ok" ? "text-[var(--brand-deep)]" : "text-red-500"}`}
@@ -1336,12 +1392,6 @@ export default function SettingsForm({
           </span>
         )}
       </div>
-
-      {msg?.type === "err" && (
-        <div className="fixed inset-x-0 top-0 z-[100] bg-red-600 px-4 py-3 text-center text-sm font-medium text-white shadow-lg">
-          ⚠️ 保存失败：{msg.text}（当前页面内容未丢失，可直接重试）
-        </div>
-      )}
     </div>
   );
 }

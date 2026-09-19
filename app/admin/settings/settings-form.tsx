@@ -1280,6 +1280,49 @@ export default function SettingsForm({
         </div>
       </section>
 
+      {/* AI 排版 */}
+      <section className={CARD}>
+        <h2 className={TITLE}>AI 排版</h2>
+        <p className="mt-1 text-xs text-[var(--c-text-3)]">
+          后台「编辑器 → AI 自动排版」会按曦微风格自动格式化 Markdown（标题层级、引用、分割线、强调等）。
+          默认使用 glm-4.7-flash 免费模型，也可改为其它 OpenAI 兼容接口。
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label className={LABEL}>API Key</label>
+            <input
+              type="password"
+              autoComplete="off"
+              className={INPUT}
+              value={s.aiFormatApiKey || s.aiCoverApiKey || ""}
+              onChange={(e) => set("aiFormatApiKey", e.target.value)}
+              placeholder="粘贴 LLM API Key（形如 sk-... 或 z-...）"
+            />
+            <p className="mt-1 text-xs text-[var(--c-text-4)]">
+              也可在部署时设置环境变量 AI_FORMAT_API_KEY，不会进入数据库。留空则尝试读取环境变量。
+            </p>
+          </div>
+          <div>
+            <label className={LABEL}>模型 ID</label>
+            <input
+              className={INPUT}
+              value={s.aiFormatModel}
+              onChange={(e) => set("aiFormatModel", e.target.value)}
+              placeholder="glm-4.7-flash"
+            />
+          </div>
+          <div>
+            <label className={LABEL}>API Base URL</label>
+            <input
+              className={INPUT}
+              value={s.aiFormatBaseUrl}
+              onChange={(e) => set("aiFormatBaseUrl", e.target.value)}
+              placeholder="https://api.anthropic.com/v1"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* 版权行 */}
       <section className={CARD}>
         <h2 className={TITLE}>页脚 · 底部信息</h2>
