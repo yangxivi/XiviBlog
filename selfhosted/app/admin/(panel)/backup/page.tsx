@@ -51,18 +51,9 @@ export default async function BackupPage() {
 
   return (
     <>
-      <div className="mb-6 flex items-center justify-between rounded-xl border border-[var(--c-border-2)] bg-[var(--c-soft)] px-4 py-3">
-        <p className="text-sm text-[var(--c-text-2)]">
-          导出 / 导入站点数据，建议每次大改前先备份一次。
-        </p>
-
+      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-slate-700/60 bg-[#1e293b] px-6 py-2">
+        <h1 className="text-base font-semibold text-white leading-none">数据备份</h1>
       </div>
-
-
-
-      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 py-2">
-<h1 className="text-base font-bold text-[var(--c-text)]">数据备份</h1>
-</div>
 
       {dbError && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">

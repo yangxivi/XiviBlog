@@ -40,7 +40,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "访问统计" };
 
 const CARD = "rounded-2xl border border-[var(--c-border-2)] p-5";
-const H2 = "text-sm font-bold text-[var(--c-text)]";
+const H2 = "text-sm font-semibold text-white";
 
 function Kpi({
   label,
@@ -54,7 +54,7 @@ function Kpi({
   return (
     <div className={CARD}>
       <p className="text-xs text-[var(--c-text-3)]">{label}</p>
-      <p className="mt-1.5 text-2xl font-bold tabular-nums text-[var(--c-text)]">
+      <p className="mt-1.5 text-2xl font-semibold tabular-nums text-white">
         {value.toLocaleString("zh-CN")}
       </p>
       {sub && <p className="mt-0.5 text-xs text-[var(--c-text-4)]">{sub}</p>}
@@ -62,7 +62,7 @@ function Kpi({
   );
 }
 
-/** 纯 SVG 趋势图：柱=PV，折线=UV，不引第三方图表库 */
+/** �?SVG 趋势图：�?PV，折�?UV，不引第三方图表�?*/
 function Trend({ data }: { data: DailyPoint[] }) {
   const W = 900;
   const H = 200;
@@ -86,7 +86,7 @@ function Trend({ data }: { data: DailyPoint[] }) {
       viewBox={`0 0 ${W} ${H}`}
       className="h-[200px] w-full"
       role="img"
-      aria-label="近 30 天访问趋势"
+      aria-label="�?30 天访问趋�?
     >
       {/* 基线 */}
       <line
@@ -141,7 +141,7 @@ function Trend({ data }: { data: DailyPoint[] }) {
   );
 }
 
-/** RSS 抓取趋势：柱=抓取次数，折线=独立读者 */
+/** RSS 抓取趋势：柱=抓取次数，折�?独立读�?*/
 function FeedTrend({ data }: { data: FeedDay[] }) {
   const W = 900;
   const H = 150;
@@ -166,7 +166,7 @@ function FeedTrend({ data }: { data: FeedDay[] }) {
       viewBox={`0 0 ${W} ${H}`}
       className="h-[150px] w-full"
       role="img"
-      aria-label="近 30 天 RSS 抓取趋势"
+      aria-label="�?30 �?RSS 抓取趋势"
     >
       <line
         x1={PAD_L}
@@ -188,7 +188,7 @@ function FeedTrend({ data }: { data: FeedDay[] }) {
             rx="1.5"
             fill="var(--brand)"
           >
-            <title>{`${d.day}  抓取 ${d.hits} 次 / 读者 ${d.visitors}`}</title>
+            <title>{`${d.day}  抓取 ${d.hits} �?/ 读�?${d.visitors}`}</title>
           </rect>
         );
       })}
@@ -220,7 +220,7 @@ function FeedTrend({ data }: { data: FeedDay[] }) {
   );
 }
 
-/** 把 /blog/xxx 换成文章标题，其它路径原样展示 */function labelPath(path: string, titles: Map<string, string>) {
+/** �?/blog/xxx 换成文章标题，其它路径原样展�?*/function labelPath(path: string, titles: Map<string, string>) {
   if (path.startsWith("/blog/")) {
     const slug = path.slice("/blog/".length);
     return titles.get(slug) ?? `${path}（已删除）`;
@@ -229,7 +229,7 @@ function FeedTrend({ data }: { data: FeedDay[] }) {
     "/": "首页",
     "/history": "历史文章",
     "/about": "关于我们",
-    "/search": "搜索页",
+    "/search": "搜索�?,
   };
   return fixed[path] ?? path;
 }
@@ -312,8 +312,8 @@ export default async function StatsPage() {
   return (
     <>
 
-      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 py-2">
-<h1 className="text-base font-bold text-[var(--c-text)]">访问统计</h1>
+      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-slate-700/60 bg-[#1e293b] px-6 py-2">
+<h1 className="text-base font-semibold text-white">访问统计</h1>
 </div>
 
       {dbError ? (
@@ -323,16 +323,16 @@ export default async function StatsPage() {
       ) : noData ? (
         <div className="rounded-2xl border border-dashed border-[var(--c-border-3)] py-16 text-center">
           <p className="text-sm text-[var(--c-text-3)]">
-            还没有任何访问数据。
+            还没有任何访问数据�?
           </p>
           <p className="mt-1 text-xs text-[var(--c-text-4)]">
-            埋点已生效，打开前台任意页面产生一次浏览后，这里就会出现数据。
+            埋点已生效，打开前台任意页面产生一次浏览后，这里就会出现数据�?
           </p>
           <Link
             href="/"
             className="mt-4 inline-block rounded-lg bg-[var(--brand)] px-4 py-1.5 text-sm font-medium text-[var(--brand-ink)] transition hover:bg-[var(--brand-hover)]"
           >
-            去前台看看 →
+            去前台看�?�?
           </Link>
         </div>
       ) : (
@@ -350,12 +350,12 @@ export default async function StatsPage() {
               sub={`访客 ${overview!.todayUv.toLocaleString("zh-CN")}`}
             />
             <Kpi
-              label="近 7 天"
+              label="�?7 �?
               value={overview!.weekPv}
               sub={`访客 ${overview!.weekUv.toLocaleString("zh-CN")}`}
             />
             <Kpi
-              label="近 30 天"
+              label="�?30 �?
               value={overview!.monthPv}
               sub={`访客 ${overview!.monthUv.toLocaleString("zh-CN")}`}
             />
@@ -364,7 +364,7 @@ export default async function StatsPage() {
           {/* 趋势 */}
           <section className={CARD}>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className={H2}>近 30 天趋势</h2>
+              <h2 className={H2}>�?30 天趋�?/h2>
               <div className="flex items-center gap-4 text-xs text-[var(--c-text-3)]">
                 <span className="flex items-center gap-1.5">
                   <span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--brand)]" />
@@ -384,12 +384,12 @@ export default async function StatsPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             {/* 热门页面 */}
             <section className={CARD}>
-              <h2 className={H2}>热门页面 · 近 30 天</h2>
+              <h2 className={H2}>热门页面 · �?30 �?/h2>
               <ol className="mt-4 space-y-2.5">
                 {topPaths.map((t, i) => (
                   <li key={t.path} className="flex items-center gap-3">
                     <span
-                      className={`w-5 shrink-0 text-center font-serif text-[15px] font-bold italic ${
+                      className={`w-5 shrink-0 text-center font-serif text-[15px] font-semibold italic ${
                         i < 3 ? "text-[#FF6B35]" : "text-[var(--c-text-4)]"
                       }`}
                     >
@@ -397,7 +397,7 @@ export default async function StatsPage() {
                     </span>
                     <Link
                       href={t.path}
-                      className="min-w-0 flex-1 truncate text-sm text-[var(--c-text)] transition-colors hover:text-[var(--brand-deep)]"
+                      className="min-w-0 flex-1 truncate text-sm text-white transition-colors hover:text-[var(--brand-deep)]"
                       title={t.path}
                     >
                       {labelPath(t.path, titles)}
@@ -415,12 +415,12 @@ export default async function StatsPage() {
 
             {/* 来源 */}
             <section className={CARD}>
-              <h2 className={H2}>来源 · 近 30 天</h2>
+              <h2 className={H2}>来源 · �?30 �?/h2>
               <ol className="mt-4 space-y-2.5">
                 {topRefs.map((r) => (
                   <li key={r.referrer} className="flex items-center gap-3">
                     <span
-                      className="min-w-0 flex-1 truncate text-sm text-[var(--c-text)]"
+                      className="min-w-0 flex-1 truncate text-sm text-white"
                       title={r.referrer}
                     >
                       {r.referrer}
@@ -437,9 +437,9 @@ export default async function StatsPage() {
             </section>
           </div>
 
-          {/* 最近访问 */}
+          {/* 最近访�?*/}
           <section className={CARD}>
-            <h2 className={H2}>最近访问</h2>
+            <h2 className={H2}>最近访�?/h2>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
@@ -458,7 +458,7 @@ export default async function StatsPage() {
                       <td className="whitespace-nowrap py-2 pr-4 text-xs tabular-nums text-[var(--c-text-3)]">
                         {cnTime(h.created_at)}
                       </td>
-                      <td className="max-w-[240px] truncate py-2 pr-4 text-[var(--c-text)]">
+                      <td className="max-w-[240px] truncate py-2 pr-4 text-white">
                         {labelPath(h.path, titles)}
                       </td>
                       <td className="max-w-[200px] truncate py-2 text-xs text-[var(--c-text-3)]">
@@ -480,38 +480,38 @@ export default async function StatsPage() {
               </table>
             </div>
           </section>
-          {/* 搜索词 */}
+          {/* 搜索�?*/}
           <section className={CARD}>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className={H2}>搜索词 · 近 30 天</h2>
+              <h2 className={H2}>搜索�?· �?30 �?/h2>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--c-text-3)]">
                 <span>
                   共{" "}
-                  <b className="tabular-nums text-[var(--c-text)]">
+                  <b className="tabular-nums text-white">
                     {searchOverview.total.toLocaleString("zh-CN")}
                   </b>{" "}
-                  次
+                  �?
                 </span>
                 <span>今日 {searchOverview.today}</span>
-                <span>独立词 {searchOverview.words}</span>
+                <span>独立�?{searchOverview.words}</span>
                 <span
                   className={
                     searchOverview.zeroWords > 0 ? "text-[#FF6B35]" : undefined
                   }
                 >
-                  搜不到 {searchOverview.zeroWords}
+                  搜不�?{searchOverview.zeroWords}
                 </span>
               </div>
             </div>
 
             {searchOverview.total === 0 ? (
               <p className="mt-4 text-xs text-[var(--c-text-4)]">
-                还没有搜索记录。前台搜索页被使用后，这里会显示热门词与「搜不到的词」。
+                还没有搜索记录。前台搜索页被使用后，这里会显示热门词与「搜不到的词」�?
               </p>
             ) : (
               <>
                 <div className="mt-4 grid gap-6 lg:grid-cols-2">
-                  {/* 热门词 */}
+                  {/* 热门�?*/}
                   <div>
                     <p className="text-xs font-medium text-[var(--c-text-3)]">
                       热门搜索
@@ -520,7 +520,7 @@ export default async function StatsPage() {
                       {topSearches.map((t, i) => (
                         <li key={t.q} className="flex items-center gap-3">
                           <span
-                            className={`w-5 shrink-0 text-center font-serif text-[15px] font-bold italic ${
+                            className={`w-5 shrink-0 text-center font-serif text-[15px] font-semibold italic ${
                               i < 3 ? "text-[#FF6B35]" : "text-[var(--c-text-4)]"
                             }`}
                           >
@@ -528,13 +528,13 @@ export default async function StatsPage() {
                           </span>
                           <Link
                             href={`/search?q=${encodeURIComponent(t.q)}`}
-                            className="min-w-0 flex-1 truncate text-sm text-[var(--c-text)] transition-colors hover:text-[var(--brand-deep)]"
+                            className="min-w-0 flex-1 truncate text-sm text-white transition-colors hover:text-[var(--brand-deep)]"
                             title={t.q}
                           >
                             {t.q}
                           </Link>
                           <span className="shrink-0 text-xs tabular-nums text-[var(--c-text-3)]">
-                            {t.hits} 次 · {t.visitors} 人
+                            {t.hits} �?· {t.visitors} �?
                           </span>
                         </li>
                       ))}
@@ -561,13 +561,13 @@ export default async function StatsPage() {
                             {t.q}
                           </span>
                           <span className="shrink-0 text-xs tabular-nums text-[var(--c-text-3)]">
-                            {t.hits} 次
+                            {t.hits} �?
                           </span>
                         </li>
                       ))}
                       {zeroSearches.length === 0 && (
                         <li className="text-xs text-[var(--c-text-4)]">
-                          每个搜索词都有命中 ✅
+                          每个搜索词都有命�?�?
                         </li>
                       )}
                     </ul>
@@ -577,7 +577,7 @@ export default async function StatsPage() {
                 {recentSearches.length > 0 && (
                   <div className="mt-6 border-t border-[var(--c-border-2)] pt-4">
                     <p className="text-xs font-medium text-[var(--c-text-3)]">
-                      最近搜索
+                      最近搜�?
                     </p>
                     <div className="mt-2.5 flex flex-wrap gap-2">
                       {recentSearches.map((r, i) => (
@@ -592,7 +592,7 @@ export default async function StatsPage() {
                         >
                           {r.q}
                           <span className="ml-1.5 text-[var(--c-text-4)]">
-                            {r.results} 篇
+                            {r.results} �?
                           </span>
                         </span>
                       ))}
@@ -603,29 +603,29 @@ export default async function StatsPage() {
             )}
           </section>
 
-          {/* RSS 阅读数 */}
+          {/* RSS 阅读�?*/}
           <section className={CARD}>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className={H2}>RSS 阅读 · 近 30 天</h2>
+              <h2 className={H2}>RSS 阅读 · �?30 �?/h2>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--c-text-3)]">
                 <span>
                   累计抓取{" "}
-                  <b className="tabular-nums text-[var(--c-text)]">
+                  <b className="tabular-nums text-white">
                     {feedOverview.total.toLocaleString("zh-CN")}
                   </b>{" "}
-                  次
+                  �?
                 </span>
                 <span>今日 {feedOverview.today}</span>
-                <span>近 7 天 {feedOverview.week}</span>
-                <span>独立阅读器 {feedOverview.readers}</span>
-                <span>独立读者 {feedOverview.visitors}</span>
+                <span>�?7 �?{feedOverview.week}</span>
+                <span>独立阅读�?{feedOverview.readers}</span>
+                <span>独立读�?{feedOverview.visitors}</span>
               </div>
             </div>
 
             {feedOverview.total === 0 ? (
               <p className="mt-4 text-xs text-[var(--c-text-4)]">
                 还没有抓到订阅器取源记录。把下面的地址填进任意 RSS 阅读器（Feedly /
-                Inoreader / 自建 FreshRSS 等）抓一次，这里就会出现数据。
+                Inoreader / 自建 FreshRSS 等）抓一次，这里就会出现数据�?
                 <br />
                 <a
                   href={feedUrl}
@@ -645,7 +645,7 @@ export default async function StatsPage() {
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="h-[2px] w-4 bg-[#111925]" />
-                    独立读者
+                    独立读�?
                   </span>
                 </div>
                 <div className="mt-3">
@@ -655,23 +655,23 @@ export default async function StatsPage() {
                 <div className="mt-4 grid gap-6 lg:grid-cols-2">
                   <div>
                     <p className="text-xs font-medium text-[var(--c-text-3)]">
-                      谁在读（按 UA 识别）
+                      谁在读（�?UA 识别�?
                     </p>
                     <ol className="mt-3 space-y-2.5">
                       {topReaders.map((r, i) => (
                         <li key={r.reader} className="flex items-center gap-3">
                           <span
-                            className={`w-5 shrink-0 text-center font-serif text-[15px] font-bold italic ${
+                            className={`w-5 shrink-0 text-center font-serif text-[15px] font-semibold italic ${
                               i < 3 ? "text-[#FF6B35]" : "text-[var(--c-text-4)]"
                             }`}
                           >
                             {i + 1}
                           </span>
-                          <span className="min-w-0 flex-1 truncate text-sm text-[var(--c-text)]">
+                          <span className="min-w-0 flex-1 truncate text-sm text-white">
                             {r.reader}
                           </span>
                           <span className="shrink-0 text-xs tabular-nums text-[var(--c-text-3)]">
-                            {r.hits} 次 · {r.visitors} 人
+                            {r.hits} �?· {r.visitors} �?
                           </span>
                         </li>
                       ))}
@@ -683,7 +683,7 @@ export default async function StatsPage() {
 
                   <div>
                     <p className="text-xs font-medium text-[var(--c-text-3)]">
-                      最近抓取
+                      最近抓�?
                     </p>
                     <ul className="mt-3 space-y-2">
                       {recentFeed.map((r, i) => (
@@ -710,7 +710,7 @@ export default async function StatsPage() {
             )}
 
             <p className="mt-4 border-t border-[var(--c-border-2)] pt-3 text-xs leading-6 text-[var(--c-text-4)]">
-              订阅地址：
+              订阅地址�?
               <a
                 href={feedUrl}
                 target="_blank"
@@ -721,8 +721,8 @@ export default async function StatsPage() {
               </a>
               <br />
               口径：RSS 阅读器取源一次记一次，同一阅读器反复拉取会重复计数（部分阅读器
-              每 15 分钟拉一次），因此这是「订阅热度」而非「读完人数」；独立读者按
-              IP + UA 匿名哈希去重，换网络会重复计数。
+              �?15 分钟拉一次），因此这是「订阅热度」而非「读完人数」；独立读者按
+              IP + UA 匿名哈希去重，换网络会重复计数�?
             </p>
           </section>
         </div>

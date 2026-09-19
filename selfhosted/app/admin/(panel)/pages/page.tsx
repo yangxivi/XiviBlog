@@ -17,13 +17,13 @@ export default async function AdminPages() {
     <>
 
 
-      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 py-2">
-        <h1 className="text-base font-bold text-[var(--c-text)]">页面管理</h1>
+      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-slate-700/60 bg-[#1e293b] px-6 py-2">
+        <h1 className="text-base font-semibold text-white">页面管理</h1>
       </div>
 
       <p className="mb-4 text-sm text-[var(--c-text-3)]">
-        这里的「页面」是独立单页（留言板、友链页、说明页等），区别于按时间排序的文章。
-        勾选「显示在导航」后会出现在顶部导航栏，可开启留言区。
+        这里的「页面」是独立单页（留言板、友链页、说明页等），区别于按时间排序的文章�?
+        勾选「显示在导航」后会出现在顶部导航栏，可开启留言区�?
       </p>
 
       <div className="overflow-hidden rounded-2xl border border-[var(--c-border-2)] bg-[var(--c-soft)]">
@@ -46,7 +46,7 @@ export default async function AdminPages() {
               className="grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-3 border-b border-[var(--c-border-2)] px-4 py-3 last:border-0"
             >
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-[var(--c-text)]">
+                <p className="truncate text-sm font-medium text-white">
                   {p.title}
                 </p>
                 <p className="truncate text-xs text-[var(--c-text-3)]">
@@ -55,16 +55,16 @@ export default async function AdminPages() {
               </div>
               <span className="w-16 text-center text-sm">
                 {p.show_in_nav === 1 ? (
-                  <span className="text-emerald-600">✓</span>
+                  <span className="text-emerald-600">�?/span>
                 ) : (
-                  <span className="text-[var(--c-text-4)]">—</span>
+                  <span className="text-[var(--c-text-4)]">�?/span>
                 )}
               </span>
               <span className="w-16 text-center text-sm">
                 {p.allow_comments === 1 ? (
-                  <span className="text-emerald-600">✓</span>
+                  <span className="text-emerald-600">�?/span>
                 ) : (
-                  <span className="text-[var(--c-text-4)]">—</span>
+                  <span className="text-[var(--c-text-4)]">�?/span>
                 )}
               </span>
               <Link
