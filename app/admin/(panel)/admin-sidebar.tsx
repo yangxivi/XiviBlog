@@ -201,18 +201,18 @@ export default function AdminSidebar({
         collapsed ? "w-16" : "w-[220px]"
       }`}
     >
-      {/* 品牌区 */}
+      {/* 品牌区：LOGO 与文字横向并排，LOGO 高度等于两行文字之和，整体压缩高度 */}
       <div
-        className={`flex flex-col items-center border-b border-slate-700/60 ${
-          collapsed ? "px-2 py-4" : "px-4 py-5"
+        className={`flex items-center border-b border-slate-700/60 ${
+          collapsed ? "px-2 py-1.5" : "px-3 py-2"
         }`}
       >
         {logo}
         {!collapsed && (
-          <>
-            <span className="mt-2 text-sm font-semibold text-white">曦微博客</span>
-            <span className="text-[11px] text-slate-500">后台管理</span>
-          </>
+          <div className="ml-2.5 flex flex-1 flex-col justify-center leading-none">
+            <span className="text-sm font-semibold text-white">曦微博客</span>
+            <span className="text-[10px] text-slate-500">后台管理</span>
+          </div>
         )}
       </div>
 
