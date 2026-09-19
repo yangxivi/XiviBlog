@@ -266,9 +266,9 @@ export default function AdminSidebar({
       <div className="space-y-1 border-t border-slate-700/60 p-3">
         <button
           type="button"
-          onClick={toggleCollapse}
+          onClick={() => { toggleCollapse(); }}
           title={collapsed ? "展开菜单" : "收起菜单"}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-500 transition hover:bg-slate-800/60 hover:text-slate-300"
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-white font-bold transition hover:bg-slate-800/60 hover:text-white"
         >
           <svg
             viewBox="0 0 24 24"
@@ -284,11 +284,11 @@ export default function AdminSidebar({
           </svg>
           {!collapsed && <span>收起菜单</span>}
         </button>
-        <form action="/api/auth/logout" method="POST">
+        <form action="/api/auth/logout" method="POST" onSubmit={(e) => { e.preventDefault(); window.location.href = '/admin/login'; }}>
           <button
             type="submit"
             title="退出登录"
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-500 transition hover:bg-slate-800/60 hover:text-slate-300"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-white font-bold transition hover:bg-slate-800/60 hover:text-white"
           >
             <svg
               viewBox="0 0 24 24"
