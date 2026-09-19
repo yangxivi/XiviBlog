@@ -203,7 +203,7 @@ export default function AdminSidebar({
     >
       {/* 品牌区：LOGO 与文字横向并排；收起时居中，展开只显示「后台管理」主标题 */}
       <div
-        className={`flex items-start border-b border-slate-700/60 ${
+        className={`flex items-center border-b border-slate-700/60 ${
           collapsed ? "justify-center px-2 py-2" : "px-3 py-2"
         }`}
       >
