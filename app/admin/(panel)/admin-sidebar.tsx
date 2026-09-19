@@ -130,10 +130,8 @@ type NavItem = {
 };
 
 export default function AdminSidebar({
-  user,
   logo,
 }: {
-  user: { name?: string | null; email?: string | null };
   logo: ReactNode;
 }) {
   const pathname = usePathname();
@@ -218,29 +216,8 @@ export default function AdminSidebar({
         )}
       </div>
 
-      {/* 用户信息卡 */}
-      <div
-        className={`flex items-center gap-3 rounded-xl bg-slate-800/70 px-3 py-2.5 ${
-          collapsed ? "mx-2 my-3 justify-center" : "mx-3 my-4"
-        }`}
-      >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand)] text-xs font-bold text-[var(--brand-ink)]">
-          {(user?.name || user?.email || "X").slice(0, 1).toUpperCase()}
-        </span>
-        {!collapsed && (
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-medium text-white">
-              {user?.name || "管理员"}
-            </p>
-            <p className="truncate text-[10px] text-slate-500">
-              {user?.email || "兼容会话"}
-            </p>
-          </div>
-        )}
-      </div>
-
       {/* 导航 */}
-      <nav className="flex-1 overflow-y-auto px-3 pb-2">
+      <nav className="flex-1 overflow-y-auto px-3 pt-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {collapsed ? (
           <div className="space-y-2">
             {GROUPS.map((group, gi) => (
