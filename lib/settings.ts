@@ -139,7 +139,7 @@ export type SiteSettings = {
   aiCoverBaseUrl: string;
   /** AI 排版 API Key（与封面共用同一 agnes 服务） */
   aiFormatApiKey: string;
-  /** AI 排版模型 ID（默认用 glm-4.7-flash 免费模型） */
+  /** AI 排版模型 ID（默认用 agnes-3.0-flash） */
   aiFormatModel: string;
   /** AI 排版 API Base URL */
   aiFormatBaseUrl: string;
@@ -230,10 +230,10 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   aiCoverBaseUrl: "https://apihub.agnes-ai.com/v1",
   /** AI 排版 API Key（默认与封面共用，留空则尝试读取环境变量） */
   aiFormatApiKey: "",
-  /** AI 排版模型 ID（默认 glm-4.7-flash 免费） */
-  aiFormatModel: "glm-4.7-flash",
+  /** AI 排版模型 ID（默认 agnes-3.0-flash） */
+  aiFormatModel: "agnes-3.0-flash",
   /** AI 排版 API Base URL（末尾不带 /v1） */
-  aiFormatBaseUrl: "https://api.anthropic.com/v1",
+  aiFormatBaseUrl: "https://apihub.agnes-ai.com/v1",
   categoryAliases: {},
   theme: "meituan",
   carousel: {

@@ -5,8 +5,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export const dynamic = "force-dynamic";
 
-const DEFAULT_BASE_URL = "https://open.bigmodel.cn/api/paas/v4";
-const DEFAULT_MODEL = "glm-4.7-flash";
+const DEFAULT_BASE_URL = "https://apihub.agnes-ai.com/v1";
+const DEFAULT_MODEL = "agnes-3.0-flash";
 
 /**
  * AI 自动排版接口。
