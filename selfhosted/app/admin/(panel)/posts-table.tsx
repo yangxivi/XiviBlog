@@ -55,6 +55,15 @@ export default function PostsTable({ posts, tags }: Props) {
   const allChecked =
     pageItems.length > 0 && pageItems.every((p) => sel.has(p.id));
 
+  // 页码窗口：最多显示 5 个（以当前页为中心）；总页数 > 5 时再用输入框跳页（同前台）
+  const pager = useMemo(() => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const start = Math.min(Math.max(cur - 2, 1), totalPages - 4);
+    return [start, start + 1, start + 2, start + 3, start + 4];
+  }, [cur, totalPages]);
+
   /** 当前推荐占用名额 */
   const recCount = useMemo(
     () => posts.filter((p) => p.recommended).length,
@@ -487,9 +496,28 @@ export default function PostsTable({ posts, tags }: Props) {
           >
             上一页
           </button>
-          <span className="text-xs text-[var(--c-text-3)]">
-            第 {cur} / {totalPages} 页
-          </span>
+          <div className="flex items-center gap-1">
+            {pager.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setPage(n)}
+                className={`h-7 min-w-[1.75rem] rounded-lg px-1.5 text-xs transition ${
+                  cur === n
+                    ? "bg-[var(--brand)] font-medium text-[var(--brand-ink)]"
+                    : "text-[var(--c-text-3)] hover:bg-[var(--c-fill)] hover:text-[var(--c-text-2)]"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+            {totalPages > 5 && (
+              <PageJump totalPages={totalPages} onJump={setPage} />
+            )}
+            <span className="ml-1 whitespace-nowrap text-xs text-[var(--c-text-3)]">
+              共 {totalPages} 页
+            </span>
+          </div>
           <button
             type="button"
             disabled={cur >= totalPages}
@@ -637,9 +665,28 @@ export default function PostsTable({ posts, tags }: Props) {
           >
             上一页
           </button>
-          <span className="text-xs text-[var(--c-text-3)]">
-            第 {cur} / {totalPages} 页
-          </span>
+          <div className="flex items-center gap-1">
+            {pager.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setPage(n)}
+                className={`h-7 min-w-[1.75rem] rounded-lg px-1.5 text-xs transition ${
+                  cur === n
+                    ? "bg-[var(--brand)] font-medium text-[var(--brand-ink)]"
+                    : "text-[var(--c-text-3)] hover:bg-[var(--c-fill)] hover:text-[var(--c-text-2)]"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+            {totalPages > 5 && (
+              <PageJump totalPages={totalPages} onJump={setPage} />
+            )}
+            <span className="ml-1 whitespace-nowrap text-xs text-[var(--c-text-3)]">
+              共 {totalPages} 页
+            </span>
+          </div>
           <button
             type="button"
             disabled={cur >= totalPages}
@@ -652,5 +699,47 @@ export default function PostsTable({ posts, tags }: Props) {
       )}
       {dialog}
     </div>
+  );
+}
+
+/** 跳页输入框（同前台）：输入数字回车/失焦即跳转，超出范围自动忽略 */
+function PageJump({
+  totalPages,
+  onJump,
+}: {
+  totalPages: number;
+  onJump: (n: number) => void;
+}) {
+  const [v, setV] = useState("");
+
+  const go = () => {
+    const n = parseInt(v, 10);
+    if (Number.isFinite(n) && n >= 1 && n <= totalPages) {
+      onJump(n);
+    }
+    setV("");
+  };
+
+  return (
+    <span className="flex items-center gap-1 text-xs">
+      <input
+        type="number"
+        min={1}
+        max={totalPages}
+        value={v}
+        onChange={(e) => setV(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            go();
+          }
+        }}
+        onBlur={go}
+        placeholder="跳"
+        aria-label="跳转到指定页"
+        className="h-7 w-12 rounded-lg border border-[var(--c-border-3)] bg-[var(--c-card)] px-1 text-center text-xs text-[var(--c-text)] outline-none transition focus:border-[var(--brand)]"
+      />
+      <span className="text-[var(--c-text-4)]">页</span>
+    </span>
   );
 }

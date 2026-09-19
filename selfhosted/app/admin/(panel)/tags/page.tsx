@@ -26,10 +26,12 @@ export default async function TagsPage() {
   return (
     <>
 
-      <h1 className="mb-1 text-2xl font-bold text-[var(--c-text)]">分类管理</h1>
-      <p className="mb-6 text-sm text-[var(--c-text-3)]">
+      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 pb-4 pt-5">
+<h1 className="text-2xl font-bold text-[var(--c-text)]">分类管理</h1>
+<p className="mt-1 text-sm text-[var(--c-text-3)]">
         共 {tags.length} 个分类
       </p>
+</div>
 
       {dbError ? (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">

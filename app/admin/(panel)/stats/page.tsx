@@ -312,12 +312,14 @@ export default async function StatsPage() {
   return (
     <>
 
-      <h1 className="mb-1 text-2xl font-bold text-[var(--c-text)]">访问统计</h1>
-      <p className="mb-6 text-sm text-[var(--c-text-3)]">
+      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 pb-4 pt-5">
+<h1 className="text-2xl font-bold text-[var(--c-text)]">访问统计</h1>
+<p className="mt-1 text-sm text-[var(--c-text-3)]">
         统计口径为东八区自然日，已排除后台/接口请求与常见爬虫；UV 按「IP + UA」匿名哈希去重。
         搜索词同样匿名记录，用于发现「访客在找但站内没有」的内容。
         RSS 抓取单独成表统计 —— 订阅阅读器的 UA 本身就是爬虫，混进访问量会把两套口径都搅乱。
       </p>
+</div>
 
       {dbError ? (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
