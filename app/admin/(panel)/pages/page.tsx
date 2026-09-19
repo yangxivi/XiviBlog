@@ -17,14 +17,8 @@ export default async function AdminPages() {
     <>
 
 
-      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 flex items-center justify-between border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 pb-4 pt-5">
-        <h1 className="text-2xl font-bold text-[var(--c-text)]">页面管理</h1>
-        <Link
-          href="/admin/pages/new"
-          className="rounded-lg bg-[var(--brand)] px-4 py-2 text-sm font-medium text-[var(--brand-ink)] transition hover:bg-[var(--brand-hover)]"
-        >
-          + 新建页面
-        </Link>
+      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 py-2">
+        <h1 className="text-base font-bold text-[var(--c-text)]">页面管理</h1>
       </div>
 
       <p className="mb-4 text-sm text-[var(--c-text-3)]">

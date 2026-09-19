@@ -29,12 +29,9 @@ export default async function HomeSettingsPage() {
 
   return (
     <>
-      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 pb-4 pt-5">
-        <h1 className="text-2xl font-bold text-[var(--c-text)]">首页模块</h1>
-        <p className="mt-1 text-sm text-[var(--c-text-3)]">
-          首页轮播、侧边栏橱窗与「最新评论」模块配置
-        </p>
-      </div>
+      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 py-2">
+<h1 className="text-base font-bold text-[var(--c-text)]">首页模块</h1>
+</div>
 
       <SettingsForm sections={["home"]} initial={settings} postOptions={postOptions} />
     </>

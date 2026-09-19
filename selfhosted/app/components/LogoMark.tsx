@@ -37,7 +37,7 @@ export default function LogoMark({
   return (
     <span
       className={`flex shrink-0 items-center justify-center rounded-[9px] bg-[var(--brand)] leading-none text-[var(--brand-ink)] ${fontClass} ${className || "h-8 w-8"}`}
-      style={{ fontSize: fontSize * 0.55 }}
+      style={{ fontSize: fontSize * 0.75 }}
     >
       {chars.map((c, i) => (
         <span key={i} style={{ marginLeft: i ? gap : 0 }}>

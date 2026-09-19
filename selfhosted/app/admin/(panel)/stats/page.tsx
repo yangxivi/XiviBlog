@@ -228,7 +228,7 @@ function FeedTrend({ data }: { data: FeedDay[] }) {
   const fixed: Record<string, string> = {
     "/": "首页",
     "/history": "历史文章",
-    "/about": "关于本站",
+    "/about": "关于我们",
     "/search": "搜索页",
   };
   return fixed[path] ?? path;
@@ -312,13 +312,8 @@ export default async function StatsPage() {
   return (
     <>
 
-      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 pb-4 pt-5">
-<h1 className="text-2xl font-bold text-[var(--c-text)]">访问统计</h1>
-<p className="mt-1 text-sm text-[var(--c-text-3)]">
-        统计口径为东八区自然日，已排除后台/接口请求与常见爬虫；UV 按「IP + UA」匿名哈希去重。
-        搜索词同样匿名记录，用于发现「访客在找但站内没有」的内容。
-        RSS 抓取单独成表统计 —— 订阅阅读器的 UA 本身就是爬虫，混进访问量会把两套口径都搅乱。
-      </p>
+      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 py-2">
+<h1 className="text-base font-bold text-[var(--c-text)]">访问统计</h1>
 </div>
 
       {dbError ? (

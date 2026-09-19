@@ -14,12 +14,9 @@ export default async function EngageSettingsPage() {
 
   return (
     <>
-      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 pb-4 pt-5">
-        <h1 className="text-2xl font-bold text-[var(--c-text)]">公告友链</h1>
-        <p className="mt-1 text-sm text-[var(--c-text-3)]">
-          全站公告条与页脚「友情链接」管理
-        </p>
-      </div>
+      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 py-2">
+<h1 className="text-base font-bold text-[var(--c-text)]">公告友链</h1>
+</div>
 
       <SettingsForm sections={["engage"]} initial={settings} postOptions={[]} />
     </>

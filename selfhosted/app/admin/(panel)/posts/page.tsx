@@ -22,8 +22,8 @@ export default async function AdminPostsPage() {
 
   return (
     <>
-      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 flex items-center justify-between border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 pb-4 pt-5">
-        <h1 className="text-2xl font-bold text-[var(--c-text)]">文章管理</h1>
+      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 py-2">
+        <h1 className="text-base font-bold text-[var(--c-text)]">文章管理</h1>
       </div>
 
       {dbError ? (

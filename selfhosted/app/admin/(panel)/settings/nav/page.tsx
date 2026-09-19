@@ -14,12 +14,9 @@ export default async function NavSettingsPage() {
 
   return (
     <>
-      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 pb-4 pt-5">
-        <h1 className="text-2xl font-bold text-[var(--c-text)]">导航菜单</h1>
-        <p className="mt-1 text-sm text-[var(--c-text-3)]">
-          维护顶部导航项，站内写 / 开头，站外写完整地址
-        </p>
-      </div>
+      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 py-2">
+<h1 className="text-base font-bold text-[var(--c-text)]">导航菜单</h1>
+</div>
 
       <SettingsForm sections={["nav"]} initial={settings} postOptions={[]} />
     </>

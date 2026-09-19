@@ -209,7 +209,7 @@ export default function AdminSidebar({
       >
         {logo}
         {!collapsed && (
-          <span className="ml-2.5 text-sm font-semibold text-white leading-none">
+          <span className="ml-2.5 text-base font-semibold text-white leading-none">
             后台管理
           </span>
         )}
