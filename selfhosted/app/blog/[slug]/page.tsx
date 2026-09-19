@@ -95,8 +95,8 @@ export default async function PostPage({ params }: Props) {
   // 当前文章分类的英文别名（用于分类链接 URL 与展示）
   const aliasFor = settings.categoryAliases[post.tag || "随笔"] || "";
 
-  // 目录至少 2 条才有意义；有目录时大屏（xl+）左栏留出来放目录
-  const showToc = toc.length >= 2;
+  // 只要有目录就显示（至少1条）；有目录时大屏（xl+）左栏留出来放目录
+  const showToc = toc.length >= 1;
 
   return (
     <div className="mx-auto max-w-[var(--page-outer)] px-4 py-6 md:px-6 md:py-8">
