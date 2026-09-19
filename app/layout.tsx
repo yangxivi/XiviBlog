@@ -82,11 +82,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: SIDEBAR_INIT }} />
         <script dangerouslySetInnerHTML={{ __html: SCROLL_INIT }} />
         <header className="z-50 shrink-0 border-b border-[var(--c-border)] bg-[var(--c-header)] backdrop-blur">
-          <div className="relative mx-auto grid h-[3.6rem] max-w-[var(--page-outer)] grid-cols-[1fr_auto_1fr] items-center px-4 md:px-6 lg:px-8">
-            {/* min-w-0 允许在窄视口被压缩；站名 truncate 防止换行撑出页头压到公告栏 */}
+          <div className="mx-auto flex h-[3.6rem] max-w-[var(--page-outer)] items-center px-4 md:px-6 lg:px-8">
+            {/* LOGO + 站名：紧贴左边缘 */}
             <Link
               href="/"
-              className="flex min-w-0 shrink-0 items-center gap-2 justify-self-start md:gap-2.5"
+              className="flex min-w-0 shrink-0 items-center gap-2 md:gap-2.5"
             >
               <LogoMark text={settings.logoText} fontClass={BRAND_TEXT_CLASS} />
               <span
@@ -96,11 +96,13 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               </span>
             </Link>
 
-            <div className="justify-self-center">
+            {/* 导航：自动撑满中间区域 */}
+            <div className="mx-auto">
               <Nav items={navItems} />
             </div>
 
-            <div className="flex items-center gap-1.5 justify-self-end md:gap-2">
+            {/* 搜索 + 侧栏切换：贴右边缘 */}
+            <div className="ml-auto flex items-center gap-1.5 md:gap-2">
               <form action="/search" className="flex items-center">
                 <div className="flex items-center gap-2 rounded-full bg-[var(--c-fill)] px-3 py-2 transition focus-within:bg-[var(--c-card)] focus-within:ring-1 focus-within:ring-[var(--brand)] md:px-4">
                   <svg

@@ -47,9 +47,11 @@ export default function UpdatePanel() {
   const { ask, dialog } = useConfirm();
   const [data, setData] = useState<Data | null>(null);
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [selectedBundle, setSelectedBundle] = useState("");
   const [snapshotId, setSnapshotId] = useState("");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const load = useCallback(async (force = false) => {
@@ -160,6 +162,64 @@ export default function UpdatePanel() {
     }
   }
 
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadFile(file);
+
+    // 验证文件名格式
+    const m = /^xiviblog-selfhosted-v?(\d+\.\d+\.\d+)\.zip$/i.exec(file.name);
+    if (!m) {
+      setMsg({ type: "err", text: `文件名格式不对，期望 xiviblog-selfhosted-vX.Y.Z.zip，实际：${file.name}` });
+      setUploadFile(null);
+      return;
+    }
+
+    const version = "v" + m[1];
+    setMsg({ type: "ok", text: `已选择安装包：${file.name}（${(file.size / 1024 / 1024).toFixed(1)} MB）` });
+  }
+
+  async function doUploadUpdate() {
+    if (!uploadFile) {
+      setMsg({ type: "err", text: "请先选择安装包文件。" });
+      return;
+    }
+
+    const ok = await ask({
+      title: "确认上传更新",
+      message: `将上传 ${uploadFile.name} 并更新到版本 ${uploadFile.name.match(/v?(\d+\.\d+\.\d+)/)?.[1]}。更新前会自动备份数据与源码，失败可回滚。整个过程约 2–5 分钟，期间站点会短暂重启。是否继续？`,
+      danger: false,
+      okText: "开始上传更新",
+    });
+    if (!ok) return;
+
+    setUploading(true);
+    setMsg(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", uploadFile);
+
+      const res = await fetch("/api/admin/update/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const j = await res.json();
+      if (!res.ok || !j.ok) {
+        throw new Error(j.error || j.message || `HTTP ${res.status}`);
+      }
+
+      setMsg({ type: "ok", text: "已启动上传更新，请留意下方进度。" });
+      await load();
+    } catch (e) {
+      setMsg({ type: "err", text: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setUploading(false);
+      setUploadFile(null);
+    }
+  }
+
   const job = data?.job;
   const check = data?.check;
   const inProgress = job && IN_PROGRESS.includes(job.status);
@@ -171,7 +231,7 @@ export default function UpdatePanel() {
         <div>
           <h2 className="text-lg font-semibold text-[var(--c-text)]">系统更新（自托管版）</h2>
           <p className="mt-1 text-sm text-[var(--c-text-3)]">
-            一键检测 GitHub 最新版本并在线更新；更新前自动备份数据与源码，失败可回滚。
+            一键检测 GitHub 最新版本并在线更新；也支持上传安装包手动更新。更新前自动备份，失败可回滚。
           </p>
         </div>
         <span className="rounded-full border border-[var(--c-border-3)] px-3 py-1 text-xs text-[var(--c-text-2)]">
@@ -179,7 +239,7 @@ export default function UpdatePanel() {
         </span>
       </div>
 
-      {/* 检测结果（自动检测更新开关已移至下方应用设置的保存栏） */}
+      {/* 检测结果 */}
       <div className="mt-4 rounded-lg border border-[var(--c-border-2)] bg-[var(--c-soft)] p-4 text-sm">
         {check ? (
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -192,7 +252,7 @@ export default function UpdatePanel() {
                 ? "🔔 有可用更新"
                 : check.latest
                 ? "✓ 已是最新"
-                : "未能获取版本信息"}
+                : "GitHub 无法访问，请使用上传安装包方式更新"}
             </span>
             <span className="text-xs text-[var(--c-text-3)]">
               检测于 {check.checkedAt?.slice(0, 19).replace("T", " ") || "—"}
@@ -220,6 +280,36 @@ export default function UpdatePanel() {
         >
           {inProgress ? "更新进行中…" : "立即更新"}
         </button>
+      </div>
+
+      {/* 上传安装包更新 */}
+      <div className="mt-6 rounded-lg border border-dashed border-[var(--c-border-3)] p-4">
+        <h3 className="text-sm font-semibold text-[var(--c-text)]">上传安装包更新</h3>
+        <p className="mt-1 text-xs leading-6 text-[var(--c-text-3)]">
+          若 GitHub 无法访问或需要从本地安装包更新，可选择 <code>xiviblog-selfhosted-vX.Y.Z.zip</code> 格式的压缩包。
+          更新前会自动备份数据与源码，失败可回滚。
+        </p>
+        <div className="mt-3 space-y-3">
+          <div className="flex items-center gap-3">
+            <input
+              type="file"
+              accept=".zip"
+              onChange={handleUpload}
+              disabled={busy || inProgress}
+              className="block w-full text-sm text-[var(--c-text-2)] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--brand)] file:text-[var(--brand-ink)] file:cursor-pointer hover:file:bg-[var(--brand-hover)] disabled:file:opacity-50"
+            />
+          </div>
+          {uploadFile && (
+            <button
+              type="button"
+              onClick={doUploadUpdate}
+              disabled={uploading || inProgress}
+              className="rounded-lg bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-[var(--brand-ink)] transition hover:bg-[var(--brand-hover)] disabled:opacity-50"
+            >
+              {uploading ? "上传更新中…" : "开始上传更新"}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 进度 */}
