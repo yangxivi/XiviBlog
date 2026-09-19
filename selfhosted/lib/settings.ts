@@ -223,6 +223,12 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   aiCoverApiKey: "",
   aiCoverModel: "agnes-image-2.0-flash",
   aiCoverBaseUrl: "https://apihub.agnes-ai.com/v1",
+  /** AI 排版 API Key（默认与封面共用，留空则尝试读取环境变量） */
+  aiFormatApiKey: "",
+  /** AI 排版模型 ID（默认 glm-4.7-flash 免费） */
+  aiFormatModel: "glm-4.7-flash",
+  /** AI 排版 API Base URL（末尾不带 /v1） */
+  aiFormatBaseUrl: "https://api.anthropic.com/v1",
   categoryAliases: {},
   theme: "meituan",
   autoUpdate: false,
@@ -469,6 +475,9 @@ export function normalizeSettings(input: unknown): SiteSettings {
     aiCoverApiKey: str(input.aiCoverApiKey, d.aiCoverApiKey, 200),
     aiCoverModel: str(input.aiCoverModel, d.aiCoverModel, 60),
     aiCoverBaseUrl: str(input.aiCoverBaseUrl, d.aiCoverBaseUrl, 200),
+    aiFormatApiKey: str(input.aiFormatApiKey, d.aiFormatApiKey, 200),
+    aiFormatModel: str(input.aiFormatModel, d.aiFormatModel, 60),
+    aiFormatBaseUrl: str(input.aiFormatBaseUrl, d.aiFormatBaseUrl, 200),
     categoryAliases: normCategoryAliases(input.categoryAliases),
     // 用主题注册表校验：非法 id 回退默认主题，避免落库一个没有对应 CSS 变量的主题名
     theme: normalizeTheme(str(input.theme, d.theme, 20)),

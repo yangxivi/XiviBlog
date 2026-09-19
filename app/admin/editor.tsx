@@ -1247,6 +1247,53 @@ export default function Editor({ initial }: { initial: EditorPost }) {
                 Key。上传图片会自动压缩后内嵌存储，无需图床；留空则按分类生成渐变色占位图。
               </p>
             </div>
+
+            {/* AI 自动排版 */}
+            <div className="mt-8 rounded-xl border border-[var(--c-border-2)] p-5">
+              <h3 className="mb-4 text-sm font-semibold text-[var(--c-text)]">AI 自动排版</h3>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!post.content.trim()) {
+                      setMsg("请先填写文章内容");
+                      return;
+                    }
+                    setAiBusy(true);
+                    setMsg("AI 正在根据曦微风格自动排版，约 5-15 秒…");
+                    try {
+                      const res = await fetch("/api/format", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          title: post.title,
+                          content: post.content,
+                        }),
+                      });
+                      const j = await res.json().catch(() => ({})) as { ok?: boolean; content?: string; error?: string };
+                      if (!res.ok || !j.ok) {
+                        setMsg(`排版失败：${j.error || "未知错误"}`);
+                        return;
+                      }
+                      set("content", j.content || post.content);
+                      setMsg("AI 排版已完成，请预览确认");
+                    } catch (e) {
+                      setMsg(`排版失败：${e instanceof Error ? e.message : "网络错误"}`);
+                    } finally {
+                      setAiBusy(false);
+                    }
+                  }}
+                  disabled={aiBusy}
+                  className="rounded-lg border border-[var(--brand)] bg-[var(--c-brand-soft)] px-4 py-2 text-sm font-medium text-[var(--brand-deep)] transition hover:bg-[var(--c-brand-soft-2)] disabled:opacity-60"
+                >
+                  {aiBusy ? "排版中…" : "AI 自动排版"}
+                </button>
+                <span className="text-xs text-[var(--c-text-3)]">按曦微风格自动设置标题层级、引用、分割线等</span>
+              </div>
+              <p className="mt-2 text-xs text-[var(--c-text-3)]">
+                需要先在「站点设置 → AI 排版」配置 API Key（默认使用 glm-4.7-flash 免费模型）。
+              </p>
+            </div>
           </div>
         </div>
 

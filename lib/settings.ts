@@ -137,6 +137,12 @@ export type SiteSettings = {
   aiCoverModel: string;
   /** AI 封面 API Base URL（末尾不带 /images/generations） */
   aiCoverBaseUrl: string;
+  /** AI 排版 API Key（与封面共用同一 agnes 服务） */
+  aiFormatApiKey: string;
+  /** AI 排版模型 ID（默认用 glm-4.7-flash 免费模型） */
+  aiFormatModel: string;
+  /** AI 排版 API Base URL */
+  aiFormatBaseUrl: string;
   /** 分类英文别名：中文分类名 → 英文别名（/category/ 别名 URL 也会解析） */
   categoryAliases: Record<string, string>;
   /** 站点主题（品牌色方案）：meituan / wechat / zhihu / tencent / xiaohongshu / purple / cyan / memorial */
@@ -466,6 +472,9 @@ export function normalizeSettings(input: unknown): SiteSettings {
     aiCoverApiKey: str(input.aiCoverApiKey, d.aiCoverApiKey, 200),
     aiCoverModel: str(input.aiCoverModel, d.aiCoverModel, 60),
     aiCoverBaseUrl: str(input.aiCoverBaseUrl, d.aiCoverBaseUrl, 200),
+    aiFormatApiKey: str(input.aiFormatApiKey, d.aiFormatApiKey, 200),
+    aiFormatModel: str(input.aiFormatModel, d.aiFormatModel, 60),
+    aiFormatBaseUrl: str(input.aiFormatBaseUrl, d.aiFormatBaseUrl, 200),
     categoryAliases: normCategoryAliases(input.categoryAliases),
     // 用主题注册表校验：非法 id 回退默认主题，避免落库一个没有对应 CSS 变量的主题名
     theme: normalizeTheme(str(input.theme, d.theme, 20)),
