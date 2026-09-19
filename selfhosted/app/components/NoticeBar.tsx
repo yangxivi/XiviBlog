@@ -21,7 +21,7 @@ export default function NoticeBar({ notice }: { notice: NoticeConfig }) {
   );
 
   return (
-    <div className="shrink-0 border-b border-[var(--c-brand-border)] bg-[var(--c-brand-tint)]">
+    <div className="notice-bar shrink-0 border-b border-[var(--c-brand-border)] bg-[var(--c-brand-tint)]">
       <div className="mx-auto flex max-w-[var(--page-outer)] items-center gap-3 px-6 py-2 text-sm text-[var(--brand-deep)]">
         {notice.href ? (
           <a

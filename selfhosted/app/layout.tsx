@@ -9,6 +9,7 @@ import BackToTop from "./components/BackToTop";
 import ThemeToggle from "./components/ThemeToggle";
 import ViewTracker from "./components/ViewTracker";
 import ScrollToTop from "./components/ScrollToTop";
+import AdminAreaFlag from "./components/AdminAreaFlag";
 import { getSettings, type LinkItem } from "@/lib/settings";
 import { isAuthenticated } from "@/lib/auth";
 import { countUsers } from "@/lib/users";
@@ -69,6 +70,9 @@ const THEME_INIT = `(function(){try{var s=localStorage.getItem('xivi-theme');var
 /** 首屏绘制前恢复侧边栏位置（左/右），避免刷新后位置闪动 */
 const SIDEBAR_INIT = `(function(){try{var s=localStorage.getItem('xivi-sidebar');if(s!=='left'&&s!=='right')s='right';document.documentElement.setAttribute('data-sidebar',s);}catch(e){document.documentElement.setAttribute('data-sidebar','right');}})();`;
 
+/** 首屏绘制前标记后台区域，CSS 据此隐藏前台页眉/页脚（避免闪烁） */
+const ADMIN_INIT = `(function(){try{var p=location.pathname;if(p==='/admin'||p.indexOf('/admin/')===0){document.documentElement.setAttribute('data-admin','true');}}catch(e){}})();`;
+
 /** 首屏强制回到最顶部，避免浏览器恢复上次滚动位置导致一打开页面卡在中间
     （新布局下滚动发生在 #xivi-main 容器内部，所以要一并重置） */
 const SCROLL_INIT = `(function(){try{if(!window.location.hash){window.scrollTo(0,0);var m=document.getElementById('xivi-main');if(m)m.scrollTop=0;}}catch(e){}})();`;
@@ -117,6 +121,7 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
         <script dangerouslySetInnerHTML={{ __html: SIDEBAR_INIT }} />
         <script dangerouslySetInnerHTML={{ __html: SCROLL_INIT }} />
+        <script dangerouslySetInnerHTML={{ __html: ADMIN_INIT }} />
         <header className="z-50 shrink-0 border-b border-[var(--c-border)] bg-[var(--c-header)] backdrop-blur">
           <div className="relative mx-auto grid h-[3.6rem] max-w-[var(--page-outer)] grid-cols-[1fr_auto_1fr] items-center px-4 md:px-6 lg:px-8">
             {/* min-w-0 允许在窄视口被压缩；站名 truncate 防止换行撑出页头压到公告栏 */}
@@ -181,6 +186,7 @@ export default async function RootLayout({
         <ThemeToggle />
         <ViewTracker />
         <ScrollToTop />
+        <AdminAreaFlag />
       </body>
     </html>
   );

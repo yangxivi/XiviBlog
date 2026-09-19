@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const script = join(process.cwd(), "scripts", "self-rollback.cjs");
-    const child = spawn("node", [script], {
+    const child = spawn(process.execPath, [script], {
       cwd: process.cwd(),
       detached: true,
       stdio: "ignore",

@@ -1,14 +1,18 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import LogoMark from "../components/LogoMark";
 
 /** 后台认证页面统一外壳（登录 / 注册 / 找回密码 / 重置密码） */
 export default function AuthShell({
   title,
   subtitle,
+  logo,
   children,
 }: {
   title: string;
   subtitle?: string;
+  /** 站点 LOGO 节点（与前台/后台侧栏同源），由各认证页传入 <AdminLogo /> */
+  logo?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -17,10 +21,10 @@ export default function AuthShell({
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <Link
             href="/"
-            className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--brand)] text-base font-black text-[var(--brand-ink)] transition hover:brightness-95"
+            className="flex h-12 w-12 items-center justify-center rounded-xl transition hover:brightness-95"
             title="返回首页"
           >
-            XV
+            {logo ?? <LogoMark text="曦微" />}
           </Link>
           <div>
             <h1 className="text-xl font-bold text-[var(--c-text)]">{title}</h1>

@@ -556,3 +556,9 @@ html.dark[data-theme="memorial"] {
   --c-brand-tint: color-mix(in srgb, var(--brand) 10%, #1b1b1f);
 }
 
+
+[data-admin="true"] header,
+[data-admin="true"] .notice-bar,
+[data-admin="true"] footer {
+  display: none !important;
+}

@@ -556,3 +556,13 @@ html.dark[data-theme="memorial"] {
   --c-brand-border: color-mix(in srgb, var(--brand) 40%, #1b1b1f);
   --c-brand-tint: color-mix(in srgb, var(--brand) 10%, #1b1b1f);
 }
+
+/* 后台（/admin）隐藏前台页眉、公告条与页脚：
+   由首屏内联脚本 + AdminAreaFlag 在 <html> 上打 data-admin 标记，
+   此处据此隐藏，避免后台出现前台 chrome。
+   SPA 跳转后属性由 AdminAreaFlag 同步清除，前台页眉恢复正常。 */
+[data-admin="true"] header,
+[data-admin="true"] .notice-bar,
+[data-admin="true"] footer {
+  display: none !important;
+}

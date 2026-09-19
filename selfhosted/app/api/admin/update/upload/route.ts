@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { isAuthenticated } from "@/lib/auth";
 import { createSnapshot } from "@/lib/snapshot";
 import { APP_VERSION } from "@/lib/version";
-import { getUpdateJob, writeUpdateJob, listRollbackBundles } from "@/lib/updater";
+import { getUpdateJob, writeUpdateJob, listRollbackBundles, type UpdateJob } from "@/lib/updater";
 import { compareVersion, parseVersion } from "@/lib/updater";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +42,7 @@ function validateZipStructure(zipPath: string): boolean {
 }
 
 /** 执行安装流程（与 self-update.cjs 类似，但使用已上传的 zip） */
-async function executeUploadUpdate(job: typeof import("@/lib/updater").UpdateJob, zipPath: string, targetVersion: string): Promise<void> {
+async function executeUploadUpdate(job: UpdateJob, zipPath: string, targetVersion: string): Promise<void> {
   const tmpBase = join(process.cwd(), "data", ".update-upload");
   mkdirSync(tmpBase, { recursive: true });
   const extractDir = join(tmpBase, "src-" + Date.now());
@@ -99,8 +99,8 @@ async function executeUploadUpdate(job: typeof import("@/lib/updater").UpdateJob
   let needInstall = true;
   try {
     if (existsSync(oldPkg) && existsSync(newPkg)) {
-      const a = JSON.stringify(require(oldPkg));
-      const b = JSON.stringify(require(newPkg));
+      const a = JSON.stringify(JSON.parse(readFileSync(oldPkg, "utf8")));
+      const b = JSON.stringify(JSON.parse(readFileSync(newPkg, "utf8")));
       needInstall = a !== b;
     }
   } catch {}
@@ -149,7 +149,7 @@ async function executeUploadUpdate(job: typeof import("@/lib/updater").UpdateJob
   try {
     const http = require("node:http");
     await new Promise<void>((res) => {
-      const req = http.get({ host: "127.0.0.1", port: 3000, path: "/api/install", timeout: 5000 }, (r) => {
+      const req = http.get({ host: "127.0.0.1", port: 3000, path: "/api/install", timeout: 5000 }, (r: import("node:http").IncomingMessage) => {
         r.resume();
         res();
       });
@@ -236,8 +236,8 @@ export async function POST(req: NextRequest) {
   }
 
   // 创建更新任务
-  const job = {
-    status: "queued" as const,
+  const job: UpdateJob = {
+    status: "queued",
     current: APP_VERSION,
     target: targetVersion || "unknown",
     tarballUrl: "",

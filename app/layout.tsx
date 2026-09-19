@@ -13,6 +13,7 @@ import { getSettings, type LinkItem } from "@/lib/settings";
 import { isAuthenticated } from "@/lib/auth";
 import { listNavPages } from "@/lib/pages";
 import { AdminProvider } from "./components/AdminContext";
+import AdminAreaFlag from "./components/AdminAreaFlag";
 import "./globals.css";
 
 /** 站点名称、导航、页脚都由 D1 设置驱动，必须按请求渲染 */
@@ -53,6 +54,10 @@ const SIDEBAR_INIT = `(function(){try{var s=localStorage.getItem('xivi-sidebar')
     （新布局下滚动发生在 #xivi-main 容器内部，所以要一并重置） */
 const SCROLL_INIT = `(function(){try{if(!window.location.hash){window.scrollTo(0,0);var m=document.getElementById('xivi-main');if(m)m.scrollTop=0;}}catch(e){}})();`;
 
+/** 首屏即把后台标记打到 <html>：避免后台页面先闪一下前台页眉/页脚再隐藏。
+   与下方 AdminAreaFlag（处理 SPA 跳转后同步清除）配合。 */
+const ADMIN_INIT = `(function(){try{var p=location.pathname;if(p==='/admin'||p.indexOf('/admin/')===0){document.documentElement.setAttribute('data-admin','true');}}catch(e){}})();`;
+
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const settings = await getSettings();
   const isAdmin = await isAuthenticated();
@@ -81,6 +86,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
         <script dangerouslySetInnerHTML={{ __html: SIDEBAR_INIT }} />
         <script dangerouslySetInnerHTML={{ __html: SCROLL_INIT }} />
+        <script dangerouslySetInnerHTML={{ __html: ADMIN_INIT }} />
         <header className="z-50 shrink-0 border-b border-[var(--c-border)] bg-[var(--c-header)] backdrop-blur">
           <div className="mx-auto flex h-[3.6rem] max-w-[var(--page-outer)] items-center px-4 md:px-6">
             {/* LOGO + 站名：紧贴左边缘 */}
@@ -147,6 +153,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeToggle />
         <ViewTracker />
         <ScrollToTop />
+        <AdminAreaFlag />
       </body>
     </html>
   );

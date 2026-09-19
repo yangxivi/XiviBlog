@@ -47,7 +47,7 @@ async function resolveCheck(force: boolean): Promise<{
   const token = process.env.GITHUB_TOKEN;
   const cache = readCheckCache();
   const settings = await getSettings().catch(() => null);
-  const auto = settings?.autoUpdate === true;
+  const auto = (settings as { autoUpdate?: boolean } | null)?.autoUpdate === true;
   const fresh =
     cache && Date.now() - new Date(cache.checkedAt).getTime() < AUTO_CHECK_INTERVAL;
   if (!force && auto && fresh && cache) {
@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
   // 3) 派生 detached 更新进程：它会下载→解包→构建→重启，即使本进程被 pm2 重启也不中断
   try {
     const script = join(process.cwd(), "scripts", "self-update.cjs");
-    const child = spawn("node", [script], {
+    const child = spawn(process.execPath, [script], {
       cwd: process.cwd(),
       detached: true,
       stdio: "ignore",
