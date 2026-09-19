@@ -24,7 +24,7 @@ export default function LogoMark({
   fontClass?: string;
   /** 与相邻站名字号一致的基准 px */
   size?: number;
-  /** 可选额外 Tailwind 类，叠加到根 span（如 h-6 w-6 缩小尺寸） */
+  /** 可选额外 Tailwind 类，叠加到根 span（如 h-8 w-8 放大尺寸） */
   className?: string;
 }) {
   const t = (text || "曦微").trim();
@@ -37,7 +37,7 @@ export default function LogoMark({
   return (
     <span
       className={`flex shrink-0 items-center justify-center rounded-[9px] bg-[var(--brand)] leading-none text-[var(--brand-ink)] ${fontClass} ${className || "h-8 w-8"}`}
-      style={{ fontSize }}
+      style={{ fontSize: fontSize * 0.4 }}
     >
       {chars.map((c, i) => (
         <span key={i} style={{ marginLeft: i ? gap : 0 }}>

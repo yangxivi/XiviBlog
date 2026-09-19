@@ -186,8 +186,8 @@ export default function AdminSidebar({
         collapsed ? "justify-center px-0" : "gap-2.5 px-3"
       } ${
         isActive(item)
-          ? "bg-[var(--brand)] text-[var(--brand-ink)]"
-          : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+          ? "bg-[var(--brand)] text-[var(--brand-ink)] font-bold"
+          : "text-white font-bold hover:bg-slate-800/60 hover:text-white"
       }`}
     >
       <span className="shrink-0">{ICONS[item.icon]}</span>
@@ -201,18 +201,17 @@ export default function AdminSidebar({
         collapsed ? "w-16" : "w-[220px]"
       }`}
     >
-      {/* 品牌区：LOGO 与文字横向并排，LOGO 高度等于两行文字之和，整体压缩高度 */}
+      {/* 品牌区：LOGO 与文字横向并排；收起时居中，展开只显示「后台管理」主标题 */}
       <div
-        className={`flex items-center border-b border-slate-700/60 ${
-          collapsed ? "px-2 py-1.5" : "px-3 py-2"
+        className={`flex items-start border-b border-slate-700/60 ${
+          collapsed ? "justify-center px-2 py-2" : "px-3 py-2"
         }`}
       >
         {logo}
         {!collapsed && (
-          <div className="ml-2.5 flex flex-1 flex-col justify-center leading-none">
-            <span className="text-sm font-semibold text-white">曦微博客</span>
-            <span className="text-[10px] text-slate-500">后台管理</span>
-          </div>
+          <span className="ml-2.5 text-sm font-semibold text-white leading-none">
+            后台管理
+          </span>
         )}
       </div>
 
