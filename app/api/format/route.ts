@@ -5,7 +5,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export const dynamic = "force-dynamic";
 
-const DEFAULT_BASE_URL = "https://api.anthropic.com/v1";
+const DEFAULT_BASE_URL = "https://open.bigmodel.cn/api/paas/v4";
 const DEFAULT_MODEL = "glm-4.7-flash";
 
 /**
