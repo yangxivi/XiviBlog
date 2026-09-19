@@ -35,7 +35,7 @@ export default async function TagsPage() {
           数据库错误：{dbError}
         </div>
       ) : (
-        <TagsClient tags={tags} untagged="未分�? aliases={aliases} />
+        <TagsClient tags={tags} untagged="未分�? aliases={aliases} />
       )}
     </>
   );

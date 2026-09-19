@@ -22,8 +22,8 @@ export default async function AdminPages() {
       </div>
 
       <p className="mb-4 text-sm text-[var(--c-text-3)]">
-        这里的「页面」是独立单页（留言板、友链页、说明页等），区别于按时间排序的文章�?
-        勾选「显示在导航」后会出现在顶部导航栏，可开启留言区�?
+        这里的「页面」是独立单页（留言板、友链页、说明页等），区别于按时间排序的文章�?
+        勾选「显示在导航」后会出现在顶部导航栏，可开启留言区�?
       </p>
 
       <div className="overflow-hidden rounded-2xl border border-[var(--c-border-2)] bg-[var(--c-soft)]">
@@ -55,16 +55,16 @@ export default async function AdminPages() {
               </div>
               <span className="w-16 text-center text-sm">
                 {p.show_in_nav === 1 ? (
-                  <span className="text-emerald-600">�?/span>
+                  <span className="text-emerald-600">�?/span>
                 ) : (
-                  <span className="text-[var(--c-text-4)]">�?/span>
+                  <span className="text-[var(--c-text-4)]">�?/span>
                 )}
               </span>
               <span className="w-16 text-center text-sm">
                 {p.allow_comments === 1 ? (
-                  <span className="text-emerald-600">�?/span>
+                  <span className="text-emerald-600">�?/span>
                 ) : (
-                  <span className="text-[var(--c-text-4)]">�?/span>
+                  <span className="text-[var(--c-text-4)]">�?/span>
                 )}
               </span>
               <Link
