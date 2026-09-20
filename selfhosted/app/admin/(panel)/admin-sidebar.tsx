@@ -284,7 +284,11 @@ export default function AdminSidebar({
           </svg>
           {!collapsed && <span>收起菜单</span>}
         </button>
-        <form action="/api/auth/logout" method="POST" onSubmit={(e) => { e.preventDefault(); window.location.href = '/admin/login'; }}>
+        <form action="/api/auth/logout" method="POST" onSubmit={async (e) => {
+          e.preventDefault();
+          await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+          window.location.href = '/admin/login';
+        }}>
           <button
             type="submit"
             title="退出登录"
