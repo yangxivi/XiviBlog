@@ -22,7 +22,7 @@ export default async function EditPage({
 
   return (
     <div>
-      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 py-2">
+      <div className="sticky top-0 z-20 -mx-6 -mt-8 mb-6 border-b border-[var(--c-border)] bg-[var(--c-page)] px-6 py-3">
 <h1 className="text-base font-bold text-[var(--c-text)]">编辑页面</h1>
 </div>
       <PageEditor
