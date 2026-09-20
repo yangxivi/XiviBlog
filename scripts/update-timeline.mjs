@@ -211,30 +211,52 @@ async function main() {
         newBullets.map((b) => `- ${b}`).join("\n") +
         content.slice(end);
     } else {
-      const marker = "## 迭代时间轴";
-      const idx = content.indexOf(marker);
-      if (idx === -1) {
-        console.error("Timeline marker not found");
+      // 找到时间轴段落的起始：支持 ## 或 # 开头
+      const timelineMarker = "迭代时间轴";
+      let markerIdx = -1;
+      // 先尝试 ## 迭代时间轴
+      let idx = content.indexOf("## " + timelineMarker);
+      if (idx >= 0) markerIdx = idx;
+      // 再尝试 # 迭代时间轴
+      if (markerIdx < 0) {
+        idx = content.indexOf("# " + timelineMarker);
+        if (idx >= 0) markerIdx = idx;
+      }
+      if (markerIdx === -1) {
+        console.error("Timeline marker not found (neither ## nor # 迭代时间轴)");
         process.exit(1);
       }
-      // 时间轴全段是「从项目启动到今天」的**升序**（线上现状：09-09 → 09-16），
+      // 时间轴全段是「从项目启动到今天」的**升序**（线上现状：09-09 → 最新），
       // 所以新的一天必须追加到**末尾**。
       //
-      // ⚠️ 别改回「插在 `## 迭代时间轴` 正下方」（2026-09-17 踩过）：那样最新一天会
+      // ⚠️ 别改回「插在 `迭代时间轴` 正下方」：那样最新一天会
       // 孤零零飘在整段最上面，读者滚到时间轴末尾——也就是最新记录本该在的位置——
       // 反而找不到当天的更新，会以为时间轴没更新。
       //
       // 末尾的判定：整段正文里最后一个 `---` 之前（`---` 后面那句
       // 「如果你也想搭一个类似的博客…」要求永远钉在整页最底），没有就落到文末。
+      //
+      // ⚠️ 注意：footer（"> 如果你也想搭…"）可能在 --- 之前或之后，
+      // 必须确保 新条目 < --- < footer，三者的相对顺序不可变。
       let insertAt = content.length;
       const lastSep = content.lastIndexOf("\n---");
-      if (lastSep > idx) insertAt = lastSep;
+      if (lastSep > markerIdx) insertAt = lastSep;
       content =
         content.slice(0, insertAt).replace(/\s+$/, "") +
         "\n\n" +
         newSection +
         "\n" +
         content.slice(insertAt);
+
+      // 二次校验：确保 09-XX < --- < footer
+      const afterInsert = content;
+      const check09 = afterInsert.indexOf("## 2026-09");
+      const checkSep = afterInsert.lastIndexOf("\n---");
+      const checkFooter = afterInsert.indexOf("如果你也想搭");
+      if (check09 > checkSep || checkFooter < checkSep) {
+        console.error("⚠️ Timeline order violated after insertion! Check manually.");
+        console.error("  09-date at:", check09, "--- at:", checkSep, "footer at:", checkFooter);
+      }
     }
   }
 
