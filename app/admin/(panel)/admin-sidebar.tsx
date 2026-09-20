@@ -204,7 +204,7 @@ export default function AdminSidebar({
       {/* 品牌区：LOGO 与文字横向并排；收起时居中，展开只显示「后台管理」主标题 */}
       <div
         className={`flex items-center border-b border-slate-700/60 h-14 ${
-          collapsed ? "justify-center px-2" : "px-3"
+          collapsed ? "justify-center px-1" : "px-2"
         }`}
       >
         {logo}
@@ -216,7 +216,7 @@ export default function AdminSidebar({
       </div>
 
       {/* 导航 */}
-      <nav className="flex-1 overflow-y-auto px-3 pt-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <nav className="flex-1 overflow-y-auto px-2 pt-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {collapsed ? (
           <div className="space-y-2">
             {GROUPS.map((group, gi) => (
