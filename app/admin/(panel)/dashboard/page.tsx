@@ -11,6 +11,7 @@ import {
   type PostMeta,
 } from "@/lib/db";
 import { countComments, listRecentComments } from "@/lib/comments";
+import CommentAvatar from "./comment-avatar";
 import { cnTime, cnDay } from "@/lib/datetime";
 import { getSettings } from "@/lib/settings";
 
@@ -337,29 +338,7 @@ export default async function DashboardPage() {
                 {recentComments.map((c) => (
                   <li key={c.id} className="border-b border-[var(--c-border-2)] last:border-0 pb-3 last:pb-0">
                     <div className="flex items-center gap-2">
-                      {c.avatar && c.avatar.trim() ? (
-                        <>
-                          <img
-                            src={c.avatar}
-                            alt=""
-                            className="h-6 w-6 rounded-full"
-                            width={24}
-                            height={24}
-                            onError={(e) => {
-                              const img = e.currentTarget as HTMLImageElement;
-                              img.style.display = 'none';
-                              img.nextElementSibling?.classList.remove('hidden');
-                            }}
-                          />
-                          <div className="hidden flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand)] text-xs font-bold text-[var(--brand-ink)]">
-                            {c.nickname.slice(0, 1)}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand)] text-xs font-bold text-[var(--brand-ink)]">
-                          {c.nickname.slice(0, 1)}
-                        </div>
-                      )}
+                      <CommentAvatar avatar={c.avatar} nickname={c.nickname} />
                       <span className="text-sm font-medium text-[var(--c-text)]">
                         {c.nickname}
                       </span>
