@@ -23,13 +23,13 @@ export default async function AdminLayout({
   const settings = await getSettings();
 
   return (
-    <div className="flex h-dvh min-h-0 bg-[var(--c-page)]">
+    <div className="flex h-dvh min-h-0 bg-[var(--c-soft)]">
       {/* ── 左侧深色侧边栏（可折叠 + 分组折叠 + 图标） ───────────── */}
       <AdminSidebar logo={<AdminLogo />} />
 
       {/* ── 右侧内容区 ─────────────────────────────────────────────── */}
       <main className="flex-1 min-w-0 overflow-y-auto">
-        <div className="px-6 py-8">
+        <div className="h-full px-6 py-8">
           {children}
         </div>
       </main>
