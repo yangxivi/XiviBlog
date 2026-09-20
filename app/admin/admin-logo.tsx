@@ -5,7 +5,7 @@ import LogoMark from "../components/LogoMark";
 export default async function AdminLogo() {
   const settings = await getSettings();
   return (
-    <a href="/" className="flex items-center gap-2 no-underline hover:opacity-80 transition-opacity">
+    <a href="/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 no-underline hover:opacity-80 transition-opacity">
       <LogoMark text={settings.logoText} className="h-10 w-10" />
     </a>
   );

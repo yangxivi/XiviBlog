@@ -29,7 +29,7 @@ export default async function AdminLayout({
 
       {/* ── 右侧内容区 ─────────────────────────────────────────────── */}
       <main className="flex-1 min-w-0 overflow-y-auto">
-        <div className="px-6 py-8">
+        <div className="h-full px-6 py-8">
           {children}
         </div>
       </main>
