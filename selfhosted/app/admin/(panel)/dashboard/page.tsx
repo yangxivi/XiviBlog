@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = { title: "仪表盘" };
 
-const CARD = "rounded-2xl border border-[var(--c-border-2)] p-5 bg-white dark:bg-slate-900";
+const CARD = "rounded-2xl border border-[var(--c-border-2)] p-5 bg-white dark:bg-slate-900 h-full";
 const H2 = "text-sm font-bold text-[var(--c-text)]";
 
 function Kpi({
@@ -189,7 +189,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <div className="sticky top-0 z-20 mb-6 h-14 border-b border-slate-700/60 bg-[#1e293b] flex items-center px-6">
+      <div className="sticky top-0 z-20 h-14 border-b border-slate-700/60 bg-[#1e293b] flex items-center px-6">
         <h1 className="text-base font-semibold text-white">仪表盘</h1>
       </div>
 
@@ -200,7 +200,7 @@ export default async function DashboardPage() {
       ) : (
         <div className="space-y-6">
           {/* KPI 卡片行 */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 h-full">
             <Kpi
               label="总文章数"
               value={postCount}
@@ -229,9 +229,9 @@ export default async function DashboardPage() {
           </div>
 
           {/* 趋势图 + 快捷操作 */}
-          <div className="grid gap-6 lg:grid-cols-3">
-            <section className="lg:col-span-2">
-              <div className={CARD}>
+          <div className="grid gap-6 lg:grid-cols-3 h-full">
+            <section className="lg:col-span-2 h-full">
+              <div className={CARD + " !h-full"}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h2 className={H2}>近 30 天浏览趋势</h2>
                   <div className="flex items-center gap-4 text-xs text-[var(--c-text-3)]">
@@ -256,7 +256,7 @@ export default async function DashboardPage() {
                 <h2 className={H2}>快捷操作</h2>
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   {[
-                    { href: "/admin/posts?new=1", label: "新文章", icon: "✏️" },
+                    { href: "/admin/edit/new", label: "新文章", icon: "✏️" },
                     { href: "/admin/comments", label: "留言审核", icon: "💬" },
                     { href: "/admin/settings", label: "基础设置", icon: "⚙️" },
                     { href: "/admin/settings/ai", label: "AI 工具", icon: "🤖" },

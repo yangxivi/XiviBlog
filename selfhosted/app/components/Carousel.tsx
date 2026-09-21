@@ -103,7 +103,7 @@ export default function Carousel({
                 <img
                   src={s.image}
                   alt=""
-                  className="h-full w-full object-contain transition-transform duration-700 group-hover/slide:scale-[1.02]"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover/slide:scale-[1.02]"
                   loading={i === 0 ? "eager" : "lazy"}
                   fetchPriority={i === 0 ? "high" : "low"}
                   decoding="async"

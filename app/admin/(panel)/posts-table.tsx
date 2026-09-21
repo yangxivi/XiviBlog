@@ -531,7 +531,7 @@ export default function PostsTable({ posts, tags }: Props) {
 
       {/* 表头 */}
       {filtered.length > 0 && (
-        <div className="mb-2 flex items-center gap-3 px-4">
+        <div className="flex items-center gap-3 px-4 py-2 bg-[var(--c-soft)] rounded-t-xl">
           <input
             type="checkbox"
             checked={allChecked}
@@ -539,7 +539,7 @@ export default function PostsTable({ posts, tags }: Props) {
             className="h-4 w-4 accent-[var(--brand)]"
             aria-label="全选本页"
           />
-          <span className="text-xs text-[var(--c-text-3)]">
+          <span className="text-xs text-[var(--c-text-3)] font-medium">
             全选本页（{pageItems.length} 篇）
           </span>
         </div>

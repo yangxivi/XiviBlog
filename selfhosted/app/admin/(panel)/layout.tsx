@@ -27,9 +27,9 @@ export default async function AdminLayout({
       {/* ── 左侧深色侧边栏（可折叠 + 分组折叠 + 图标） ───────────── */}
       <AdminSidebar logo={<AdminLogo />} />
 
-      {/* ── 右侧内容区 ─────────────────────────────────────────────── */}
-      <main className="flex-1 min-w-0 overflow-y-auto">
-        <div className="h-full px-6 py-8">
+      {/* ── 右侧内容区 ───────────────────────────────────────────── */}
+      <main className="flex-1 min-w-0 overflow-y-auto" style={{ scrollBehavior: 'smooth' }}>
+        <div className="px-6 pt-6">
           {children}
         </div>
       </main>
