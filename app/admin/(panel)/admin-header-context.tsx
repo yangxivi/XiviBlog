@@ -1,31 +1,31 @@
 "use client";
 
-import { createContext, useContext } from "react";
-import type { ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 
-type AdminHeaderContextType = {
-  title?: ReactNode;
-  action?: ReactNode;
-};
-
-export const AdminHeaderContext = createContext<AdminHeaderContextType>({});
-
-export function useAdminHeader() {
-  return useContext(AdminHeaderContext);
+/**
+ * 用于在页面层级共享 header 尺寸和 sticky 状态
+ * 供需要感知 header 位置的组件使用
+ */
+export interface HeaderContextType {
+  /** header 高度（px），默认 56（h-14） */
+  height: number;
+  /** 是否 sticky */
+  sticky: boolean;
 }
 
-export function AdminHeaderProvider({
-  title,
-  action,
-  children,
-}: {
-  title?: ReactNode;
-  action?: ReactNode;
-  children: ReactNode;
-}) {
+const HeaderContext = createContext<HeaderContextType>({
+  height: 56,
+  sticky: true,
+});
+
+export function HeaderProvider({ children }: { children: ReactNode }) {
   return (
-    <AdminHeaderContext.Provider value={{ title, action }}>
+    <HeaderContext.Provider value={{ height: 56, sticky: true }}>
       {children}
-    </AdminHeaderContext.Provider>
+    </HeaderContext.Provider>
   );
+}
+
+export function useHeader() {
+  return useContext(HeaderContext);
 }

@@ -129,3 +129,10 @@ scripts/watermark-verify.mjs
 /verify-*.mjs
 /build-article-html.py
 /*.old-*
+
+# 远程运维临时脚本（不入库）
+/_*.py
+/_*.sh
+/_*.cjs
+/_*.txt
+/_*.js

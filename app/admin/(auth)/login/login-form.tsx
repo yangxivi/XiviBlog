@@ -87,12 +87,6 @@ export default function LoginForm({ next }: { next: string }) {
           />
           记住我（30 天）
         </label>
-        <Link
-          href="/admin/forgot"
-          className="text-sm text-[var(--brand-deep)] transition hover:underline"
-        >
-          忘记密码？
-        </Link>
       </div>
 
       {err && (
@@ -110,13 +104,7 @@ export default function LoginForm({ next }: { next: string }) {
       </button>
 
       <p className="pt-1 text-center text-sm text-[var(--c-text-3)]">
-        还没有账号？{" "}
-        <Link
-          href="/admin/register"
-          className="font-medium text-[var(--brand-deep)] transition hover:underline"
-        >
-          注册一个
-        </Link>
+        曦微博客 · 单管理员系统
       </p>
     </form>
   );

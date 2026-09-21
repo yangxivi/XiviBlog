@@ -49,7 +49,7 @@ export function useConfirm() {
 
   const dialog = st ? (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 px-6"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 px-0"
       onClick={() => close(null)}
       role="presentation"
     >

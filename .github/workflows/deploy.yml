@@ -1,0 +1,88 @@
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          NODE_ENV: production
+
+      - name: Debug environment
+        run: |
+          echo "=== Node version ==="
+          node --version
+          echo ""
+          echo "=== npm version ==="
+          npm --version
+          echo ""
+          echo "=== OpenNext package ==="
+          ls node_modules/@opennextjs/ 2>/dev/null || echo "Not installed"
+          echo ""
+          echo "=== Wrangler package ==="
+          ls node_modules/wrangler/ 2>/dev/null | head -5 || echo "Not installed"
+          echo ""
+          echo "=== Next version ==="
+          node -e "console.log(require('./node_modules/next/package.json').version)" 2>/dev/null || echo "Unknown"
+          echo ""
+          echo "=== Package scripts ==="
+          npm run 2>&1 | grep -E "(build|deploy|cf)" || echo "No matching scripts"
+          echo ""
+          echo "=== Working directory ==="
+          pwd
+          echo ""
+          echo "=== Files ==="
+          ls -la
+
+      - name: Build for Cloudflare
+        run: |
+          echo "=== Starting build ==="
+          echo "Node: $(node --version)"
+          echo "NPM: $(npm --version)"
+          echo ""
+          echo "=== Running next build ==="
+          npm run build 2>&1
+          echo ""
+          echo "=== Build exit code: $? ==="
+          echo ""
+          echo "=== Checking .next directory ==="
+          ls -la .next/ 2>/dev/null || echo ".next not created"
+          if [ -f ".next/server/worker.js" ]; then
+            echo "✓ worker.js generated"
+          else
+            echo "✗ worker.js NOT generated"
+          fi
+
+      - name: Check build artifacts
+        run: |
+          echo "=== .open-next contents ==="
+          find .open-next -type f 2>/dev/null | head -30 || echo "No .open-next directory"
+          echo ""
+          echo "=== Wrangler config ==="
+          cat wrangler.jsonc 2>/dev/null || cat wrangler.toml 2>/dev/null || echo "No wrangler config found"
+
+      - name: Deploy to Cloudflare
+        if: success()
+        run: npx wrangler deploy --compatibility-date=2024-09-23
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CI: true
+          WORKERS_CI: true

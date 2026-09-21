@@ -211,7 +211,7 @@ export default function AdminSidebar({
 
   return (
     <aside
-      className={`flex shrink-0 flex-col bg-[#1e293b] text-slate-300 transition-all duration-200 ${
+      className={`flex shrink-0 flex-col bg-[#1e293b] text-slate-300 transition-[width] duration-200 ${
         collapsed ? "w-16" : "w-[220px]"
       }`}
     >

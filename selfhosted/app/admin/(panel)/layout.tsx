@@ -8,7 +8,7 @@ import AdminLogo from "../admin-logo";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | 后台管理",
+    template: "%s |后台管理",
     default: "后台管理",
   },
 };
@@ -24,12 +24,12 @@ export default async function AdminLayout({
 
   return (
     <div className="flex h-dvh min-h-0 bg-[var(--c-soft)]">
-      {/* ── 左侧深色侧边栏（可折叠 + 分组折叠 + 图标） ───────────── */}
+      {/* 左侧深色侧边栏 */}
       <AdminSidebar logo={<AdminLogo />} />
 
-      {/* ── 右侧内容区 ───────────────────────────────────────────── */}
+      {/* 右侧内容区 */}
       <main className="flex-1 min-w-0 overflow-y-auto" style={{ scrollBehavior: 'smooth' }}>
-        <div className="px-6 pt-6">
+        <div className="px-6 pt-0">
           {children}
         </div>
       </main>

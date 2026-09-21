@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
@@ -8,7 +9,7 @@ import AdminLogo from "../admin-logo";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | 后台管理",
+    template: "%s |后台管理",
     default: "后台管理",
   },
 };
@@ -20,18 +21,22 @@ export default async function AdminLayout({
 }) {
   if (!(await isAuthenticated())) redirect("/admin/login");
 
-  const settings = await getSettings();
+  // 预取 settings（如有需要可在 layout 内使用，暂时留作占位）
+  await getSettings();
 
   return (
     <div className="flex h-dvh min-h-0 bg-[var(--c-soft)]">
-      {/* ── 左侧深色侧边栏（可折叠 + 分组折叠 + 图标） ───────────── */}
+      {/* 左侧深色侧边栏：无异步依赖，立即可渲染 */}
       <AdminSidebar logo={<AdminLogo />} />
 
-      {/* ── 右侧内容区 ───────────────────────────────────────────── */}
+      {/* 右侧内容区 */}
       <main className="flex-1 min-w-0 overflow-y-auto" style={{ scrollBehavior: 'smooth' }}>
-        <div className="px-6 pt-6">
+        {/* Suspense 边界：框架立即可见，点击导航时内容区直接显示背景色，不闪白 */}
+        <Suspense fallback={
+          <div className="w-full min-h-[calc(100vh-3.5rem)] bg-[var(--c-soft)]" />
+        }>
           {children}
-        </div>
+        </Suspense>
       </main>
     </div>
   );

@@ -14,7 +14,7 @@ export default async function AiSettingsPage() {
 
   return (
     <>
-      <div className="sticky top-0 z-20 h-14 border-b border-slate-700/60 bg-[#1e293b] flex items-center px-6">
+      <div className="sticky top-0 z-20 h-14 border-b border-slate-700/60 bg-[#1e293b] flex items-center px-0">
 <h1 className="text-base font-semibold text-white">AI 工具</h1>
 </div>
 
