@@ -5,9 +5,14 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -16,73 +21,29 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
-        env:
-          NODE_ENV: production
 
-      - name: Debug environment
-        run: |
-          echo "=== Node version ==="
-          node --version
-          echo ""
-          echo "=== npm version ==="
-          npm --version
-          echo ""
-          echo "=== OpenNext package ==="
-          ls node_modules/@opennextjs/ 2>/dev/null || echo "Not installed"
-          echo ""
-          echo "=== Wrangler package ==="
-          ls node_modules/wrangler/ 2>/dev/null | head -5 || echo "Not installed"
-          echo ""
-          echo "=== Next version ==="
-          node -e "console.log(require('./node_modules/next/package.json').version)" 2>/dev/null || echo "Unknown"
-          echo ""
-          echo "=== Package scripts ==="
-          npm run 2>&1 | grep -E "(build|deploy|cf)" || echo "No matching scripts"
-          echo ""
-          echo "=== Working directory ==="
-          pwd
-          echo ""
-          echo "=== Files ==="
-          ls -la
+      - name: Build with OpenNext
+        run: npx opennextjs-cloudflare build
 
-      - name: Build for Cloudflare
+      - name: Verify build output
         run: |
-          echo "=== Starting build ==="
-          echo "Node: $(node --version)"
-          echo "NPM: $(npm --version)"
-          echo ""
-          echo "=== Running next build ==="
-          npm run build 2>&1
-          echo ""
-          echo "=== Build exit code: $? ==="
-          echo ""
-          echo "=== Checking .next directory ==="
-          ls -la .next/ 2>/dev/null || echo ".next not created"
-          if [ -f ".next/server/worker.js" ]; then
-            echo "✓ worker.js generated"
+          echo "=== .open-next ==="
+          ls -la .open-next/ || true
+          if [ -f .open-next/worker.js ]; then
+            echo "OK: worker.js ($(wc -c < .open-next/worker.js) bytes)"
           else
-            echo "✗ worker.js NOT generated"
+            echo "ERROR: .open-next/worker.js missing"
+            exit 1
           fi
 
-      - name: Check build artifacts
-        run: |
-          echo "=== .open-next contents ==="
-          find .open-next -type f 2>/dev/null | head -30 || echo "No .open-next directory"
-          echo ""
-          echo "=== Wrangler config ==="
-          cat wrangler.jsonc 2>/dev/null || cat wrangler.toml 2>/dev/null || echo "No wrangler config found"
-
       - name: Deploy to Cloudflare
-        if: success()
-        run: npx wrangler deploy --compatibility-date=2024-09-23
+        run: npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CI: true
-          WORKERS_CI: true
