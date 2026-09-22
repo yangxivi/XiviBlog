@@ -37,4 +37,7 @@ _seed_*.md
 # 打包 / 压缩产物
 xiviblog-install.zip
 *.tar.gz
+release-v*.zip
+raw.zip
+release-notes.md
 
