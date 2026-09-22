@@ -10,11 +10,11 @@ const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || "b433825d809e0bb7e7ba0bb
 const DATABASE_ID = process.env.CLOUDFLARE_DATABASE_ID || "0a6dacad-4281-4016-aa90-ce912fe9fa6a";
 const TOKEN = process.env.CLOUDFLARE_API_TOKEN || "";
 
-const date = "2026-09-20";
+const date = "2026-09-22";
 const heading = "后台 UI 优化与迭代时间轴更新";
 /** 同一天的小节标题如果改了主题，这里做一次改名（旧 → 新） */
-const staleHeadings = ["### 2026-09-17｜滚动到底与页脚贴合修复"];
-const bullets = ["后台侧边栏品牌区 + 所有 15 个 panel 页面 sticky title bar 高度统一为 h-14 (56px) + flex items-center","所有图标统一 h-4 w-4","收起菜单/退出登录按钮改为 text-white font-bold text-xs","退出登录：POST /api/auth/logout 后跳转 /admin/login","侧边栏内边距缩减（品牌区 px-3→px-2、导航 px-3→px-2、底部 p-3→p-2）让左右留白均衡","CF 部署版本：2222043d-d6bd-48df-bd63-ad95611aee09",];
+const staleHeadings = [];
+const bullets = ["删除所有面板页的深色标题栏 DIV（15个页面），简化 page-with-header 组件","main 容器添加 p-4 内边距，解决内容区四周留白太少问题","文章管理页搜索/筛选栏与批量操作栏改为 sticky 固定置顶（top-0 / top-14）","补齐所有面板页面标题的 pl-[2em] 右移，以及新建/编辑页面、公告友链页面的 h1 缺失修复","手机端响应式：侧边栏支持汉堡菜单 + 滑入抽屉布局","防白屏闪烁：Suspense fallback 保持深色背景","CF 部署版本：969fb8e"];
 
 const stalePhrases = [
   // 09-17 当天被后续实现推翻的旧描述（留着会与最终说明矛盾）
