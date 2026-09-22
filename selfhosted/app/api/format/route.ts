@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export const dynamic = "force-dynamic";
 
@@ -35,17 +34,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 获取 API 配置
-  let apiKey = "";
-  try {
-    const ctx = (await getCloudflareContext({ async: true })) as unknown as { env?: Record<string, unknown> };
-    const envKey =
-      (typeof ctx.env?.AI_FORMAT_API_KEY === "string" && ctx.env.AI_FORMAT_API_KEY) ||
-      (typeof process.env.AI_FORMAT_API_KEY === "string" && process.env.AI_FORMAT_API_KEY);
-    if (envKey) apiKey = envKey;
-  } catch {
-    /* 忽略 */
-  }
+  // 获取 API 配置（直接使用环境变量，无需 Cloudflare Context）
+  const apiKey = process.env.AI_FORMAT_API_KEY || "";
 
   const settings = await getSettings();
   if (!apiKey) apiKey = settings.aiFormatApiKey || settings.aiCoverApiKey || "";
