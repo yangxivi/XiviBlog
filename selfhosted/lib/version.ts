@@ -1,1 +1,6 @@
-LyoqCiAqIOW9k+WJjeS7o+eggeeahOeJiOacrOWPt+OAguavj+WPkeS4gOasoeiHquaJmOeuoSBSZWxlYXNl77yIR2l0SHViIHRhZyB2WC5ZLlrvvInlsLHmiYvliqggKzHjgIIKICog5a6D5piv44CM5q2j5Zyo6L+Q6KGM55qE5Luj56CB5Yiw5bqV5piv5ZOq5LiA54mI44CN55qE5ZSv5LiA55yf55u45p2l5rqQ77ybCiAqIOabtOaWsOWujOaIkOWQjueUsSBzY3JpcHRzL3NlbGYtdXBkYXRlLmNqcyDmiormlrDniYjmnKzlj7flhpnov5sgZGF0YS92ZXJzaW9uLmpzb24g5L2c5Li65bey6YOo572y6K6w5b2V44CCCiAqLwpleHBvcnQgY29uc3QgQVBQX1ZFUlNJT04gPSAiMS4zLjEyIjsK
+/**
+ * 当前代码的版本号。每发一次自托管 Release（GitHub tag vX.Y.Z）就手动 +1。
+ * 它是「正在运行的代码到底是哪一版」的唯一真相来源；
+ * 更新完成后由 scripts/self-update.cjs 把新版本号写进 data/version.json 作为已部署记录。
+ */
+export const APP_VERSION = "1.3.12";
