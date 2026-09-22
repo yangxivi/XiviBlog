@@ -51,9 +51,6 @@ export default async function BackupPage() {
 
   return (
     <>
-      <div className="sticky top-0 z-20 h-14 border-b border-slate-700/60 bg-[#1e293b] flex items-center px-0">
-        <h1 className="text-base font-semibold text-white pl-[2em]">数据备份</h1>
-      </div>
 
       {dbError && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
