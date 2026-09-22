@@ -196,7 +196,7 @@ export default async function DashboardPage() {
       ) : (
         <div className="space-y-6">
           {/* KPI 卡片行 */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 h-full">
             <Kpi
               label="总文章数"
               value={postCount}
@@ -225,8 +225,8 @@ export default async function DashboardPage() {
           </div>
 
           {/* 趋势图 + 快捷操作 */}
-          <div className="grid gap-6 lg:grid-cols-3">
-            <section className="lg:col-span-2">
+          <div className="grid gap-6 lg:grid-cols-3 h-full">
+            <section className="lg:col-span-2 h-full">
               <div className={CARD}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h2 className={H2}>近 30 天浏览趋势</h2>

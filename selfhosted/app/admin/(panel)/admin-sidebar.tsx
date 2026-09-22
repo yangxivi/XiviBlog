@@ -132,6 +132,7 @@ const GROUPS = [
       { href: "/admin/settings/engage", label: "公告友链", icon: "announce" },
       { href: "/admin/settings/ai", label: "AI 工具", icon: "ai" },
       { href: "/admin/backup", label: "数据备份", icon: "backup" },
+      { href: "/admin/settings/update", label: "系统更新", icon: "update" },
     ],
   },
 ];

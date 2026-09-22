@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import SettingsForm from "./settings-form";
-import UpdatePanel from "./update-panel";
+
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,7 @@ export default async function SettingsPage() {
   return (
     <>
       <SettingsForm sections={["basic"]} initial={settings} postOptions={[]} />
-      <UpdatePanel />
+      
     </>
   );
 }

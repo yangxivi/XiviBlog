@@ -17,11 +17,7 @@ export default async function AdminPages() {
     <>
 
 
-      <div className="sticky top-0 z-20 h-14 border-b border-slate-700/60 bg-[#1e293b] flex items-center px-6">
-        <h1 className="text-base font-semibold text-white">页面管理</h1>
-      </div>
-
-      <p className="mb-4 text-sm text-[var(--c-text-3)]">
+<p className="mb-4 text-sm text-[var(--c-text-3)]">
         这里的「页面」是独立单页（留言板、友链页、说明页等），区别于按时间排序的文章。
         勾选「显示在导航」后会出现在顶部导航栏，可开启留言区。
       </p>
