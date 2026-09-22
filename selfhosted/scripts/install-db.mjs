@@ -39,7 +39,7 @@ for (const f of files) {
         if (tableName && columnName) {
           const colCheck = db.prepare(
             `PRAGMA table_info(${tableName})`
-          ).all() as Array<{ name: string }>;
+          ).all();
           const colExists = colCheck.some((c) => c.name === columnName);
           if (colExists) {
             skipped.push(`${f}: column ${columnName} already exists`);
