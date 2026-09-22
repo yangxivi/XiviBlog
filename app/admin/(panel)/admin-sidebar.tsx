@@ -151,6 +151,7 @@ export default function AdminSidebar({
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [closed, setClosed] = useState<Record<string, boolean>>({});
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -210,11 +211,34 @@ export default function AdminSidebar({
   );
 
   return (
-    <aside
-      className={`flex shrink-0 flex-col bg-[#1e293b] text-slate-300 transition-[width] duration-200 ${
-        collapsed ? "w-16" : "w-[220px]"
-      }`}
-    >
+    <>
+      {/* 移动端菜单按钮 */}
+      <button
+        type="button"
+        onClick={() => setMobileOpen(!mobileOpen)}
+        className="fixed top-3 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-lg bg-[#1e293b] text-white shadow md:hidden"
+      >
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      {/* 移动端遮罩 */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* 侧边栏 */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-[220px] flex-col bg-[#1e293b] text-slate-300 transition-transform duration-200 md:relative md:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        } ${collapsed ? "md:w-16" : "md:w-[220px]"}`}
+      >
       {/* 品牌区：LOGO 与文字横向并排；收起时居中，展开只显示「后台管理」主标题 */}
       <div
         className={`flex items-center border-b border-slate-700/60 h-14 ${
@@ -325,6 +349,7 @@ export default function AdminSidebar({
           </button>
         </form>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

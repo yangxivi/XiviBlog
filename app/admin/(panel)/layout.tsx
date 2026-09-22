@@ -30,10 +30,10 @@ export default async function AdminLayout({
       <AdminSidebar logo={<AdminLogo />} />
 
       {/* 右侧内容区 */}
-      <main className="flex-1 min-w-0 overflow-y-auto" style={{ scrollBehavior: 'smooth' }}>
-        {/* Suspense 边界：框架立即可见，点击导航时内容区直接显示背景色，不闪白 */}
+      <main className="flex-1 min-w-0 overflow-y-auto bg-[#1e293b]" style={{ scrollBehavior: 'smooth' }}>
+        {/* Suspense 边界：深色背景立即显示，避免切换页面时白屏闪烁 */}
         <Suspense fallback={
-          <div className="w-full min-h-[calc(100vh-3.5rem)] bg-[var(--c-soft)]" />
+          <div className="w-full min-h-[calc(100vh-3.5rem)] bg-[#1e293b]" />
         }>
           {children}
         </Suspense>
