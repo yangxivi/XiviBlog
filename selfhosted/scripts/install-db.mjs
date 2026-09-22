@@ -21,11 +21,43 @@ const files = readdirSync(dir)
   .filter((f) => !/seed/i.test(f))
   .sort();
 
-let count = 0;
+const executed = [];
+const skipped = [];
+
 for (const f of files) {
-  db.exec(readFileSync(join(dir, f), "utf8"));
-  count++;
+  const sql = readFileSync(join(dir, f), "utf8");
+  try {
+    // 与 lib/migrate.ts 保持一致：分割语句并逐个执行
+    const statements = sql.split(";").filter((s) => s.trim());
+    for (const stmt of statements) {
+      const trimmed = stmt.trim();
+      if (!trimmed) continue;
+      // 检测是否包含 ADD COLUMN，如果列已存在则跳过
+      if (/ALTER\s+TABLE\s+\w+\s+ADD\s+COLUMN/i.test(trimmed)) {
+        const tableName = trimmed.match(/ALTER\s+TABLE\s+(\w+)/i)?.[1];
+        const columnName = trimmed.match(/ADD\s+COLUMN\s+(\w+)/i)?.[1];
+        if (tableName && columnName) {
+          const colCheck = db.prepare(
+            `PRAGMA table_info(${tableName})`
+          ).all() as Array<{ name: string }>;
+          const colExists = colCheck.some((c) => c.name === columnName);
+          if (colExists) {
+            skipped.push(`${f}: column ${columnName} already exists`);
+            continue;
+          }
+        }
+      }
+      db.exec(trimmed);
+    }
+    executed.push(f);
+  } catch (e) {
+    console.error(`✗ Migration ${f} failed:`, e instanceof Error ? e.message : e);
+    // 继续执行后续迁移，不中断整个过程
+  }
 }
 
 db.close();
-console.log(`✓ 已执行 ${count} 个迁移文件，数据库就绪：${path}`);
+console.log(`✓ 已执行 ${executed.length} 个迁移文件，跳过 ${skipped.length} 条：${path}`);
+if (skipped.length > 0) {
+  console.log("  跳过详情:", skipped.join("; "));
+}
