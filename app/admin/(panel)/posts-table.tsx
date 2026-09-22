@@ -314,8 +314,8 @@ export default function PostsTable({ posts, tags }: Props) {
 
   return (
     <div>
-      {/* 筛选栏 */}
-      <div className="mb-4 rounded-xl border border-[var(--c-border-2)] bg-[var(--c-soft)] p-3">
+      {/* 筛选栏 - 固定置顶 */}
+      <div className="mb-4 rounded-xl border border-[var(--c-border-2)] bg-[var(--c-soft)] p-3 sticky top-0 z-10">
         <div className="flex flex-wrap items-center gap-2">
           <input
             value={q}
@@ -384,9 +384,9 @@ export default function PostsTable({ posts, tags }: Props) {
         </p>
       </div>
 
-      {/* 批量操作栏 */}
+      {/* 批量操作栏 - 固定置顶 */}
       {sel.size > 0 && (
-        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-[var(--brand)] bg-[var(--c-brand-soft)] px-3 py-2">
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-[var(--brand)] bg-[var(--c-brand-soft)] px-3 py-2 sticky top-14 z-10">
           <span className="text-xs font-medium text-[var(--brand-deep)]">
             已选 {sel.size} 篇
           </span>
