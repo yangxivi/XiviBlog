@@ -16,6 +16,9 @@ const PROBE_HEADER = "x-install-probe";
 // 消灭「刚装完点 /admin 被旧缓存弹回安装页」的窗口。
 const FRESH_COOKIE = "xivi_install_fresh";
 
+// 会话 Cookie 名（与 lib/auth.ts 保持一致）
+const SESSION_COOKIE = "xivi_session";
+
 async function isInstalled(req: NextRequest): Promise<boolean> {
   const now = Date.now();
   const fresh = req.cookies.get(FRESH_COOKIE)?.value === "1";
@@ -36,11 +39,22 @@ async function isInstalled(req: NextRequest): Promise<boolean> {
   }
 }
 
+/** 检查请求是否带有有效的会话 Cookie（简化版：只看 cookie 存在，不验签） */
+function hasSessionCookie(req: NextRequest): boolean {
+  return req.cookies.get(SESSION_COOKIE)?.value !== undefined;
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // 自身发出的安装状态探针：直接放行
   if (req.headers.get(PROBE_HEADER) === "1") {
+    return NextResponse.next();
+  }
+
+  // 已登录用户：无论安装状态如何，直接放行
+  // 避免安装完成后用户被旧缓存弹回安装页
+  if (hasSessionCookie(req)) {
     return NextResponse.next();
   }
 
