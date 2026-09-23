@@ -32,12 +32,8 @@ jobs:
           echo "Package size: $(du -h XiviBlog-selfhosted.zip | cut -f1)"
           ls -la XiviBlog-selfhosted.zip
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: v${{ github.run_number }}
-          name: "Selfhosted ${{ github.run_number }}"
-          files: XiviBlog-selfhosted.zip
-          fail_on_unmatched_files: true
-          draft: false
-          prerelease: false
+          name: XiviBlog-selfhosted
+          path: XiviBlog-selfhosted.zip
