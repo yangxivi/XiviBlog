@@ -1,0 +1,43 @@
+name: Release Selfhosted
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'selfhosted/**'
+      - '.github/workflows/release-selfhosted.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: release-selfhosted-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            selfhosted
+
+      - name: Create package
+        run: |
+          cd selfhosted
+          zip -r ../XiviBlog-selfhosted.zip . -x "node_modules/*" -x ".next/*" -x ".git/*"
+          cd ..
+          echo "Package size: $(du -h XiviBlog-selfhosted.zip | cut -f1)"
+          ls -la XiviBlog-selfhosted.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: "Selfhosted ${{ github.run_number }}"
+          files: XiviBlog-selfhosted.zip
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: false
