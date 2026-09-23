@@ -14,6 +14,9 @@ export const maxDuration = 300; // 5 分钟超时（构建可能需要较长时�
 /** 安装包目录（上传后暂存） */
 const UPLOAD_DIR = join(process.cwd(), "data", ".upload");
 
+/** 源码备份目录 */
+const RB_DIR = join(process.cwd(), "data", ".rollback");
+
 /** 验证文件名是否符合 xiviblog-selfhosted-vX.Y.Z.zip 格式 */
 function parseUploadFilename(filename: string): { version: string; ok: boolean } {
   const m = /^xiviblog-selfhosted-v?(\d+\.\d+\.\d+)\.zip$/i.exec(filename);
