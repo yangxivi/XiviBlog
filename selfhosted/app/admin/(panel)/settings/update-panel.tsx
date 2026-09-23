@@ -167,15 +167,15 @@ export default function UpdatePanel() {
     if (!file) return;
     setUploadFile(file);
 
-    // 验证文件名格式
-    const m = /^xiviblog-selfhosted-v?(\d+\.\d+\.\d+)\.zip$/i.exec(file.name);
+    // 验证文件名格式：支持 xiviblog-selfhosted-vX.Y.Z.zip 或 XiviBlog-vX.Y.Z-selfhosted.zip
+    const m = /^xiviblog-selfhosted-v?(\d+\.\d+\.\d+)\.zip$|^XiviBlog-v(\d+\.\d+\.\d+)-selfhosted\.zip$/i.exec(file.name);
     if (!m) {
-      setMsg({ type: "err", text: `文件名格式不对，期望 xiviblog-selfhosted-vX.Y.Z.zip，实际：${file.name}` });
+      setMsg({ type: "err", text: `文件名格式不对，期望 xiviblog-selfhosted-vX.Y.Z.zip 或 XiviBlog-vX.Y.Z-selfhosted.zip，实际：${file.name}` });
       setUploadFile(null);
       return;
     }
 
-    const version = "v" + m[1];
+    const version = "v" + (m[1] || m[2]);
     setMsg({ type: "ok", text: `已选择安装包：${file.name}（${(file.size / 1024 / 1024).toFixed(1)} MB）` });
   }
 
