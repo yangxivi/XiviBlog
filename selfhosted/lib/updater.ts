@@ -226,7 +226,8 @@ export function listRollbackBundles(): { file: string; version: string; at: stri
     const files = readdirSync(dir)
       .filter((f: string) => f.endsWith(".tar.gz"))
       .map((f: string) => {
-        const m = /^app-(.+)-(\d+)\.tar\.gz$/.exec(f);
+        // 兼容两种格式：app-xxx-xxx.tar.gz 或 upload-xxx-xxx.tar.gz
+        const m = /^(?:app|upload)-(.*?)-(\d+)\.tar\.gz$/.exec(f);
         return { file: join(dir, f), version: m?.[1] || "未知", at: m?.[2] || "" };
       })
       .sort((a: { file: string }, b: { file: string }) => b.file.localeCompare(a.file));
