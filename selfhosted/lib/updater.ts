@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { APP_VERSION } from "./version";
 
@@ -234,5 +234,16 @@ export function listRollbackBundles(): { file: string; version: string; at: stri
     return files;
   } catch {
     return [];
+  }
+}
+
+/** 删除指定的回滚备份文件 */
+export function deleteRollbackBundle(file: string): boolean {
+  try {
+    if (!existsSync(file)) return false;
+    unlinkSync(file);
+    return true;
+  } catch {
+    return false;
   }
 }

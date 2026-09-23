@@ -162,6 +162,35 @@ export default function UpdatePanel() {
     }
   }
 
+  async function deleteBackup() {
+    if (!selectedBundle) return;
+    const ok = await ask({
+      title: "删除备份",
+      message: `确认删除源码备份 v${data?.rollbackBundles.find(b => b.file === selectedBundle)?.version || "未知"}？此操作不可恢复。`,
+      danger: true,
+      okText: "删除",
+    });
+    if (!ok) return;
+    setBusy(true);
+    setMsg(null);
+    try {
+      const fileName = selectedBundle.split("/").pop() || "";
+      const res = await fetch("/api/admin/update/rollback", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file: fileName }),
+      });
+      const j = await res.json();
+      if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
+      setMsg({ type: "ok", text: "备份已删除" });
+      await load();
+    } catch (e) {
+      setMsg({ type: "err", text: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -371,6 +400,14 @@ export default function UpdatePanel() {
               className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-500 transition hover:bg-red-50 disabled:opacity-40"
             >
               回滚到所选备份
+            </button>
+            <button
+              type="button"
+              onClick={deleteBackup}
+              disabled={busy || !selectedBundle}
+              className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-500 transition hover:bg-gray-50 disabled:opacity-40"
+            >
+              删除此备份
             </button>
           </div>
         ) : (
