@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   const model = settings.aiFormatModel?.trim() || DEFAULT_MODEL;
   const baseUrl = settings.aiFormatBaseUrl?.trim() || DEFAULT_BASE_URL;
 
-  if (!apiKey) {
+  if (!resolvedApiKey) {
     return NextResponse.json(
       {
         error: "未配置 AI 排版 API Key。请在「站点设置 → AI 排版」填入 Key。",
