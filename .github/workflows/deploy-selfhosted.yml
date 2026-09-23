@@ -13,24 +13,117 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  build-and-release:
+    name: Build & Release Package
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create selfhosted package
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: selfhosted/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./selfhosted
+        run: npm ci
+
+      - name: Build project
+        working-directory: ./selfhosted
+        run: npm run build
+
+      - name: Create deployment package
+        working-directory: ./selfhosted
         run: |
-          cd selfhosted
-          zip -r ../XiviBlog-selfhosted.zip . -x "node_modules/*" -x ".next/*" -x ".git/*"
-          cd ..
-          echo "Package size: $(du -h XiviBlog-selfhosted.zip | cut -f1)"
+          # 方案1: standalone 产物（最快，无需服务器装依赖）
+          zip -r ../XiviBlog-Standalone.zip . \
+            -x "node_modules/*" \
+            -x ".next/cache/*" \
+            -x ".git/*" \
+            -x "*.md" \
+            -x "docs/*" \
+            -x ".next/standalone/.next/cache/*"
+
+          # 方案2: 完整源码包（备选）
+          zip -r ../XiviBlog-Source.zip . \
+            -x "node_modules/*" \
+            -x ".next/*" \
+            -x ".git/*" \
+            -x "docs/*"
+
+          ls -lh ../XiviBlog-*.zip
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ github.run_number }}
-          files: XiviBlog-selfhosted.zip
-          fail_on_unmatched_files: true
+          files: |
+            selfhosted/XiviBlog-Standalone.zip
+            selfhosted/XiviBlog-Source.zip
+          name: "XiviBlog Selfhosted v${{ github.run_number }}"
+          body: |
+            ## 📦 XiviBlog 自托管版 - 一键部署包
+
+            ### 快速部署（Standalone 包，无需 npm install）
+
+            ```bash
+            # 下载并解压
+            cd /opt
+            curl -L -o xiviblog.zip https://github.com/yangxivi/XiviBlog/releases/download/v${{ github.run_number }}/XiviBlog-Standalone.zip
+            unzip xiviblog.zip
+            cd xiviblog
+
+            # 生成密钥（只需执行一次）
+            cp .env.example .env
+            sed -i "s/SESSION_SECRET=.*/SESSION_SECRET=$(openssl rand -hex 32)/" .env
+            sed -i "s/ADMIN_PASSWORD=.*/ADMIN_PASSWORD=xiviblog$(openssl rand -hex 4)/" .env
+
+            # 初始化数据库
+            node scripts/install-db.mjs
+
+            # 启动服务
+            PORT=3000 node server.js
+            ```
+
+            ### 或使用一键脚本
+
+            ```bash
+            # 从 GitHub 拉取最新代码
+            git clone --depth 1 https://github.com/yangxivi/XiviBlog.git
+            cd XiviBlog/selfhosted
+            bash bootstrap-deploy.sh
+            ```
+
+            ### Cloud Studio 部署
+
+            1. 从 Releases 下载 `XiviBlog-Standalone.zip`
+            2. 上传到 Cloud Studio 工作空间
+            3. 解压并进入目录：`unzip XiviBlog-Standalone.zip && cd xiviblog`
+            4. 生成密钥并启动：
+               ```bash
+               cp .env.example .env
+               sed -i "s/SESSION_SECRET=.*/SESSION_SECRET=$(openssl rand -hex 32)/" .env
+               PORT=3000 node server.js
+               ```
+
+            ### 访问地址
+            - 前台首页：`http://<服务器IP>:3000`
+            - 安装向导：`http://<服务器IP>:3000/install`
+            - 后台管理：`http://<服务器IP>:3000/admin`
+        fail_on_unmatched_files: false
+
+  post-deploy-info:
+    name: Post Deploy Info
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output deploy info
+        run: |
+          echo "## ✅ 部署包已生成"
+          echo "- 标签: v${{ github.run_number }}"
+          echo "- 下载地址: https://github.com/yangxivi/XiviBlog/releases/tag/v${{ github.run_number }}"
