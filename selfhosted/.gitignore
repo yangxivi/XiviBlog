@@ -1,0 +1,43 @@
+# dependencies
+node_modules/
+
+# next.js build output
+.next/
+out/
+
+# runtime data
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# env files (含密钥，绝不入库)
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# temp
+_tmp_*/
+.scaffold_*
+
+# 调试 / 临时文件（以下划线开头的零散调试产物，不入库）
+_*
+# 例外：种子文件需要提交
+_seed_*.sql
+_seed_*.md
+
+# 打包 / 压缩产物
+xiviblog-install.zip
+*.tar.gz
+release-v*.zip
+raw.zip
+release-notes.md
+
