@@ -262,7 +262,9 @@ export async function POST(req: NextRequest) {
 
   // 2) 源码备份
   try {
-    const rbFile = join(rbDir, `upload-${targetVersion || "unknown"}-${ts}.tar.gz`);
+    mkdirSync(RB_DIR, { recursive: true });
+    const ts = Date.now();
+    const rbFile = join(RB_DIR, `upload-${targetVersion || "unknown"}-${ts}.tar.gz`);
     execFileSync("tar", [
       "-czf", rbFile,
       "--exclude=node_modules",
