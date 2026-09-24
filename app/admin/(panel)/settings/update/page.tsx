@@ -18,7 +18,7 @@ export default function UpdatePanel() {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/update${force ? "?force=1" : ""}`);
-      const j = await res.json();
+      const j = await res.json() as Check;
       setCheck(j);
     } catch {
       setCheck({ current: "1.3.19", latest: null, hasUpdate: false, checkedAt: "", error: "检查失败" });
