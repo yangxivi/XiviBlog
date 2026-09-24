@@ -96,8 +96,8 @@ export default function UpdatePanel() {
         <h3 className="text-sm font-semibold text-[var(--c-text)]">如何更新</h3>
         <ol className="mt-2 list-inside list-decimal space-y-1 text-sm text-[var(--c-text-2)]">
           <li>点击「前往 GitHub Releases」下载最新 Release（含完整源码）</li>
-          <li>本地运行 <code className="rounded bg-[var(--c-code-bg)] px-1 text-xs">git pull origin main</code></li>
-          <li>执行 <code className="rounded bg-[var(--c-code-bg)] px-1 text-xs">npm run cf:deploy</code> 重新部署</li>
+          <li>本地运行 <code className="rounded bg-[var(--c-fill)] px-1.5 py-0.5 text-xs font-mono text-[var(--c-text)]">git pull origin main</code></li>
+          <li>执行 <code className="rounded bg-[var(--c-fill)] px-1.5 py-0.5 text-xs font-mono text-[var(--c-text)]">npm run cf:deploy</code> 重新部署</li>
         </ol>
       </div>
     </div>
