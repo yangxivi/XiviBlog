@@ -33,7 +33,11 @@ function validateZipStructure(zipPath: string): boolean {
     const hasPkg = existsSync(join(tmp, "package.json"));
     const hasApp = existsSync(join(tmp, "app"));
     // 也检查是否是 xiviblog 项目根（有 next.config 或 open-next）
-    const hasNextConfig = existsSync(join(tmp, "next.config.ts")) || existsSync(join(tmp, "next.config.js"));
+    // 支持 .ts / .js / .mjs 三种格式
+    const hasNextConfig =
+      existsSync(join(tmp, "next.config.ts")) ||
+      existsSync(join(tmp, "next.config.js")) ||
+      existsSync(join(tmp, "next.config.mjs"));
     const hasOpenNext = existsSync(join(tmp, ".open-next"));
     const valid = (hasPkg && hasApp) || (hasNextConfig && hasOpenNext);
     // 清理验证目录
