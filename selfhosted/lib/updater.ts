@@ -44,8 +44,10 @@ export type ReleaseInfo = {
   notes: string;
   /** 仓库源码 tarball（universality：tar -xzf 即可解，无需 unzip） */
   tarballUrl: string;
-  /** Release asset zip（含完整 selfhosted 代码，供在线更新使用） */
+  /** Release asset zip（含完整 selfhosted 源码，更新时需本地构建） */
   zipUrl: string | null;
+  /** Release asset zip（源码 + CI 预构建的 .next，更新时免服务器构建，小内存机器首选） */
+  prebuiltUrl: string | null;
   htmlUrl: string;
   publishedAt: string;
 };
@@ -70,9 +72,14 @@ export async function fetchLatestRelease(token?: string): Promise<ReleaseInfo | 
       assets?: Array<{ name?: string; browser_download_url?: string }>;
     };
     if (!j.tag_name || !j.tarball_url) return null;
-    // 优先找 xiviblog-selfhosted-*.zip 格式的 asset
-    const zipAsset = j.assets?.find((a) =>
-      a.name?.toLowerCase().includes("selfhosted") && a.name?.endsWith(".zip")
+    const assetName = (a: { name?: string }) => (a.name || "").toLowerCase();
+    // 源码 zip（更新时需本地构建）
+    const zipAsset = j.assets?.find(
+      (a) => assetName(a).includes("selfhosted") && assetName(a).endsWith(".zip")
+    );
+    // 预构建 zip（源码 + .next，更新时免构建）
+    const prebuiltAsset = j.assets?.find(
+      (a) => assetName(a).includes("prebuilt") && assetName(a).endsWith(".zip")
     );
     return {
       tag: j.tag_name,
@@ -80,6 +87,7 @@ export async function fetchLatestRelease(token?: string): Promise<ReleaseInfo | 
       notes: j.body || "",
       tarballUrl: j.tarball_url,
       zipUrl: zipAsset?.browser_download_url ?? null,
+      prebuiltUrl: prebuiltAsset?.browser_download_url ?? null,
       htmlUrl: j.html_url || `https://github.com/${REPO}/releases/tag/${j.tag_name}`,
       publishedAt: j.published_at || "",
     };
@@ -172,6 +180,10 @@ export type UpdateJob = {
   current: string;
   target: string;
   tarballUrl: string;
+  /** Release 源码 zip 地址（更新时需本地构建） */
+  zipUrl?: string;
+  /** Release 预构建 zip 地址（源码 + .next，更新时免构建） */
+  prebuiltUrl?: string;
   snapshotId: number | null;
   rollbackFile: string | null;
   startedAt: string | null;
@@ -212,7 +224,10 @@ export function writeUpdateJob(job: UpdateJob): void {
 }
 
 export function appendJobLog(job: UpdateJob, line: string): UpdateJob {
-  const next = { ...job, log: [...job.log, `[${new Date().toISOString().slice(11, 19)}] ${line}`].slice(-200) };
+  // 北京时间 HH:MM:SS（toISOString 是 UTC，会与用户时钟差 8 小时）
+  const nowTs = () =>
+    new Date().toLocaleTimeString("sv-SE", { timeZone: "Asia/Shanghai", hour12: false });
+  const next = { ...job, log: [...job.log, `[${nowTs()}] ${line}`].slice(-200) };
   writeUpdateJob(next);
   return next;
 }
