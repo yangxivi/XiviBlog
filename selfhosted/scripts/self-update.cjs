@@ -319,6 +319,23 @@ function attemptRollback(job) {
   }
 }
 
+/** 资产下载：直连失败时依次尝试加速镜像（国内服务器访问 objects.githubusercontent.com 常被卡） */
+async function downloadAsset(url, dest) {
+  const mirrors = [
+    url,
+    "https://ghproxy.cn/" + url,
+    "https://gh-proxy.com/" + url,
+  ];
+  for (const u of mirrors) {
+    const ok = await download(u, dest);
+    if (ok) {
+      if (u !== url) log(`直连失败，已通过镜像下载：${u.split("/")[2]}`);
+      return true;
+    }
+  }
+  return false;
+}
+
 /** 下载 + 解包 + 找到 selfhosted 根；失败返回 null（原因已写入日志） */
 async function fetchAndExtract(job, url, kind) {
   const tmpBase = path.join(DATA_DIR, ".update");
@@ -326,9 +343,9 @@ async function fetchAndExtract(job, url, kind) {
   const packagePath = path.join(tmpBase, kind === "prebuilt" ? "prebuilt.zip" : kind === "zip" ? "release.zip" : "release.tar.gz");
 
   log(`下载 ${kind} 包: ${url.split("/").pop()}`);
-  const ok = await download(url, packagePath);
+  const ok = kind === "tarball" ? await download(url, packagePath) : await downloadAsset(url, packagePath);
   if (!ok) {
-    buildLogWrite(`下载 ${kind}`, `下载失败: ${url}`);
+    buildLogWrite(`下载 ${kind}`, `下载失败（含镜像）: ${url}`);
     return null;
   }
   log(`下载完成（${Math.round(fs.statSync(packagePath).size / 1024)} KB），开始解包…`);
