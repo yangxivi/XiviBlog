@@ -52,14 +52,9 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // 已登录用户：无论安装状态如何，直接放行
-  // 避免安装完成后用户被旧缓存弹回安装页
-  if (hasSessionCookie(req)) {
-    return NextResponse.next();
-  }
-
-  // 安装向导（页面 + API）：仅未安装时可用；装完自动关闭，
-  // 防止已上线站点被任何人重开向导覆盖安装。
+  // 安装向导（页面 + API）：仅未安装时可用；装完自动关闭。
+  // ⚠️ 此判断必须放在会话检查之前：已登录用户（带 xivi_session Cookie）
+  // 也不能重开向导，否则登录态下 /install 会完整渲染安装表单（安全风险）。
   if (pathname === "/install" || pathname.startsWith("/api/install")) {
     const installed = await isInstalled(req);
     if (!installed) return NextResponse.next();
@@ -76,6 +71,12 @@ export async function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
+  }
+
+  // 已登录用户：无论安装状态如何，直接放行
+  // 避免安装完成后用户被旧缓存弹回安装页
+  if (hasSessionCookie(req)) {
+    return NextResponse.next();
   }
 
   // 鉴权、静态资源、图片目录等一律放行
