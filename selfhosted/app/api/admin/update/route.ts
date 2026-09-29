@@ -101,6 +101,8 @@ export async function POST(req: NextRequest) {
   const release = check.release as {
     tag: string;
     tarballUrl: string;
+    zipUrl: string | null;
+    prebuiltUrl: string | null;
     notes: string;
   };
 
@@ -120,6 +122,8 @@ export async function POST(req: NextRequest) {
     current: APP_VERSION,
     target: release.tag,
     tarballUrl: release.tarballUrl,
+    zipUrl: release.zipUrl ?? undefined,
+    prebuiltUrl: release.prebuiltUrl ?? undefined,
     snapshotId: null,
     rollbackFile: null,
     startedAt: new Date().toISOString(),
