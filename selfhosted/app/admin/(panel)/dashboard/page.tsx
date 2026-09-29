@@ -135,21 +135,6 @@ function Trend({ data }: { data: DailyPoint[] }) {
   );
 }
 
-/** 把 /blog/xxx 换成文章标题，其它路径原样展示 */
-function labelPath(path: string, titles: Map<string, string>) {
-  if (path.startsWith("/blog/")) {
-    const slug = path.slice("/blog/".length);
-    return titles.get(slug) ?? `${path}（已删除）`;
-  }
-  const fixed: Record<string, string> = {
-    "/": "首页",
-    "/history": "历史文章",
-    "/about": "关于我们",
-    "/search": "搜索页",
-  };
-  return fixed[path] ?? path;
-}
-
 export default async function DashboardPage() {
   if (!(await isAuthenticated())) redirect("/admin/login");
 
@@ -196,7 +181,7 @@ export default async function DashboardPage() {
       ) : (
         <div className="space-y-6">
           {/* KPI 卡片行 */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 h-full">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
             <Kpi
               label="总文章数"
               value={postCount}
@@ -227,7 +212,7 @@ export default async function DashboardPage() {
           {/* 趋势图 + 快捷操作 */}
           <div className="grid gap-6 lg:grid-cols-3 h-full">
             <section className="lg:col-span-2 h-full">
-              <div className={CARD}>
+              <div className={`${CARD} h-full flex flex-col`}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h2 className={H2}>近 30 天浏览趋势</h2>
                   <div className="flex items-center gap-4 text-xs text-[var(--c-text-3)]">
@@ -241,16 +226,16 @@ export default async function DashboardPage() {
                     </span>
                   </div>
                 </div>
-                <div className="mt-4">
+                <div className="mt-4 flex-1">
                   <Trend data={daily} />
                 </div>
               </div>
             </section>
 
-            <section>
-              <div className={CARD}>
+            <section className="h-full">
+              <div className={`${CARD} h-full flex flex-col`}>
                 <h2 className={H2}>快捷操作</h2>
-                <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="mt-4 grid grid-cols-2 gap-3 flex-1 content-start">
                   {[
                     { href: "/admin/posts?new=1", label: "新文章", icon: "✏️" },
                     { href: "/admin/comments", label: "留言审核", icon: "💬" },
@@ -287,8 +272,8 @@ export default async function DashboardPage() {
           </div>
 
           {/* 最近文章 + 最近留言 */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <section className={CARD}>
+          <div className="grid gap-6 lg:grid-cols-2 h-full">
+            <section className={`${CARD} h-full flex flex-col`}>
               <div className="flex items-center justify-between">
                 <h2 className={H2}>最近文章</h2>
                 <Link
@@ -298,7 +283,7 @@ export default async function DashboardPage() {
                   查看全部 →
                 </Link>
               </div>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 space-y-3 flex-1">
                 {latestPosts.map((p) => (
                   <li key={p.id} className="flex items-start justify-between gap-3">
                     <Link
@@ -320,7 +305,7 @@ export default async function DashboardPage() {
               </ul>
             </section>
 
-            <section className={CARD}>
+            <section className={`${CARD} h-full flex flex-col`}>
               <div className="flex items-center justify-between">
                 <h2 className={H2}>最近留言</h2>
                 <Link
@@ -330,7 +315,7 @@ export default async function DashboardPage() {
                   查看全部 →
                 </Link>
               </div>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 space-y-3 flex-1">
                 {recentComments.map((c) => (
                   <li key={c.id} className="border-b border-[var(--c-border-2)] last:border-0 pb-3 last:pb-0">
                     <div className="flex items-center gap-2">
