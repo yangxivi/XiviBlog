@@ -126,7 +126,11 @@ export default function AccountForm({ user }: { user: User }) {
         credentials: "include",
         body: JSON.stringify({ action: "profile", name: name.trim(), email: email.trim() }),
       });
-      const j = await res.json().catch(() => ({}));
+      const j = (await res.json().catch(() => ({}))) as {
+        message?: string;
+        error?: string;
+        user?: { name?: string; email?: string } | null;
+      };
       if (res.ok) {
         setProfileMsg({ type: "ok", text: j.message || "账号资料已更新" });
         setName(j.user?.name ?? name.trim());
@@ -158,7 +162,10 @@ export default function AccountForm({ user }: { user: User }) {
           confirmPassword: confirm,
         }),
       });
-      const j = await res.json().catch(() => ({}));
+      const j = (await res.json().catch(() => ({}))) as {
+        message?: string;
+        error?: string;
+      };
       if (res.ok) {
         setPwMsg({ type: "ok", text: j.message || "密码修改成功" });
         setCurrent("");
