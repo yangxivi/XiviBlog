@@ -106,8 +106,8 @@ const ICONS: Record<string, ReactNode> = {
   ),
   password: (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </svg>
   ),
 };
@@ -146,7 +146,7 @@ const GROUPS = [
       { href: "/admin/settings/ai", label: "AI 工具", icon: "ai" },
       { href: "/admin/backup", label: "数据备份", icon: "backup" },
       { href: "/admin/settings/update", label: "系统更新", icon: "update" },
-      { href: "/admin/settings/password", label: "修改密码", icon: "password" },
+      { href: "/admin/settings/account", label: "账号管理", icon: "password" },
     ],
   },
 ];

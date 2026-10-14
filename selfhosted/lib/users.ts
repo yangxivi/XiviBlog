@@ -113,6 +113,48 @@ export async function updatePassword(
     .run();
 }
 
+/**
+ * 更新账号资料（用户名 / 邮箱）。
+ * 邮箱唯一：若改成已被他人占用的邮箱，抛错由调用方转成 409。
+ */
+export async function updateProfile(
+  userId: number,
+  input: { name?: string; email?: string }
+): Promise<{ emailChanged: boolean }> {
+  const db = await getDB();
+
+  const sets: string[] = [];
+  const binds: unknown[] = [];
+
+  if (input.name !== undefined) {
+    sets.push(`name=?${binds.length + 1}`);
+    binds.push(input.name.trim() || "管理员");
+  }
+
+  let emailChanged = false;
+  if (input.email !== undefined) {
+    const email = normalizeEmail(input.email);
+    const exist = await db
+      .prepare("SELECT id FROM users WHERE email=?1 AND id<>?2")
+      .bind(email, userId)
+      .first<{ id: number }>();
+    if (exist) throw new Error("EMAIL_TAKEN");
+    sets.push(`email=?${binds.length + 1}`);
+    binds.push(email);
+    emailChanged = true;
+  }
+
+  if (!sets.length) return { emailChanged: false };
+
+  binds.push(userId);
+  await db
+    .prepare(`UPDATE users SET ${sets.join(", ")} WHERE id=?${binds.length}`)
+    .bind(...(binds as never[]))
+    .run();
+
+  return { emailChanged };
+}
+
 export async function touchLogin(userId: number): Promise<void> {
   const db = await getDB();
   await db
