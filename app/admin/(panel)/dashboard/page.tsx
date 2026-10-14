@@ -19,9 +19,14 @@ export const dynamic = "force-dynamic";
 
 export const metadata = { title: "仪表盘" };
 
-const CARD = "rounded-2xl border border-[var(--c-border-2)] p-5 bg-white dark:bg-slate-900 h-full";
+const CARD = "rounded-2xl border border-[var(--c-border-2)] p-5 bg-white dark:bg-slate-900";
 const H2 = "text-sm font-bold text-[var(--c-text)]";
 
+/**
+ * KPI 卡片：等高对齐。
+ * - 卡片本身 h-full 撑满网格行高；
+ * - 数值行 mt-auto 贴底，保证「有副标题 / 无副标题」的卡片内部结构一致。
+ */
 function Kpi({
   label,
   value,
@@ -35,16 +40,8 @@ function Kpi({
   icon: string;
   href?: string;
 }) {
-  const wrap = (child: React.ReactNode) =>
-    href ? (
-      <Link href={href} className="block h-full transition hover:opacity-80">
-        {child}
-      </Link>
-    ) : (
-      <div className="block h-full">{child}</div>
-    );
-  return wrap(
-    <div className={CARD}>
+  const card = (
+    <div className={`${CARD} flex h-full flex-col`}>
       <div className="flex items-center justify-between">
         <p className="text-xs text-[var(--c-text-3)]">{label}</p>
         <span className="text-lg">{icon}</span>
@@ -52,8 +49,28 @@ function Kpi({
       <p className="mt-2 text-2xl font-bold tabular-nums text-[var(--c-text)]">
         {value.toLocaleString("zh-CN")}
       </p>
-      {sub && <p className="mt-0.5 text-xs text-[var(--c-text-4)]">{sub}</p>}
+      <div className="mt-auto pt-0.5">
+        {sub ? (
+          <p className="text-xs text-[var(--c-text-4)]">{sub}</p>
+        ) : (
+          /* 占位，保持有/无副标题的卡片内边距一致 */
+          <p className="select-none text-xs text-transparent" aria-hidden="true">
+            &nbsp;
+          </p>
+        )}
+      </div>
     </div>
+  );
+
+  return href ? (
+    <Link
+      href={href}
+      className="block h-full transition hover:opacity-80 focus-visible:opacity-80"
+    >
+      {card}
+    </Link>
+  ) : (
+    <div className="block h-full">{card}</div>
   );
 }
 
@@ -197,7 +214,7 @@ export default async function DashboardPage() {
       ) : (
         <div className="space-y-6">
           {/* KPI 卡片行 */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 h-full">
+          <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Kpi
               label="总文章数"
               value={postCount}
@@ -225,71 +242,67 @@ export default async function DashboardPage() {
             />
           </div>
 
-          {/* 趋势图 + 快捷操作 */}
-          <div className="grid gap-6 lg:grid-cols-3 h-full">
-            <section className="lg:col-span-2 h-full">
-              <div className={CARD + " !h-full"}>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h2 className={H2}>近 30 天浏览趋势</h2>
-                  <div className="flex items-center gap-4 text-xs text-[var(--c-text-3)]">
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--brand)]" />
-                      浏览 PV
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-[2px] w-4 bg-[#111925]" />
-                      访客 UV
-                    </span>
-                  </div>
+          {/* 趋势图 + 快捷操作：两卡等宽均分总宽、等高 */}
+          <div className="grid items-stretch gap-6 lg:grid-cols-2">
+            <section className={`${CARD} flex h-full flex-col`}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className={H2}>近 30 天浏览趋势</h2>
+                <div className="flex items-center gap-4 text-xs text-[var(--c-text-3)]">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--brand)]" />
+                    浏览 PV
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-[2px] w-4 bg-[#111925]" />
+                    访客 UV
+                  </span>
                 </div>
-                <div className="mt-4">
-                  <Trend data={daily} />
-                </div>
+              </div>
+              <div className="mt-4 flex-1">
+                <Trend data={daily} />
               </div>
             </section>
 
-            <section>
-              <div className={CARD}>
-                <h2 className={H2}>快捷操作</h2>
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  {[
-                    { href: "/admin/edit/new", label: "新文章", icon: "✏️" },
-                    { href: "/admin/comments", label: "留言审核", icon: "💬" },
-                    { href: "/admin/settings", label: "基础设置", icon: "⚙️" },
-                    { href: "/admin/settings/ai", label: "AI 工具", icon: "🤖" },
-                    { href: siteUrl, label: "前台首页", icon: "🏠", external: true },
-                    { href: "/admin/stats", label: "访问统计", icon: "📊" },
-                  ].map((item) => (
-                    item.external ? (
-                      <a
-                        key={item.label}
-                        href={item.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex flex-col items-center justify-center gap-2 rounded-xl border border-[var(--c-border-2)] bg-[var(--c-page)] p-3 text-center transition hover:border-[var(--brand)] hover:bg-[var(--brand)]/5"
-                      >
-                        <span className="text-xl">{item.icon}</span>
-                        <span className="text-xs font-medium text-[var(--c-text)]">{item.label}</span>
-                      </a>
-                    ) : (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        className="flex flex-col items-center justify-center gap-2 rounded-xl border border-[var(--c-border-2)] bg-[var(--c-page)] p-3 text-center transition hover:border-[var(--brand)] hover:bg-[var(--brand)]/5"
-                      >
-                        <span className="text-xl">{item.icon}</span>
-                        <span className="text-xs font-medium text-[var(--c-text)]">{item.label}</span>
-                      </Link>
-                    )
-                  ))}
-                </div>
+            <section className={`${CARD} flex h-full flex-col`}>
+              <h2 className={H2}>快捷操作</h2>
+              <div className="mt-4 grid flex-1 auto-rows-fr grid-cols-2 content-start gap-3">
+                {[
+                  { href: "/admin/edit/new", label: "新文章", icon: "✏️" },
+                  { href: "/admin/comments", label: "留言审核", icon: "💬" },
+                  { href: "/admin/settings", label: "基础设置", icon: "⚙️" },
+                  { href: "/admin/settings/ai", label: "AI 工具", icon: "🤖" },
+                  { href: siteUrl, label: "前台首页", icon: "🏠", external: true },
+                  { href: "/admin/stats", label: "访问统计", icon: "📊" },
+                ].map((item) => (
+                  item.external ? (
+                    <a
+                      key={item.label}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-col items-center justify-center gap-2 rounded-xl border border-[var(--c-border-2)] bg-[var(--c-page)] p-3 text-center transition hover:border-[var(--brand)] hover:bg-[var(--brand)]/5"
+                    >
+                      <span className="text-xl">{item.icon}</span>
+                      <span className="text-xs font-medium text-[var(--c-text)]">{item.label}</span>
+                    </a>
+                  ) : (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="flex flex-col items-center justify-center gap-2 rounded-xl border border-[var(--c-border-2)] bg-[var(--c-page)] p-3 text-center transition hover:border-[var(--brand)] hover:bg-[var(--brand)]/5"
+                    >
+                      <span className="text-xl">{item.icon}</span>
+                      <span className="text-xs font-medium text-[var(--c-text)]">{item.label}</span>
+                    </Link>
+                  )
+                ))}
               </div>
             </section>
           </div>
 
-          {/* 最近文章 + 最近留言 */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <section className={CARD}>
+          {/* 最近文章 + 最近留言：两卡等宽均分、等高 */}
+          <div className="grid items-stretch gap-6 lg:grid-cols-2">
+            <section className={`${CARD} flex flex-col`}>
               <div className="flex items-center justify-between">
                 <h2 className={H2}>最近文章</h2>
                 <Link
@@ -299,7 +312,7 @@ export default async function DashboardPage() {
                   查看全部 →
                 </Link>
               </div>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 flex-1 space-y-3">
                 {latestPosts.map((p) => (
                   <li key={p.id} className="flex items-start justify-between gap-3">
                     <Link
@@ -321,7 +334,7 @@ export default async function DashboardPage() {
               </ul>
             </section>
 
-            <section className={CARD}>
+            <section className={`${CARD} flex flex-col`}>
               <div className="flex items-center justify-between">
                 <h2 className={H2}>最近留言</h2>
                 <Link
@@ -331,7 +344,7 @@ export default async function DashboardPage() {
                   查看全部 →
                 </Link>
               </div>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 flex-1 space-y-3">
                 {recentComments.map((c) => (
                   <li key={c.id} className="border-b border-[var(--c-border-2)] last:border-0 pb-3 last:pb-0">
                     <div className="flex items-center gap-2">
