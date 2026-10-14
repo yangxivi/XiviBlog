@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
-import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { existsSync, mkdirSync } from "node:fs";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { cnDay } from "./datetime";
 import {
   REVISION_LIMIT,
@@ -80,8 +80,31 @@ export interface DBLike {
 let _db: DBLike | null = null;
 let _raw: import("better-sqlite3").Database | null = null;
 
+/**
+ * 解析数据库文件路径（与 lib/install-lock.ts 共用，保证安装判定与业务查询
+ * 永远落在同一个库上）。
+ * - 绝对路径：原样返回。
+ * - 相对路径：先按「进程工作目录」解析（兼容开发态，以及面板以项目根目录为 cwd 启动）。
+ * - 若工作目录下的文件不存在，且当前正处于 standalone 构建目录
+ *   （<项目根>/.next/standalone）内启动，则回落到「项目根目录」解析，
+ *   避免 standalone server 因 cwd 不同而打开到一个错误的空数据库
+ *   （历史上这一坑曾导致整站被判定为「未安装」→ 首页 307、/install 长期暴露）。
+ */
+export function resolveDbPath(): string {
+  const raw = process.env.DATABASE_PATH || "./data/xiviblog.db";
+  if (isAbsolute(raw)) return raw;
+  const cwdBased = resolve(raw);
+  if (existsSync(cwdBased)) return cwdBased;
+  const cwd = process.cwd().replace(/\\/g, "/");
+  if (cwd.endsWith("/.next/standalone")) {
+    const rootBased = resolve(process.cwd(), "..", "..", raw);
+    if (existsSync(rootBased)) return rootBased;
+  }
+  return cwdBased;
+}
+
 function openDB() {
-  const path = process.env.DATABASE_PATH || "./data/xiviblog.db";
+  const path = resolveDbPath();
   mkdirSync(dirname(path), { recursive: true });
   const raw = new Database(path);
   raw.pragma("journal_mode = WAL");

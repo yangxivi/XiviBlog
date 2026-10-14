@@ -2,30 +2,34 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { runMigrations } from "@/lib/migrate";
-import { createUser, countUsers } from "@/lib/users";
+import { createUser } from "@/lib/users";
 import { saveSettings } from "@/lib/settings";
 import { getRawDb } from "@/lib/db";
+import {
+  installState,
+  writeInstallMarker,
+  isInstallLockedByEnv,
+} from "@/lib/install-lock";
 
 export const dynamic = "force-dynamic";
 
-// 安装成功后种下的短命标记：middleware 见到即绕过安装状态缓存强制重探，
-// 避免刚装完点「/admin」被 3 秒旧缓存弹回安装页。
-const FRESH_COOKIE = "xivi_install_fresh=1; Path=/; Max-Age=15; HttpOnly; SameSite=Lax";
-
-function freshResponse(data: Record<string, unknown>, status = 200) {
-  const res = NextResponse.json(data, { status });
-  res.headers.append("set-cookie", FRESH_COOKIE);
-  return res;
-}
-
+/**
+ * 安装接口。
+ *
+ * ⚠️ 这里是「重复安装」的最后一道闸门，必须在 Node 运行时判断（直连数据库）。
+ * 安装状态统一走 lib/install-lock.ts：环境变量硬锁 → 安装标记文件 → users 表非空，
+ * 命中任意一条即拒绝安装。
+ *
+ * 装完后 /install 页面会 404（见 app/install/page.tsx），但接口这一层仍要独立拒绝：
+ * 页面被绕过时也不能让人重建管理员账号。
+ */
 export async function GET() {
-  try {
-    const n = await countUsers();
-    return NextResponse.json({ installed: n > 0 });
-  } catch {
-    // 表尚未建立 → 尚未安装
-    return NextResponse.json({ installed: false });
-  }
+  const state = await installState();
+  return NextResponse.json({
+    installed: state.installed,
+    reason: state.reason,
+    locked: isInstallLockedByEnv(),
+  });
 }
 
 function isEmail(s: string): boolean {
@@ -33,16 +37,20 @@ function isEmail(s: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
-  // 已安装则拒绝重复安装
-  try {
-    if ((await countUsers()) > 0) {
-      return freshResponse(
-        { error: "博客已安装，无需重复安装。如需重置请清空数据库文件后重试。" },
-        409
-      );
-    }
-  } catch {
-    /* 表还没建，继续安装流程 */
+  // 已安装（或已被 env 硬锁）则拒绝重复安装
+  const state = await installState();
+  if (state.installed) {
+    const locked = state.reason === "env-lock";
+    return NextResponse.json(
+      {
+        error: locked
+          ? "安装向导已被关闭（XIVIBLOG_INSTALL_LOCK=1），如需重装请先移除该环境变量并清空数据库与安装标记。"
+          : "博客已安装，安装向导已关闭。如需重装请清空数据库文件与安装标记后重启服务。",
+        installed: true,
+        reason: state.reason,
+      },
+      { status: locked ? 403 : 409 }
+    );
   }
 
   const body = (await req.json().catch(() => null)) as {
@@ -74,6 +82,8 @@ export async function POST(req: NextRequest) {
       password,
       role: "admin",
     });
+    // 2.5) 落盘安装标记：即使之后 users 表被清空，也无法再走一遍安装流程
+    const markerWritten = writeInstallMarker();
     // 3) 可选：写入站点名称
     if (siteName) {
       try {
@@ -132,10 +142,11 @@ export async function POST(req: NextRequest) {
     } catch {
       /* 种子失败不影响安装 */
     }
-    return freshResponse({
+    return NextResponse.json({
       ok: true,
       userId: uid,
       migrations: files.length,
+      markerWritten,
       seededAbout,
       seededAboutPage,
       seededPosts,

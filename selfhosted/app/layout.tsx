@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import Footer from "./components/Footer";
 import LogoMark, { BRAND_TEXT_CLASS } from "./components/LogoMark";
 import Nav from "./components/Nav";
@@ -12,7 +14,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import AdminAreaFlag from "./components/AdminAreaFlag";
 import { getSettings, type LinkItem } from "@/lib/settings";
 import { isAuthenticated } from "@/lib/auth";
-import { countUsers } from "@/lib/users";
+import { isInstalled } from "@/lib/install-lock";
 import { listNavPages } from "@/lib/pages";
 import { AdminProvider } from "./components/AdminContext";
 import "./globals.css";
@@ -77,13 +79,28 @@ const ADMIN_INIT = `(function(){try{var p=location.pathname;if(p==='/admin'||p.i
     （新布局下滚动发生在 #xivi-main 容器内部，所以要一并重置） */
 const SCROLL_INIT = `(function(){try{if(!window.location.hash){window.scrollTo(0,0);var m=document.getElementById('xivi-main');if(m)m.scrollTop=0;}}catch(e){}})();`;
 
+/** 归一化路径：去掉末尾斜杠，空路径保持空串（取不到 header 时不误判） */
+function normPath(p: string | null | undefined): string {
+  if (!p) return "";
+  const trimmed = p.replace(/\/+$/, "");
+  return trimmed || "/";
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  // 未安装（users 表为空，或表尚未建立）时输出「裸」布局：只有安装向导本身，
-  // 不渲染导航 / 搜索 / 公告 / 悬浮按钮 / 页脚等任何站点元素。
-  const installed = (await countUsers().catch(() => 0)) > 0;
+  // 安装状态：唯一权威判定在 lib/install-lock.ts（Node 运行时，直连数据库）。
+  // ⚠️ 不要再把这里换成 middleware 的 HTTP 自探：edge 沙箱里探测失败会被
+  // 误判为「未安装」，把已装好的站点整站重定向回 /install（历史故障）。
+  const installed = await isInstalled();
   if (!installed) {
+    // 未安装：把访客引导到安装向导；/install 自身放行，避免重定向死循环。
+    // 当前路径由 middleware 透传的 x-pathname 提供。
+    const pathname = normPath((await headers()).get("x-pathname"));
+    if (pathname && pathname !== "/install") redirect("/install");
+
+    // 「裸」布局：只有安装向导本身，
+    // 不渲染导航 / 搜索 / 公告 / 悬浮按钮 / 页脚等任何站点元素。
     return (
       <html lang="zh-CN" className="h-full antialiased" suppressHydrationWarning>
         <body className="flex min-h-dvh flex-col bg-[var(--c-page)] text-[var(--c-text)]">
