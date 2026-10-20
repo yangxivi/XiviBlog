@@ -1,0 +1,74 @@
+name: Release Cloudflare
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'lib/**'
+      - 'migrations/**'
+      - 'scripts/**'
+      - 'selfhosted/scripts/build-packages.mjs'
+      - '.github/workflows/release-cloudflare.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-cloudflare-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read version
+        id: ver
+        run: echo "version=$(grep -oP 'APP_VERSION = "\K[0-9.]+' lib/version.ts)" >> "$GITHUB_OUTPUT"
+
+      - name: Package Cloudflare zip
+        run: |
+          # 复用统一打包脚本（与自托管版同一入口），只取 CF 版产物
+          node selfhosted/scripts/build-packages.mjs
+          ls -lh selfhosted/dist/
+
+      - name: Verify seed included
+        env:
+          VER: ${{ steps.ver.outputs.version }}
+        run: |
+          ZIP="selfhosted/dist/xiviblog-cloudflare-v$VER.zip"
+          test -f "$ZIP" || (echo "✗ 未生成 $ZIP" && exit 1)
+          unzip -l "$ZIP" | grep -E "_seed_full.json|import-seed.mjs|0017_pages.sql" \
+            || (echo "✗ 种子文件缺失" && exit 1)
+          echo "✓ 种子文件已包含在 CF 安装包内"
+
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VER: ${{ steps.ver.outputs.version }}
+        run: |
+          TAG="v$VER"
+          ZIP="selfhosted/dist/xiviblog-cloudflare-v$VER.zip"
+          if gh release view "$TAG" --repo yangxivi/XiviBlog > /dev/null 2>&1; then
+            gh release upload "$TAG" --repo yangxivi/XiviBlog --clobber "$ZIP"
+          else
+            gh release create "$TAG" --repo yangxivi/XiviBlog --latest \
+              --title "v$VER" \
+              --notes "Cloudflare Workers 版安装包（含完整演示数据种子）。
+
+导入演示数据：node scripts/import-seed.mjs" \
+              "$ZIP"
+          fi
+
+      - name: Verify release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "v${{ steps.ver.outputs.version }}" --repo yangxivi/XiviBlog \
+            --json assets --jq '.assets[] | select(.name | test("cloudflare")) | .name + "  " + (.size|tostring) + " bytes  " + .state'
