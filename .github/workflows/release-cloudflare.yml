@@ -10,7 +10,7 @@ on:
       - 'scripts/**'
       - 'selfhosted/scripts/build-packages.mjs'
       - '.github/workflows/release-cloudflare.yml'
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 permissions:
   contents: write
