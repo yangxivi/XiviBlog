@@ -10,6 +10,7 @@ import {
   writeInstallMarker,
   isInstallLockedByEnv,
 } from "@/lib/install-lock";
+import { applySeedToSqlite, type SeedData } from "@/lib/seed";
 
 export const dynamic = "force-dynamic";
 
@@ -92,53 +93,25 @@ export async function POST(req: NextRequest) {
         /* 站点名写入失败不影响安装 */
       }
     }
-    // 4) 种子内容：「关于本站」（与 blog.aixivi.cn/about 一致的完整文案）
+    // 4) 种子内容：完整演示数据（站点设置 + 文章 + 页面 + 留言）
+    //    「关于本站」等页面内容都在种子 JSON 里（settings.aboutContent + pages 表），
+    //    用户安装后可在后台自由修改或删除全部内容。
+    //    用 JSON + 参数化写入（文章正文含分号，按 ; 拆 SQL 会切坏内容）。
+    let seeded = { settings: false, posts: 0, pages: 0, comments: 0 };
+    let seededPosts = 0;
     let seededAbout = false;
-    let aboutMd = "";
+    let seededAboutPage = false;
     try {
-      aboutMd = readFileSync(
-        join(process.cwd(), "migrations", "_seed_about.md"),
+      const seedRaw = readFileSync(
+        join(process.cwd(), "migrations", "_seed_full.json"),
         "utf8"
       );
-      await saveSettings({ aboutTitle: "关于本站", aboutContent: aboutMd });
-      seededAbout = true;
-    } catch {
-      /* 种子失败不影响安装 */
-    }
-    // 4.5) 把「关于本站」种进页面管理（slug=about，即 /about 的内容源，
-    //       后台「页面管理」可直接编辑；show_in_nav=0，导航入口由默认设置提供）
-    let seededAboutPage = false;
-    if (aboutMd) {
-      try {
-        const db = getRawDb();
-        const exists = db
-          .prepare("SELECT id FROM pages WHERE slug='about'")
-          .get();
-        if (!exists) {
-          db.prepare(
-            "INSERT INTO pages (slug, title, content, show_in_nav, nav_order, allow_comments) VALUES ('about', '关于本站', ?, 0, 99, 1)"
-          ).run(aboutMd);
-        }
-        seededAboutPage = true;
-      } catch {
-        /* 页面种子失败不影响安装 */
-      }
-    }
-    // 5) 种子内容：20 篇样本文章（仅在文章表为空时写入）
-    let seededPosts = 0;
-    try {
-      const db = getRawDb();
-      const row = db.prepare("SELECT COUNT(*) AS c FROM posts").get() as
-        | { c: number }
-        | undefined;
-      if (!row || row.c === 0) {
-        const seedSql = readFileSync(
-          join(process.cwd(), "migrations", "_seed_posts20.sql"),
-          "utf8"
-        );
-        db.exec(seedSql);
-        seededPosts = 20;
-      }
+      const seed = JSON.parse(seedRaw) as SeedData;
+      const r = await applySeedToSqlite(seed);
+      seeded = r;
+      seededPosts = r.posts;
+      seededAbout = r.settings;
+      seededAboutPage = r.pages > 0;
     } catch {
       /* 种子失败不影响安装 */
     }
@@ -150,6 +123,7 @@ export async function POST(req: NextRequest) {
       seededAbout,
       seededAboutPage,
       seededPosts,
+      seeded,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

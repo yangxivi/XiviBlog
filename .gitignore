@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# next.js build output
+.next/
+.open-next/
+out/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# 本地打包产物
+dist-packages/
+
+# runtime data
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# env files (含密钥，绝不入库)
+.env
+.env.local
+.env*.local
+
+# OS
+.DS_Store
+Thumbs.db

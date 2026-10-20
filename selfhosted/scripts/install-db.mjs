@@ -8,6 +8,10 @@ import { readdirSync, readFileSync } from "node:fs";
 /**
  * 按分号分割 SQL 语句，但跳过 CREATE TRIGGER ... BEGIN ... END 块。
  * SQLite 触发器体内部的分号是语句分隔符，不应在此处拆分。
+ *
+ * 注意：结束行通常是 `END;`，若先把 inTrigger 置 false 再按分号切分，
+ * 就会把 `END` 切成一条残缺语句（报 incomplete input）。
+ * 正确做法：遇到 END 行时，把整段触发器（含结尾分号）作为一条完整语句输出。
  */
 function splitStatements(sql) {
   const statements = [];
@@ -18,14 +22,20 @@ function splitStatements(sql) {
   for (const line of lines) {
     const trimmed = line.trim();
 
-    // 检测 BEGIN 开始触发器体
-    if (/^\s*BEGIN\s*$/i.test(trimmed) || /^\s*BEGIN/i.test(trimmed)) {
+    // 触发器体开始：BEGIN
+    if (!inTrigger && /^\s*BEGIN\b/i.test(trimmed)) {
       inTrigger = true;
+      current += line + "\n";
+      continue;
     }
 
-    // 检测 END 结束触发器体
-    if (/^\s*END\s*$/i.test(trimmed) || /^\s*END/i.test(trimmed)) {
+    // 触发器体结束：END（可能带分号）—— 整段作为一条语句输出
+    if (inTrigger && /^\s*END\b/i.test(trimmed)) {
+      current += line + "\n";
       inTrigger = false;
+      if (current.trim()) statements.push(current.trim());
+      current = "";
+      continue;
     }
 
     if (!inTrigger) {

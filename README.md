@@ -66,14 +66,34 @@ done
 
 > 若你的环境 `--file` 通道异常，可改用 Cloudflare 控制台 D1 的 Query 面板逐文件粘贴执行，或用 `npx wrangler d1 execute xivi-blog-db --remote --command "$(cat 文件路径)"`。
 
-### 4.（可选）初始化管理员与示例文章
+### 4.（可选）初始化管理员与演示内容
 
 ```bash
+# 4.1 占位管理员（admin@example.com，密码不可用）
 npx wrangler d1 execute xivi-blog-db --remote --file=migrations/_seed_default_user.sql
-npx wrangler d1 execute xivi-blog-db --remote --file=migrations/_seed_posts.sql
+
+# 4.2 完整演示内容（推荐）
+export CLOUDFLARE_API_TOKEN=你的token
+export CLOUDFLARE_ACCOUNT_ID=你的account_id
+node scripts/import-seed.mjs
 ```
 
-`_seed_default_user.sql` 写入的是一个**占位管理员**（`admin@example.com`，密码不可用）。部署完成后请通过前台 **`/admin/register`** 用「邀请码 = `ADMIN_PASSWORD`」创建你自己的管理员账号，再删除占位账号。
+`import-seed.mjs` 会把 `migrations/_seed_full.json` 里的完整演示数据写入 D1：
+
+| 内容 | 数量 | 说明 |
+|---|---|---|
+| 站点设置 | 1 条 | 页脚四栏、导航、侧边栏橱窗卡、公告、友情链接、**页脚二维码**、关于本站、主题 |
+| 文章 | 183 篇 | 含 7 篇置顶、7 篇推荐；封面留空（请自行上传） |
+| 页面 | 2 个 | 关于本站等，可在后台「页面管理」编辑 |
+| 留言 | 7 条 | 演示用，可自行删除 |
+
+导入后**所有内容都可在后台自由修改或删除**，不影响正常使用。
+脚本是幂等的（`settings.key` / `posts.slug` / `pages.slug` 唯一），重复执行不会产生重复数据。
+
+> 种子文件用 JSON 而非 SQL：文章正文里含分号（如 shell 命令 `for f in *.sql; do`），
+> 按 `;` 拆 SQL 执行会切坏内容；JSON + 参数化写入可彻底规避。
+
+> `_seed_default_user.sql` 写入的是一个**占位管理员**（`admin@example.com`，密码不可用）。部署完成后请通过前台 **`/admin/register`** 用「邀请码 = `ADMIN_PASSWORD`」创建你自己的管理员账号，再删除占位账号。
 
 ### 5. 设置运行所需 Secret
 
@@ -283,7 +303,19 @@ bash setup-nginx.sh blog.yourdomain.com   # Nginx 反代 + 免费 HTTPS 证书
 
 1. 建好全部数据库表；
 2. 创建管理员账号；
-3. 写入「关于本站」页面与 20 篇样本文章，页脚带 [By XiviBlog](https://blog.aixivi.cn/) 署名。
+3. 写入**完整演示数据**（详见下方说明）。
+
+#### 装完你会得到什么
+
+| 内容 | 数量 | 说明 |
+|---|---|---|
+| 站点设置 | 1 条 | 页脚四栏、导航、侧边栏橱窗卡、公告、友情链接、**页脚二维码**、关于本站、主题 |
+| 文章 | 183 篇 | 含 7 篇置顶、7 篇推荐；封面留空（请自行上传） |
+| 页面 | 2 个 | 关于本站等，可在后台「页面管理」编辑 |
+| 留言 | 7 条 | 演示用，可自行删除 |
+
+**所有内容都可以在后台自由修改或删除**，不影响正常使用。演示数据来自 `migrations/_seed_full.json`，
+用 JSON + 参数化写入（文章正文含分号，按 `;` 拆 SQL 会切坏内容）。
 
 看到下面这个页面就说明装好了：
 

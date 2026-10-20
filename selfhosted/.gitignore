@@ -33,6 +33,7 @@ _*
 # 例外：种子文件需要提交
 _seed_*.sql
 _seed_*.md
+_seed_*.json
 
 # 打包 / 压缩产物
 xiviblog-install.zip

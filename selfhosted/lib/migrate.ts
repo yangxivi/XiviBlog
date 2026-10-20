@@ -8,6 +8,49 @@ import { getRawDb } from "./db";
  * - 按文件名升序执行，CREATE TABLE 均带 IF NOT EXISTS，可安全重复执行。
  * - 使用 sqlite_master 检查列是否已存在，避免 ALTER TABLE ADD COLUMN 重复时报错。
  */
+
+/**
+ * 按分号分割 SQL 语句，但跳过 CREATE TRIGGER ... BEGIN ... END 块。
+ * 触发器体内部的分号不是语句分隔符，直接 split(";") 会把触发器切成残缺语句
+ * （报 incomplete input）。遇到 END 行时整段触发器作为一条语句输出。
+ */
+function splitStatements(sql: string): string[] {
+  const statements: string[] = [];
+  let current = "";
+  let inTrigger = false;
+
+  for (const line of sql.split("\n")) {
+    const trimmed = line.trim();
+
+    if (!inTrigger && /^\s*BEGIN\b/i.test(trimmed)) {
+      inTrigger = true;
+      current += line + "\n";
+      continue;
+    }
+    if (inTrigger && /^\s*END\b/i.test(trimmed)) {
+      current += line + "\n";
+      inTrigger = false;
+      if (current.trim()) statements.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    if (!inTrigger) {
+      current += line + "\n";
+      const parts = current.split(";");
+      current = parts.pop() || "";
+      for (const part of parts) {
+        if (part.trim()) statements.push(part.trim());
+      }
+    } else {
+      current += line + "\n";
+    }
+  }
+
+  if (current.trim()) statements.push(current.trim());
+  return statements;
+}
+
 export function runMigrations(): { files: string[]; skipped: string[] } {
   const db = getRawDb();
   const dir = join(process.cwd(), "migrations");
@@ -22,7 +65,7 @@ export function runMigrations(): { files: string[]; skipped: string[] } {
     const sql = readFileSync(join(dir, f), "utf8");
     try {
       // 先尝试执行 ALTER TABLE，如果列已存在则跳过该语句
-      const statements = sql.split(";").filter((s) => s.trim());
+      const statements = splitStatements(sql);
       for (const stmt of statements) {
         const trimmed = stmt.trim();
         if (!trimmed) continue;
