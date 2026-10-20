@@ -9,7 +9,7 @@
 // 说明：CF 版无需预构建产物（用户在自己机器上 npx opennextjs-cloudflare build），
 // 故只打源码包。
 import { existsSync, mkdirSync, rmSync, readdirSync, statSync, cpSync, readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 
@@ -55,50 +55,69 @@ function rmTree(dir) {
   }
 }
 
-/** 递归复制目录，可排除顶层目录名 */
-function copyDir(src, dest, excludes = []) {
+/** 递归复制目录。skipNext=false 时会连 .next 一起复制（预构建包需要） */
+function copyDir(src, dest, excludes = [], skipNext = true) {
   mkdirSync(dest, { recursive: true });
   for (const e of readdirSync(src, { withFileTypes: true })) {
-    if (["node_modules", ".git", ".next"].includes(e.name)) continue;
+    if (["node_modules", ".git"].includes(e.name)) continue;
+    if (skipNext && e.name === ".next") continue;
     if (excludes.includes(e.name)) continue;
     const from = join(src, e.name);
     const to = join(dest, e.name);
-    if (e.isDirectory()) copyDir(from, to, excludes);
+    if (e.isDirectory()) copyDir(from, to, excludes, skipNext);
     else cpSync(from, to);
   }
 }
 
 /**
  * 打包成 zip。
- * ⚠️ 必须用 zip 命令而非 Compress-Archive：后者在 Windows 上写反斜杠路径，
- * Linux/macOS 用户解压后目录结构会错乱。zip 始终写正斜杠。
+ *
+ * ⚠️ 三个要点：
+ * 1) 必须用 zip 命令而非 Compress-Archive：后者在 Windows 上写反斜杠路径，
+ *    Linux/macOS 用户解压后目录结构会错乱。zip 始终写正斜杠。
+ * 2) 必须只打包目标目录，不能用 `zip -r dest .` —— 那会把 cwd 下所有内容
+ *    （dist/ 里已生成的其他安装包、中间目录）一起打进包里。
+ * 3) topName 指定包内的顶层目录名（如 xiviblog-cloudflare），
+ *    用户解压后直接得到该目录，不暴露 stage-* 这类中间目录名。
  */
-function zip(srcDir, zipName) {
+/**
+ * 把目录内容打包成 zip，并指定包内顶层目录名。
+ * 做法：在临时父目录里建一个 topName 软链/副本，再对该目录打包。
+ */
+function zipAs(srcDir, zipName, topName) {
+  const holder = join(OUT, ".ziptmp-" + topName);
+  rmTree(holder);
+  mkdirSync(holder, { recursive: true });
+  const inner = join(holder, topName);
+  copyDir(srcDir, inner, [], false);
   const dest = join(OUT, zipName);
   rmSync(dest, { force: true });
-  let hasZip = true;
-  try {
-    execFileSync("zip", ["-v"], { stdio: "pipe" });
-  } catch {
-    hasZip = false;
-  }
+  const hasZip = (() => {
+    try {
+      execFileSync("zip", ["-v"], { stdio: "pipe" });
+      return true;
+    } catch {
+      return false;
+    }
+  })();
   if (hasZip) {
-    execFileSync("zip", ["-rq", dest, "."], { cwd: dirname(srcDir), stdio: "pipe" });
+    execFileSync("zip", ["-rq", dest, topName], { cwd: holder, stdio: "pipe" });
   } else {
     execFileSync(
       "powershell",
       ["-NoProfile", "-Command",
-        `Compress-Archive -Path '${srcDir}' -DestinationPath '${dest}' -Force`],
+        `Compress-Archive -Path '${inner}' -DestinationPath '${dest}' -Force`],
       { stdio: "pipe" }
     );
   }
+  rmTree(holder);
   return dest;
 }
 
 // ---------- 1) 自托管版纯源码 ----------
 const srcStage = join(OUT, "stage-src", "selfhosted");
 copyDir(selfRoot, srcStage, ["data", ".env", ".env.local", "dist"]);
-zip(srcStage, `xiviblog-selfhosted-v${SH_VER}.zip`);
+zipAs(srcStage, `xiviblog-selfhosted-v${SH_VER}.zip`, 'selfhosted');
 console.log(`[build-packages] ✓ xiviblog-selfhosted-v${SH_VER}.zip`);
 
 // ---------- 2) 自托管版预构建（带 .next） ----------
@@ -109,7 +128,7 @@ if (existsSync(join(selfRoot, ".next"))) {
 } else {
   console.warn("[build-packages] ⚠️ selfhosted/.next 不存在，prebuilt 包不含构建产物");
 }
-zip(pbStage, `xiviblog-prebuilt-v${SH_VER}.zip`);
+zipAs(pbStage, `xiviblog-prebuilt-v${SH_VER}.zip`, 'selfhosted');
 console.log(`[build-packages] ✓ xiviblog-prebuilt-v${SH_VER}.zip`);
 
 // ---------- 3) Cloudflare 版（仓库根目录的 CF 变体） ----------
@@ -134,7 +153,7 @@ for (const f of readdirSync(migSrc)) {
   if (f === "_seed_default_user.sql") continue;
   cpSync(join(migSrc, f), join(migDest, f));
 }
-zip(join(OUT, "stage-cf"), `xiviblog-cloudflare-v${CF_VER}.zip`);
+zipAs(cfStage, `xiviblog-cloudflare-v${CF_VER}.zip`, 'xiviblog-cloudflare');
 console.log(`[build-packages] ✓ xiviblog-cloudflare-v${CF_VER}.zip`);
 
 // ---------- 清理中间目录 ----------
