@@ -49,8 +49,30 @@ function copyDir(src, dest, excludes = []) {
   }
 }
 
+/**
+ * 打包成 zip。
+ *
+ * ⚠️ 必须用 `zip` 命令而不是 PowerShell 的 Compress-Archive：
+ * Compress-Archive 在 Windows 上会把路径写成反斜杠（xiviblog-cloudflare\app\...），
+ * Linux/macOS 用户解压后目录结构会错乱。`zip` 始终写正斜杠，跨平台安全。
+ */
 function zip(srcDir, zipName) {
   const dest = join(OUT, zipName);
+  rmSync(dest, { force: true });
+  const hasZip = (() => {
+    try {
+      execFileSync("zip", ["-v"], { stdio: "pipe" });
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+  if (hasZip) {
+    // 在 srcDir 的父目录里打包，保证包内是相对路径
+    execFileSync("zip", ["-rq", dest, "."], { cwd: dirname(srcDir), stdio: "pipe" });
+    return dest;
+  }
+  // 无 zip 命令时退回 Compress-Archive（仅限 Windows 本地使用）
   execFileSync(
     "powershell",
     ["-NoProfile", "-Command",
