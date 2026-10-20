@@ -3,4 +3,4 @@
  *
  * 注意：CF 版与 selfhosted 版共用同一套功能版本号。
  */
-export const APP_VERSION = "1.3.25";
+export const APP_VERSION = "1.3.26";
