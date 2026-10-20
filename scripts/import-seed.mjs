@@ -80,7 +80,7 @@ let pages = 0;
 let comments = 0;
 
 settings = await exec(
-  "INSERT OR IGNORE INTO settings (key, value) VALUES (?1, ?2)",
+  "INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)",
   ["site", JSON.stringify(seed.settings)]
 );
 
@@ -90,7 +90,7 @@ for (const p of seed.posts) {
        (slug, title, excerpt, content, tag, tags, status,
         created_at, updated_at, cover_image, cover_thumb,
         pinned, recommended, publish_at)
-     VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)`,
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
       p.slug, p.title, p.excerpt ?? "", p.content ?? "",
       p.tag ?? "随笔", p.tags ?? "", p.status ?? "published",
@@ -106,7 +106,7 @@ for (const p of seed.pages) {
     `INSERT OR IGNORE INTO pages
        (slug, title, content, show_in_nav, nav_order, allow_comments,
         created_at, updated_at, header_title, header_tagline, header_desc)
-     VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)`,
+     VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
     [
       p.slug, p.title, p.content ?? "",
       p.show_in_nav ?? 0, p.nav_order ?? 0, p.allow_comments ?? 0,
@@ -120,7 +120,7 @@ for (const c of seed.comments) {
   comments += await exec(
     `INSERT OR IGNORE INTO comments
        (page_key, nickname, avatar, content, ip_hash, created_at)
-     VALUES (?1,?2,?3,?4,?5,?6)`,
+     VALUES (?,?,?,?,?,?)`,
     [
       c.page_key, c.nickname, c.avatar ?? "",
       c.content, c.ip_hash ?? "", c.created_at,

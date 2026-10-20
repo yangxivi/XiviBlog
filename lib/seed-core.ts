@@ -13,6 +13,11 @@
  *   - 留言：演示用
  *
  * 幂等：settings.key / posts.slug / pages.slug 唯一，重复执行自动跳过。
+ *
+ * ⚠️ 占位符必须用匿名 `?`，不能用 D1 风格的 `?1` / `?2`：
+ * better-sqlite3 的 run()/bind() 不认编号占位符（会报
+ * "Too many parameter values were provided"），而 D1 两种都支持。
+ * 匿名 `?` 是唯一两边通吃的写法。
  */
 
 export type SeedPost = {
@@ -82,7 +87,7 @@ export async function applySeed(
   // ---------- 站点设置 ----------
   if (seed.settings && Object.keys(seed.settings).length) {
     const n = await exec(
-      "INSERT OR IGNORE INTO settings (key, value) VALUES (?1, ?2)",
+      "INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)",
       ["site", JSON.stringify(seed.settings)]
     );
     result.settings = n > 0;
@@ -95,7 +100,7 @@ export async function applySeed(
          (slug, title, excerpt, content, tag, tags, status,
           created_at, updated_at, cover_image, cover_thumb,
           pinned, recommended, publish_at)
-       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)`,
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         p.slug, p.title, p.excerpt ?? "", p.content ?? "",
         p.tag ?? "随笔", p.tags ?? "", p.status ?? "published",
@@ -113,7 +118,7 @@ export async function applySeed(
       `INSERT OR IGNORE INTO pages
          (slug, title, content, show_in_nav, nav_order, allow_comments,
           created_at, updated_at, header_title, header_tagline, header_desc)
-       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)`,
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
       [
         p.slug, p.title, p.content ?? "",
         p.show_in_nav ?? 0, p.nav_order ?? 0, p.allow_comments ?? 0,
@@ -129,7 +134,7 @@ export async function applySeed(
     const n = await exec(
       `INSERT OR IGNORE INTO comments
          (page_key, nickname, avatar, content, ip_hash, created_at)
-       VALUES (?1,?2,?3,?4,?5,?6)`,
+       VALUES (?,?,?,?,?,?)`,
       [
         c.page_key, c.nickname, c.avatar ?? "",
         c.content, c.ip_hash ?? "", c.created_at,
